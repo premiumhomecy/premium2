@@ -803,7 +803,7 @@ st.sidebar.info(
     f"Email: {COMPANY_INFO['email']}\n"
     f"Telefon: {COMPANY_INFO['phone']}\n"
     f"Website: {COMPANY_INFO['website']}\n"
-    f"Linktree: {COMPANY_INFO['linktree']}" # This is where the previous NameError occurred, ensuring it's correct now.
+    f"Linktree: {COMPANY_INFO['linktree']}"
 )
 
 st.sidebar.header("Fiyat Güncelleme")
@@ -909,8 +909,23 @@ else:
     solar_kapasite = 0 # Default to 0 if not selected
 
 st.header("FİNANSAL AYARLAR")
-kar_orani_input = st.slider("Kar Oranı:", min_value=0.0, max_value=0.50, value=0.20, step=0.01, format='.0%')
-kdv_input = st.slider("KDV Oranı:", min_value=0.0, max_value=0.25, value=KDV_ORANI, step=0.01, format='.0%')
+# Düzeltilen kısım: format='.0%' yerine format_func kullanıldı
+kar_orani_input = st.slider(
+    "Kar Oranı:",
+    min_value=0.0,
+    max_value=0.50,
+    value=0.20,
+    step=0.01,
+    format_func=lambda x: f"{x:.0%}"
+)
+kdv_input = st.slider(
+    "KDV Oranı:",
+    min_value=0.0,
+    max_value=0.25,
+    value=KDV_ORANI,
+    step=0.01,
+    format_func=lambda x: f"{x:.0%}"
+)
 
 st.header("MÜŞTERİ ÖZEL İSTEKLERİ VE NOTLAR")
 musteri_notlari = st.text_area("Müşteri Notları:", value='')
