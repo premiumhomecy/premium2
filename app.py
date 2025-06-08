@@ -2,18 +2,14 @@ import math
 import pandas as pd
 import base64
 import io
-import ipywidgets as widgets
+import streamlit as st
 from datetime import datetime
-from IPython.display import display, clear_output, HTML
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle, Paragraph, Spacer, SimpleDocTemplate, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
-from reportlab.lib.units import mm, inch
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.units import mm
 import requests
 from PIL import Image as PILImage
 
