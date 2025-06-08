@@ -1,202 +1,34 @@
-import math
+import streamlit as st
 import pandas as pd
+import math
 import base64
 import io
-import streamlit as st
 from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle, Paragraph, Spacer, SimpleDocTemplate, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import mm
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.units import mm, inch
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 import requests
 from PIL import Image as PILImage
 
-# === THEME AND FONT SETTINGS ===
-DARK_MODE = False  # User can toggle dark mode
+# === FONT AYARLARI === (Türkçe karakter desteği için)
+# Try to register Arial fonts for PDF generation.
+# If Arial.ttf and Arial Bold.ttf are in the same directory as app.py, they will be used.
+# Otherwise, it will fall back to Helvetica.
+try:
+    pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+    pdfmetrics.registerFont(TTFont('Arial-Bold', 'Arial Bold.ttf'))
+    MAIN_FONT = 'Arial'
+except Exception:
+    MAIN_FONT = 'Helvetica'
 
-def set_theme(dark_mode=False):
-    """Sets the UI theme (light or dark)"""
-    global DARK_MODE
-    DARK_MODE = dark_mode
-    
-    bg_color = "#f8f9fa" if not dark_mode else "#1a202c"
-    text_color = "#2d3748" if not dark_mode else "#e2e8f0"
-    primary_color = "#3182ce" if not dark_mode else "#63b3ed"
-    secondary_color = "#e2e8f0" if not dark_mode else "#4a5568"
-    card_bg = "#ffffff" if not dark_mode else "#2d3748"
-    border_color = "#e2e8f0" if not dark_mode else "#4a5568"
-    
-    display(HTML(f"""
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        
-        * {{
-            font-family: 'Inter', sans-serif !important;
-        }}
-        
-        .widget-label {{ 
-            font-weight: 500; 
-            margin-top: 10px;
-            color: {text_color} !important;
-        }}
-        
-        h3 {{ 
-            color: {primary_color}; 
-            border-bottom: 2px solid {primary_color}; 
-            padding-bottom: 5px; 
-            margin-top: 20px;
-            font-weight: 600 !important;
-        }}
-        
-        .dataframe {{ 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 10px; 
-            font-size: 14px;
-            background-color: {card_bg};
-            color: {text_color};
-        }}
-        
-        .dataframe th, .dataframe td {{ 
-            border: 1px solid {border_color}; 
-            padding: 8px; 
-            text-align: left; 
-        }}
-        
-        .dataframe th {{ 
-            background-color: {primary_color}; 
-            color: white;
-            font-weight: 600 !important;
-        }}
-        
-        .pdf-button {{ 
-            background-color: {primary_color}; 
-            border: none; 
-            color: white; 
-            padding: 12px 24px; 
-            text-align: center; 
-            text-decoration: none; 
-            display: inline-block; 
-            font-size: 16px; 
-            margin: 15px; 
-            cursor: pointer; 
-            border-radius: 8px; 
-            transition: all 0.3s;
-            font-weight: 500 !important;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }}
-        
-        .pdf-button:hover {{ 
-            background-color: {'#2c5282' if not dark_mode else '#90cdf4'}; 
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }}
-        
-        .pdf-container {{ 
-            margin: 25px 0; 
-            padding: 20px; 
-            background-color: {'#edf2f7' if not dark_mode else '#1a202c'}; 
-            border-radius: 10px; 
-            text-align: center;
-            border: 1px solid {border_color};
-        }}
-        
-        .customer-section {{
-            background-color: {'#ebf8ff' if not dark_mode else '#2b6cb0'};
-            border: 1px solid {primary_color};
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }}
-        
-        .warning {{ 
-            color: {'#e53e3e' if not dark_mode else '#fc8181'}; 
-            font-weight: 500; 
-            background-color: {'#fff5f5' if not dark_mode else '#742a2a'};
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid {'#fed7d7' if not dark_mode else '#9b2c2c'};
-        }}
-        
-        .section-title {{
-            background-color: {primary_color};
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 600 !important;
-            margin-top: 20px;
-        }}
-        
-        .price-table {{
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 14px;
-            background-color: {card_bg};
-            color: {text_color};
-        }}
-        
-        .price-table th, .price-table td {{
-            border: 1px solid {border_color}; 
-            padding: 10px;
-            text-align: left;
-        }}
-        
-        .price-table th {{
-            background-color: {primary_color};
-            color: white;
-        }}
-        
-        .price-table tr:nth-child(even) {{
-            background-color: {'#f7fafc' if not dark_mode else '#2d3748'};
-        }}
-        
-        body {{
-            background-color: {bg_color};
-            color: {text_color};
-        }}
-        
-        .widget-text input, .widget-dropdown select {{
-            background-color: {card_bg};
-            color: {text_color};
-            border: 1px solid {border_color};
-        }}
-        
-        .widget-checkbox input[type="checkbox"] {{
-            filter: {'none' if not dark_mode else 'invert(80%)'};
-        }}
-        
-        .card {{
-            background-color: {card_bg};
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid {border_color};
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }}
-    </style>
-    """))
-
-# Initialize theme
-set_theme(DARK_MODE)
-
-# Dark mode toggle button
-def toggle_dark_mode(b):
-    set_theme(not DARK_MODE)
-
-dark_mode_button = widgets.ToggleButton(
-    value=DARK_MODE,
-    description='🌙 Dark Mode' if DARK_MODE else '☀️ Light Mode',
-    tooltip='Toggle dark/light mode',
-    button_style='',
-    icon='moon' if DARK_MODE else 'sun'
-)
-dark_mode_button.observe(lambda change: toggle_dark_mode(change), 'value')
-
-# === COMPANY INFORMATION ===
-LOGO_URL = "https://premiumpluscy.eu/wp-content/uploads/2024/05/pp-logo-2-1.png"
+# === LOGO VE ŞİRKET BİLGİLERİ ===
+LOGO_URL = "https://premiumpluscy.eu/wp-content/uploads/2023/08/Logo-dark.webp" # Yeni logo URL'si
 LINKTREE_URL = "https://linktr.ee/premiumplushome?utm_source=linktree_admin_share"
 COMPANY_INFO = {
     "name": "PREMIUM PLUS CONSTRUCTION",
@@ -207,1259 +39,1081 @@ COMPANY_INFO = {
     "linktree": LINKTREE_URL
 }
 
-# === PRICE DEFINITIONS ===
-FIYATLAR = {
-    # Steel Profile Prices
-    "steel_profile_100x100x3": 45.00,
-    "steel_profile_100x50x3": 33.00,
-    "steel_profile_40x60x2": 14.00,
-    "steel_profile_50x50x2": 11.00,  # Changed from 40x40 to 50x50
-    "steel_profile_30x30x2": 8.50,
-    "steel_profile_HEA160": 155.00,
+# === Fiyat Tanımlamaları ===
+FIYATLAR = {} # Initialize global FIYATLAR
 
-    # Material Prices
-    "heavy_steel_m2": 400.00,
-    "sandwich_panel_m2": 22.00,
-    "plywood_piece": 44.44,
-    "aluminum_window_piece": 250.00,
-    "sliding_glass_door_piece": 300.00,  # Added sliding glass door
-    "wc_window_piece": 120.00,
-    "wc_sliding_door_piece": 150.00,  # Added WC sliding door
-    "door_piece": 280.00,
-    "kitchen_installation_piece": 1500.00,
-    "shower_wc_installation_piece": 1000.00,
-    "connection_element_m2": 1.50,
-    "transportation": 500.00,
-    "floor_heating_m2": 50.00,
-    "wc_ceramic_m2": 20.00 + (650/45.5),  # WC ceramic (labor + material converted from TL to EUR)
+def update_prices():
+    """Defines and updates the global FIYATLAR dictionary with current prices."""
+    global FIYATLAR
+    FIYATLAR = {
+        # Çelik Profil Fiyatları (per 6m piece for light steel)
+        "celik_profil_100x100x3": 45.00,
+        "celik_profil_100x50x3": 33.00,
+        "celik_profil_40x60x2": 14.00,
+        "celik_profil_40x40x2": 11.00,
+        "celik_profil_30x30x2": 8.50,
+        "celik_profil_hea160": 155.00, # Corrected to lowercase 'hea160' for consistency with lookup
 
-    # Labor Prices
-    "welding_labor_m2": 160.00,
-    "panel_assembly_labor_m2": 5.00,
-    "plasterboard_material_m2": 20.00,
-    "plasterboard_labor_m2": 80.00,
-    "plywood_flooring_labor_m2": 11.11,
-    "door_window_assembly_labor_piece": 50.00,
-    
-    # Installation Prices
-    "electrical_installation_price": 1200.00,
-    "plumbing_installation_price": 1300.00,
-    
-    # Solar Price (1kW = 1250€)
-    "solar_per_kw": 1250.00
-}
+        # Malzeme Fiyatları
+        "celik_agir_m2": 400.00,       # Heavy steel per m²
+        "sandvic_panel_m2": 22.00,     # Sandwich panel per m²
+        "plywood_adet": 44.44,         # Plywood per piece (approx 1.22x2.44m)
+        "aluminyum_pencere_adet": 250.00, # Aluminum window per piece
+        "wc_pencere_adet": 120.00,      # WC window per piece
+        "kapi_adet": 280.00,            # General Door per piece (Can be adjusted for specific types)
+        "sliding_door_adet": 350.00,    # Added: Sliding Door per piece
+        "main_door_adet": 400.00,       # Added: Main Door per piece
+        "mutfak_kurulum_adet": 1500.00, # Kitchen installation
+        "dus_wc_kurulum_adet": 1000.00, # Shower/WC installation
+        "wc_ceramic_m2": 25.00,        # WC Ceramic per m² (Added from new file)
+        "baglanti_elemani_m2": 1.50,   # Connection elements per m²
+        "tasinma": 500.00,              # Transportation/Shipping
+        "yerden_isitma_m2": 50.00,      # Underfloor heating per m²
 
-FIRE_RATE = 0.05
-VAT_RATE = 0.19
+        # İşçilik Fiyatları
+        "kaynak_iscilik_m2": 160.00,        # Welding labor per m²
+        "panel_montaj_iscilik_m2": 5.00,    # Panel assembly labor per m²
+        "alcipan_malzeme_m2": 20.00,        # Drywall material per m²
+        "alcipan_iscilik_m2": 80.00,        # Drywall labor per m²
+        "plywood_doseme_iscilik_m2": 11.11, # Plywood flooring labor per m²
+        "kapi_pencere_montaj_iscilik_adet": 50.00, # Door/window installation labor per piece
+        
+        # Tesisat Fiyatları
+        "elektrik_tesisat_fiyat": 1200.00,  # Electrical installation
+        "su_tesisat_fiyat": 1300.00,        # Water installation
+       
+        # Solar Fiyatı (1kW = 1250€)
+        "solar_per_kw": 1250.00             # Solar energy per kW
+    }
 
-# === CUSTOMER INFORMATION WIDGETS ===
-customer_title = widgets.HTML(value="<div class='section-title'>CUSTOMER INFORMATION (Optional)</div>")
-customer_note = widgets.HTML(value="<div class='warning'>Note: Customer information is not mandatory. If left blank, it will be marked as 'GENERAL'.</div>")
+# Load initial prices when the app starts
+update_prices()
 
-customer_name = widgets.Text(
-    description="Full Name:", 
-    value="GENERAL",
-    style={'description_width': '120px'},
-    layout={'width': '400px'}
-)
+# Sabit Oranlar
+FIRE_ORANI = 0.05 # Waste/Contingency rate
+KDV_ORANI = 0.19  # VAT rate (default)
 
-customer_company = widgets.Text(
-    description="Company:", 
-    style={'description_width': '120px'},
-    layout={'width': '400px'}
-)
-
-customer_address = widgets.Text(
-    description="Address:", 
-    style={'description_width': '120px'},
-    layout={'width': '400px'}
-)
-
-customer_city = widgets.Text(
-    description="City:", 
-    style={'description_width': '120px'},
-    layout={'width': '400px'}
-)
-
-customer_phone = widgets.Text(
-    description="Phone:", 
-    style={'description_width': '120px'},
-    layout={'width': '400px'}
-)
-
-customer_email = widgets.Text(
-    description="Email:", 
-    style={'description_width': '120px'},
-    layout={'width': '400px'}
-)
-
-# === PROJECT INFORMATION WIDGETS ===
-structure_type = widgets.ToggleButtons(
-    options=['Light Steel', 'Heavy Steel'], 
-    description='Structure Type:', 
-    button_style='primary',
-    style={'description_width': '120px'},
-    layout={'width': '400px'}
-)
-
-plasterboard_option = widgets.Checkbox(
-    value=True, 
-    description="Include Interior Plasterboard",
-    indent=False,
-    style={'description_width': '120px'}
-)
-
-width_input = widgets.FloatText(
-    value=10, 
-    description="Width (m):",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-length_input = widgets.FloatText(
-    value=8, 
-    description="Length (m):",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-height_input = widgets.FloatText(
-    value=2.6, 
-    description="Height (m):",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-room_config_input = widgets.Text(
-    value="1 room, 1 bathroom, 1 kitchen", 
-    description="Room Configuration:",
-    style={'description_width': '120px'},
-    layout={'width': '400px'}
-)
-
-# Steel Profile Quantities
-profile_count_label = widgets.HTML(
-    value="<div class='section-title'>STEEL PROFILE QUANTITIES (For Light Steel)</div>"
-    "<b>(per 6m piece)</b>"
-)
-
-profile_100x100_count = widgets.IntText(
-    value=0, 
-    description="100x100x3 Count:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-profile_100x50_count = widgets.IntText(
-    value=0, 
-    description="100x50x3 Count:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-profile_40x60_count = widgets.IntText(
-    value=0, 
-    description="40x60x2 Count:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-profile_50x50_count = widgets.IntText(  # Changed from 40x40 to 50x50
-    value=0, 
-    description="50x50x2 Count:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-profile_30x30_count = widgets.IntText(
-    value=0, 
-    description="30x30x2 Count:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-profile_HEA160_count = widgets.IntText(
-    value=0, 
-    description="HEA160 Count:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-# Additional Features
-heating_option = widgets.Checkbox(
-    value=False, 
-    description="Include Floor Heating (50€/m²)",
-    indent=False,
-    style={'description_width': '120px'}
-)
-
-solar_option = widgets.Checkbox(
-    value=False, 
-    description="Solar Energy System",
-    indent=False,
-    style={'description_width': '120px'}
-)
-
-solar_capacity = widgets.Dropdown(
-    options=[('5 kW', 5), ('7.2 kW', 7.2), ('11 kW', 11)],
-    value=5,
-    description="Capacity:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-solar_price = widgets.FloatText(
-    value=5 * 1250,
-    description="Solar Price (€):",
-    disabled=True,
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-# Windows and Doors Section
-window_input = widgets.IntText(
-    value=4, 
-    description="Window Count:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-window_size = widgets.Text(
-    value="100x100 cm",  # Updated to 1x1m
-    description="Size:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-sliding_door_input = widgets.IntText(  # Added sliding glass door
-    value=0, 
-    description="Sliding Glass Door:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-sliding_door_size = widgets.Text(
-    value="200x200 cm",
-    description="Size:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-wc_window_input = widgets.IntText(
-    value=1, 
-    description="WC Window Count:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-wc_window_size = widgets.Text(
-    value="100x50 cm", 
-    description="Size:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-wc_sliding_door_input = widgets.IntText(  # Added WC sliding door
-    value=0, 
-    description="WC Sliding Door:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-wc_sliding_door_size = widgets.Text(
-    value="140x70 cm",
-    description="Size:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-door_input = widgets.IntText(
-    value=2, 
-    description="Door Count:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-door_size = widgets.Text(
-    value="90x210 cm", 
-    description="Size:",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-# Additional Equipment
-kitchen_input = widgets.Checkbox(
-    value=True, 
-    description="Include Kitchen",
-    indent=False,
-    style={'description_width': '120px'}
-)
-
-shower_input = widgets.Checkbox(
-    value=True, 
-    description="Include Shower/WC",
-    indent=False,
-    style={'description_width': '120px'}
-)
-
-wc_ceramic_input = widgets.Checkbox(  # Added WC ceramic option
-    value=False, 
-    description="WC Ceramic Floor/Walls",
-    indent=False,
-    style={'description_width': '120px'}
-)
-
-wc_ceramic_area = widgets.FloatText(
-    value=0, 
-    description="WC Ceramic Area (m²):",
-    style={'description_width': '120px'},
-    layout={'width': '200px'}
-)
-
-electrical_installation_input = widgets.Checkbox(
-    value=False, 
-    description="Include Electrical Installation",
-    indent=False,
-    style={'description_width': '120px'}
-)
-
-plumbing_installation_input = widgets.Checkbox(
-    value=False, 
-    description="Include Plumbing Installation",
-    indent=False,
-    style={'description_width': '120px'}
-)
-
-transportation_input = widgets.Checkbox(
-    value=False, 
-    description="Include Transportation (500€)",
-    indent=False,
-    style={'description_width': '120px'}
-)
-
-# Financial Settings
-profit_rate_input = widgets.FloatSlider(
-    value=0.20, 
-    min=0.0, 
-    max=0.50, 
-    step=0.01, 
-    description="Profit Rate:", 
-    readout_format='.0%',
-    style={'description_width': '120px'},
-    layout={'width': '400px'}
-)
-
-vat_rate_input = widgets.FloatSlider(
-    value=VAT_RATE, 
-    min=0.0, 
-    max=0.25, 
-    step=0.01, 
-    description="VAT Rate:", 
-    readout_format='.0%',
-    style={'description_width': '120px'},
-    layout={'width': '400px'}
-)
-
-# Customer Notes
-customer_notes = widgets.Textarea(
-    value='',
-    description='Customer Notes:',
-    style={'description_width': '120px'},
-    layout={'width': '95%', 'height': '100px'}
-)
-
-# === CALCULATION FUNCTIONS ===
-def calculate_area(width, length, height):
-    floor_area = width * length
-    wall_area = math.ceil(2 * (width + length) * height)
-    roof_area = floor_area
-    return {"floor": floor_area, "wall": wall_area, "roof": roof_area}
+# === Hesaplama Fonksiyonları ===
+def alan_hesapla(genislik, uzunluk, yukseklik):
+    """Calculates ground, wall, and roof areas."""
+    zemin_alani = genislik * uzunluk
+    duvar_alani = math.ceil(2 * (genislik + uzunluk) * yukseklik)
+    cati_alani = zemin_alani
+    return {"zemin": zemin_alani, "duvar": duvar_alani, "cati": cati_alani}
 
 def format_currency(value):
-    """Formats currency professionally: €32,500.00"""
-    if value >= 1000:
-        return f"€{value:,.2f}"
-    return f"€{value:.2f}"
+    """Formats a numeric value as a Euro currency string (e.g., €32.500,00)."""
+    if value is None:
+        return "N/A"
+    # Convert to string with 2 decimal places, replace decimal point with comma
+    # and use dot for thousands separator.
+    s = f"{value:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    return f"€{s}"
 
-def calculate():
-    width, length, height = width_input.value, length_input.value, height_input.value
-    window_count, sliding_door_count = window_input.value, sliding_door_input.value
-    wc_window_count, wc_sliding_door_count = wc_window_input.value, wc_sliding_door_input.value
-    door_count = door_input.value
+def calculate_recommended_profiles(zemin_alani):
+    """
+    Provides a very rough estimation of recommended steel profile pieces based on floor area.
+    This is illustrative and not a precise engineering calculation.
+    """
+    # These factors are arbitrary for demonstration and can be adjusted based on typical designs.
+    # Actual values would come from structural engineering design.
+    base_factor = zemin_alani / 20.0 # Adjust this base factor as needed for a realistic number of pieces
     
-    manual_profile_counts = {
-        "100x100x3": profile_100x100_count.value,
-        "100x50x3": profile_100x50_count.value,
-        "40x60x2": profile_40x60_count.value,
-        "50x50x2": profile_50x50_count.value,  # Changed from 40x40 to 50x50
-        "30x30x2": profile_30x30_count.value,
-        "HEA160": profile_HEA160_count.value,
+    return {
+        "100x100x3": int(base_factor * 2),
+        "100x50x3": int(base_factor * 3),
+        "40x60x2": int(base_factor * 4),
+        "40x40x2": int(base_factor * 5),
+        "30x30x2": int(base_factor * 6),
+        "HEA160": int(base_factor * 0.5) # For heavier support, if applicable for light steel
+    }
+
+
+def calculate_costs(
+    yapi_tipi_val, alcipan_secenek_val, en, boy, yukseklik, oda_konfigurasyonu,
+    profil_100x100_adet, profil_100x50_adet, profil_40x60_adet, profil_40x40_adet, profil_30x30_adet, profil_HEA160_adet,
+    isitma_secenek_val, solar_secenek_val, solar_kapasite_val,
+    pencere_ad, pencere_olcu, wc_pencere_ad, wc_pencere_olcu, 
+    kapi_ad, kapi_olcu, # Renamed to general_kapi_ad, general_kapi_olcu if you want to be explicit
+    sliding_door_ad, sliding_door_olcu, # Added
+    main_door_ad, main_door_olcu,       # Added
+    mutfak_input_val, dus_input_val, wc_ceramic_input_val, wc_ceramic_alan_val,
+    elektrik_tesisat_input_val, su_tesisat_input_val, tasinma_input_val,
+    kar_orani, kdv_orani, musteri_notlari,
+    customer_name_val, customer_company_val, customer_address_val, customer_city_val, customer_phone_val, customer_email_val
+):
+    """
+    Performs detailed cost calculations for the construction project.
+    Returns a dictionary containing cost breakdown, financial summary, and project details.
+    """
+    
+    manuel_profil_adetleri = {
+        "100x100x3": profil_100x100_adet,
+        "100x50x3": profil_100x50_adet,
+        "40x60x2": profil_40x60_adet,
+        "40x40x2": profil_40x40_adet,
+        "30x30x2": profil_30x30_adet,
+        "HEA160": profil_HEA160_adet,
     }
     
-    default_piece_length = 6.0
-    areas = calculate_area(width, length, height)
-    floor_area = areas["floor"]
-    wall_area = areas["wall"]
-    roof_area = areas["roof"]
+    varsayilan_parca_boyutu = 6.0 # Default length of a steel profile piece in meters
+    alanlar = alan_hesapla(en, boy, yukseklik)
+    zemin_alani = alanlar["zemin"]
+    duvar_alani = math.ceil(2 * (en + boy) * yukseklik) # Corrected to use en and boy
+    cati_alani = zemin_alani
     
-    costs = []
-    profile_analysis_details = []
+    maliyetler = [] # List to store detailed cost items
+    profil_analizi_detaylari = [] # List to store steel profile breakdown
 
-    # Steel Structure
-    if structure_type.value == 'Heavy Steel':
-        total_price = floor_area * FIYATLAR["heavy_steel_m2"]
-        costs.append({
-            'Item': 'Heavy Steel Construction',
-            'Quantity': f'{floor_area:.2f} m²',
-            'Unit Price (€)': format_currency(FIYATLAR["heavy_steel_m2"]),
-            'Total (€)': format_currency(total_price)
+    # Çelik İskelet (Steel Frame) Costs
+    if yapi_tipi_val == 'Ağır Çelik': # Heavy Steel
+        toplam_fiyat = zemin_alani * FIYATLAR["celik_agir_m2"]
+        maliyetler.append({
+            'Kalem': 'Ağır Çelik Konstrüksiyon',
+            'Miktar': f'{zemin_alani:.2f} m²',
+            'Birim Fiyat (€)': format_currency(FIYATLAR["celik_agir_m2"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
         })
         
-        total_price = floor_area * FIYATLAR["welding_labor_m2"]
-        costs.append({
-            'Item': 'Steel Welding Labor',
-            'Quantity': f'{floor_area:.2f} m²',
-            'Unit Price (€)': format_currency(FIYATLAR["welding_labor_m2"]),
-            'Total (€)': format_currency(total_price)
+        toplam_fiyat = zemin_alani * FIYATLAR["kaynak_iscilik_m2"]
+        maliyetler.append({
+            'Kalem': 'Çelik Kaynak İşçiliği',
+            'Miktar': f'{zemin_alani:.2f} m²',
+            'Birim Fiyat (€)': format_currency(FIYATLAR["kaynak_iscilik_m2"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
         })
-    else:
-        for profile_type, piece_count in manual_profile_counts.items():
-            if piece_count > 0:
-                profile_key_clean = profile_type.lower().replace('x', '').replace(' ', '')
-                unit_price_6m_piece = FIYATLAR.get(f"steel_profile_{profile_key_clean}")
-                if unit_price_6m_piece is None:
-                    continue
-                total_price = piece_count * unit_price_6m_piece
-                report_length_meters = piece_count * default_piece_length
-                profile_analysis_details.append({
-                    'Profile Type': profile_type,
-                    'Count': piece_count,
-                    'Unit Price (€)': unit_price_6m_piece,
-                    'Total (€)': total_price
+    else: # Hafif Çelik (Light Steel)
+        for profil_tipi, adet_parca in manuel_profil_adetleri.items():
+            if adet_parca > 0:
+                # Get the base price per 6m piece for the steel profile type
+                # Ensure the lookup key matches the definition in FIYATLAR (e.g., 'hea160' vs 'HEA160')
+                lookup_key = f"celik_profil_{profil_tipi.replace('x', '_').lower()}"
+                birim_fiyat_6m_parca = FIYATLAR.get(lookup_key)
+                
+                if birim_fiyat_6m_parca is None:
+                    # Fallback if specific key is not found, though it should be with corrected HEA160
+                    birim_fiyat_6m_parca = 0.0
+                
+                toplam_fiyat = adet_parca * birim_fiyat_6m_parca
+                rapor_miktari_metre = adet_parca * varsayilan_parca_boyutu
+                profil_analizi_detaylari.append({
+                    'Profil Tipi': profil_tipi,
+                    'Adet': adet_parca,
+                    'Birim Fiyat (€)': birim_fiyat_6m_parca,
+                    'Toplam (€)': toplam_fiyat
                 })
-                costs.append({
-                    'Item': f"Steel Profile ({profile_type})",
-                    'Quantity': f"{piece_count} pieces ({report_length_meters:.1f}m)",
-                    'Unit Price (€)': format_currency(unit_price_6m_piece),
-                    'Total (€)': format_currency(total_price)
+                maliyetler.append({
+                    'Kalem': f"Çelik Profil ({profil_tipi})",
+                    'Miktar': f"{adet_parca} adet ({rapor_miktari_metre:.1f}m)",
+                    'Birim Fiyat (€)': format_currency(birim_fiyat_6m_parca),
+                    'Toplam (€)': format_currency(toplam_fiyat)
                 })
         
-        total_price = floor_area * FIYATLAR["welding_labor_m2"]
-        costs.append({
-            'Item': 'Steel Welding Labor',
-            'Quantity': f'{floor_area:.2f} m²',
-            'Unit Price (€)': format_currency(FIYATLAR["welding_labor_m2"]),
-            'Total (€)': format_currency(total_price)
+        toplam_fiyat = zemin_alani * FIYATLAR["kaynak_iscilik_m2"]
+        maliyetler.append({
+            'Kalem': 'Çelik Kaynak İşçiliği',
+            'Miktar': f'{zemin_alani:.2f} m²',
+            'Birim Fiyat (€)': format_currency(FIYATLAR["kaynak_iscilik_m2"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
         })
 
-    # Cladding and Insulation
-    total_price = roof_area * FIYATLAR["sandwich_panel_m2"]
-    costs.append({
-        'Item': 'Roof (Sandwich Panel)',
-        'Quantity': f'{roof_area:.2f} m²',
-        'Unit Price (€)': format_currency(FIYATLAR["sandwich_panel_m2"]),
-        'Total (€)': format_currency(total_price)
+    # Kaplama ve Yalıtım (Cladding and Insulation)
+    toplam_fiyat = cati_alani * FIYATLAR["sandvic_panel_m2"]
+    maliyetler.append({
+        'Kalem': 'Çatı (Sandviç Panel)',
+        'Miktar': f'{cati_alani:.2f} m²',
+        'Birim Fiyat (€)': format_currency(FIYATLAR["sandvic_panel_m2"]),
+        'Toplam (€)': format_currency(toplam_fiyat)
     })
     
-    total_price = wall_area * FIYATLAR["sandwich_panel_m2"]
-    costs.append({
-        'Item': 'Facade (Sandwich Panel)',
-        'Quantity': f'{wall_area:.2f} m²',
-        'Unit Price (€)': format_currency(FIYATLAR["sandwich_panel_m2"]),
-        'Total (€)': format_currency(total_price)
+    toplam_fiyat = duvar_alani * FIYATLAR["sandvic_panel_m2"]
+    maliyetler.append({
+        'Kalem': 'Cephe (Sandviç Panel)',
+        'Miktar': f'{duvar_alani:.2f} m²',
+        'Birim Fiyat (€)': format_currency(FIYATLAR["sandvic_panel_m2"]),
+        'Toplam (€)': format_currency(toplam_fiyat)
     })
     
-    total_price = (wall_area + roof_area) * FIYATLAR["panel_assembly_labor_m2"]
-    costs.append({
-        'Item': "Panel Assembly Labor",
-        'Quantity': f"{(wall_area + roof_area):.2f} m²",
-        'Unit Price (€)': format_currency(FIYATLAR["panel_assembly_labor_m2"]),
-        'Total (€)': format_currency(total_price)
+    toplam_fiyat = (duvar_alani + cati_alani) * FIYATLAR["panel_montaj_iscilik_m2"]
+    maliyetler.append({
+        'Kalem': "Panel Montaj İşçiliği",
+        'Miktar': f"{(duvar_alani + cati_alani):.2f} m²",
+        'Birim Fiyat (€)': format_currency(FIYATLAR["panel_montaj_iscilik_m2"]),
+        'Toplam (€)': format_currency(toplam_fiyat)
     })
 
-    # Interior and Flooring
-    if plasterboard_option.value:
-        plasterboard_area = wall_area + roof_area
-        total_price = plasterboard_area * FIYATLAR["plasterboard_material_m2"]
-        costs.append({
-            'Item': 'Plasterboard Material', 
-            'Quantity': f'{plasterboard_area:.2f} m²',
-            'Unit Price (€)': format_currency(FIYATLAR["plasterboard_material_m2"]),
-            'Total (€)': format_currency(total_price)
+    # İç Mekan ve Zemin (Interior and Flooring)
+    if alcipan_secenek_val: # Drywall option selected
+        alcipan_alani = duvar_alani + cati_alani # Drywall applies to walls and ceiling
+        toplam_fiyat = alcipan_alani * FIYATLAR["alcipan_malzeme_m2"]
+        maliyetler.append({
+            'Kalem': 'Alçıpan Malzeme',
+            'Miktar': f'{alcipan_alani:.2f} m²',
+            'Birim Fiyat (€)': format_currency(FIYATLAR["alcipan_malzeme_m2"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
         })
         
-        total_price = plasterboard_area * FIYATLAR["plasterboard_labor_m2"]
-        costs.append({
-            'Item': 'Plasterboard Labor', 
-            'Quantity': f'{plasterboard_area:.2f} m²',
-            'Unit Price (€)': format_currency(FIYATLAR["plasterboard_labor_m2"]),
-            'Total (€)': format_currency(total_price)
+        toplam_fiyat = alcipan_alani * FIYATLAR["alcipan_iscilik_m2"]
+        maliyetler.append({
+            'Kalem': 'Alçıpan İşçilik',
+            'Miktar': f'{alcipan_alani:.2f} m²',
+            'Birim Fiyat (€)': format_currency(FIYATLAR["alcipan_iscilik_m2"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
         })
 
-    plywood_pieces_needed = math.ceil(floor_area / (1.22 * 2.44))
-    total_price = plywood_pieces_needed * FIYATLAR["plywood_piece"]
-    costs.append({
-        'Item': 'Floor (Plywood Material)',
-        'Quantity': plywood_pieces_needed,
-        'Unit Price (€)': format_currency(FIYATLAR["plywood_piece"]),
-        'Total (€)': format_currency(total_price)
+    plywood_adet_gerekli = math.ceil(zemin_alani / (1.22 * 2.44)) # Calculate plywood pieces needed (assuming 1.22x2.44m sheets)
+    toplam_fiyat = plywood_adet_gerekli * FIYATLAR["plywood_adet"]
+    maliyetler.append({
+        'Kalem': 'Zemin (Plywood Malzeme)',
+        'Miktar': plywood_adet_gerekli,
+        'Birim Fiyat (€)': format_currency(FIYATLAR["plywood_adet"]),
+        'Toplam (€)': format_currency(toplam_fiyat)
     })
     
-    total_price = floor_area * FIYATLAR["plywood_flooring_labor_m2"]
-    costs.append({
-        'Item': 'Floor (Plywood Labor)',
-        'Quantity': f'{floor_area:.2f} m²',
-        'Unit Price (€)': format_currency(FIYATLAR["plywood_flooring_labor_m2"]),
-        'Total (€)': format_currency(total_price)
+    toplam_fiyat = zemin_alani * FIYATLAR["plywood_doseme_iscilik_m2"]
+    maliyetler.append({
+        'Kalem': 'Zemin (Plywood İşçilik)',
+        'Miktar': f'{zemin_alani:.2f} m²',
+        'Birim Fiyat (€)': format_currency(FIYATLAR["plywood_doseme_iscilik_m2"]),
+        'Toplam (€)': format_currency(toplam_fiyat)
     })
 
-    # Floor Heating
-    if heating_option.value:
-        total_price = floor_area * FIYATLAR["floor_heating_m2"]
-        costs.append({
-            'Item': 'Floor Heating System',
-            'Quantity': f'{floor_area:.2f} m²',
-            'Unit Price (€)': format_currency(FIYATLAR["floor_heating_m2"]),
-            'Total (€)': format_currency(total_price)
+    # Yerden Isıtma (Underfloor Heating)
+    if isitma_secenek_val:
+        toplam_fiyat = zemin_alani * FIYATLAR["yerden_isitma_m2"]
+        maliyetler.append({
+            'Kalem': 'Yerden Isıtma Sistemi',
+            'Miktar': f'{zemin_alani:.2f} m²',
+            'Birim Fiyat (€)': format_currency(FIYATLAR["yerden_isitma_m2"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
         })
 
     # Solar Energy System
-    if solar_option.value:
-        solar_price_value = solar_capacity.value * FIYATLAR['solar_per_kw']
-        costs.append({
-            'Item': f'Solar Energy System ({solar_capacity.value} kW)',
-            'Quantity': 1,
-            'Unit Price (€)': format_currency(solar_price_value),
-            'Total (€)': format_currency(solar_price_value)
+    if solar_secenek_val and solar_kapasite_val > 0:
+        solar_fiyat_deger = solar_kapasite_val * FIYATLAR['solar_per_kw']
+        maliyetler.append({
+            'Kalem': f'Solar Energy System ({solar_kapasite_val} kW)',
+            'Miktar': 1,
+            'Birim Fiyat (€)': format_currency(solar_fiyat_deger),
+            'Toplam (€)': format_currency(solar_fiyat_deger)
+        })
+    
+    # WC Ceramic (Added from new file)
+    if wc_ceramic_input_val and wc_ceramic_alan_val > 0:
+        wc_ceramic_maliyet = wc_ceramic_alan_val * FIYATLAR["wc_ceramic_m2"]
+        maliyetler.append({
+            'Kalem': 'WC Seramik',
+            'Miktar': f'{wc_ceramic_alan_val:.2f} m²',
+            'Birim Fiyat (€)': format_currency(FIYATLAR["wc_ceramic_m2"]),
+            'Toplam (€)': format_currency(wc_ceramic_maliyet)
         })
 
-    # Windows and Doors
-    if window_count > 0:
-        total_price = window_count * FIYATLAR["aluminum_window_piece"]
-        costs.append({
-            'Item': f'Window ({window_size.value})',
-            'Quantity': window_count,
-            'Unit Price (€)': format_currency(FIYATLAR["aluminum_window_piece"]),
-            'Total (€)': format_currency(total_price)
+    # Kapı ve Pencereler (Doors and Windows) - DETAYLI
+    toplam_kapi_pencere_montaj_adedi = 0
+
+    if pencere_ad > 0:
+        toplam_fiyat = pencere_ad * FIYATLAR["aluminyum_pencere_adet"]
+        maliyetler.append({
+            'Kalem': f'Pencere ({pencere_olcu})',
+            'Miktar': pencere_ad,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["aluminyum_pencere_adet"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
+        })
+        toplam_kapi_pencere_montaj_adedi += pencere_ad
+
+    if wc_pencere_ad > 0:
+        toplam_fiyat = wc_pencere_ad * FIYATLAR["wc_pencere_adet"]
+        maliyetler.append({
+            'Kalem': f'WC Pencere ({wc_pencere_olcu})',
+            'Miktar': wc_pencere_ad,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["wc_pencere_adet"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
+        })
+        toplam_kapi_pencere_montaj_adedi += wc_pencere_ad
+    
+    if kapi_ad > 0: # Genel Kapı
+        toplam_fiyat = kapi_ad * FIYATLAR["kapi_adet"]
+        maliyetler.append({
+            'Kalem': f'Kapı (Genel) ({kapi_olcu})',
+            'Miktar': kapi_ad,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["kapi_adet"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
+        })
+        toplam_kapi_pencere_montaj_adedi += kapi_ad
+
+    if sliding_door_ad > 0: # Sürgülü Kapı
+        toplam_fiyat = sliding_door_ad * FIYATLAR["sliding_door_adet"]
+        maliyetler.append({
+            'Kalem': f'Sürgülü Kapı ({sliding_door_olcu})',
+            'Miktar': sliding_door_ad,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["sliding_door_adet"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
+        })
+        toplam_kapi_pencere_montaj_adedi += sliding_door_ad
+        
+    if main_door_ad > 0: # Ana Kapı
+        toplam_fiyat = main_door_ad * FIYATLAR["main_door_adet"]
+        maliyetler.append({
+            'Kalem': f'Ana Kapı ({main_door_olcu})',
+            'Miktar': main_door_ad,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["main_door_adet"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
+        })
+        toplam_kapi_pencere_montaj_adedi += main_door_ad
+
+    if toplam_kapi_pencere_montaj_adedi > 0:
+        toplam_fiyat = toplam_kapi_pencere_montaj_adedi * FIYATLAR["kapi_pencere_montaj_iscilik_adet"]
+        maliyetler.append({
+            'Kalem': 'Kapı/Pencere Montaj İşçiliği',
+            'Miktar': toplam_kapi_pencere_montaj_adedi,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["kapi_pencere_montaj_iscilik_adet"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
         })
     
-    if sliding_door_count > 0:  # Sliding glass door
-        total_price = sliding_door_count * FIYATLAR["sliding_glass_door_piece"]
-        costs.append({
-            'Item': f'Sliding Glass Door ({sliding_door_size.value})',
-            'Quantity': sliding_door_count,
-            'Unit Price (€)': format_currency(FIYATLAR["sliding_glass_door_piece"]),
-            'Total (€)': format_currency(total_price)
-        })
-    
-    if wc_window_count > 0:
-        total_price = wc_window_count * FIYATLAR["wc_window_piece"]
-        costs.append({
-            'Item': f'WC Window ({wc_window_size.value})',
-            'Quantity': wc_window_count,
-            'Unit Price (€)': format_currency(FIYATLAR["wc_window_piece"]),
-            'Total (€)': format_currency(total_price)
-        })
-    
-    if wc_sliding_door_count > 0:  # WC sliding door
-        total_price = wc_sliding_door_count * FIYATLAR["wc_sliding_door_piece"]
-        costs.append({
-            'Item': f'WC Sliding Door ({wc_sliding_door_size.value})',
-            'Quantity': wc_sliding_door_count,
-            'Unit Price (€)': format_currency(FIYATLAR["wc_sliding_door_piece"]),
-            'Total (€)': format_currency(total_price)
-        })
-    
-    if door_count > 0:
-        total_price = door_count * FIYATLAR["door_piece"]
-        costs.append({
-            'Item': f'Door ({door_size.value})',
-            'Quantity': door_count,
-            'Unit Price (€)': format_currency(FIYATLAR["door_piece"]),
-            'Total (€)': format_currency(total_price)
-        })
-    
-    total_door_window_count = window_count + sliding_door_count + wc_window_count + wc_sliding_door_count + door_count
-    if total_door_window_count > 0:
-        total_price = total_door_window_count * FIYATLAR["door_window_assembly_labor_piece"]
-        costs.append({
-            'Item': 'Door/Window Assembly Labor',
-            'Quantity': total_door_window_count,
-            'Unit Price (€)': format_currency(FIYATLAR["door_window_assembly_labor_piece"]),
-            'Total (€)': format_currency(total_price)
-        })
-    
-    # Other Items
-    total_price = floor_area * FIYATLAR["connection_element_m2"]
-    costs.append({
-        'Item': "Connection Elements",
-        'Quantity': f"{floor_area:.2f} m²",
-        'Unit Price (€)': format_currency(FIYATLAR["connection_element_m2"]),
-        'Total (€)': format_currency(total_price)
+    # Diğer Kalemler (Other Items)
+    toplam_fiyat = zemin_alani * FIYATLAR["baglanti_elemani_m2"]
+    maliyetler.append({
+        'Kalem': "Bağlantı Elemanları",
+        'Miktar': f"{zemin_alani:.2f} m²",
+        'Birim Fiyat (€)': format_currency(FIYATLAR["baglanti_elemani_m2"]),
+        'Toplam (€)': format_currency(toplam_fiyat)
     })
 
-    if kitchen_input.value:
-        costs.append({
-            'Item': 'Kitchen Installation',
-            'Quantity': 1,
-            'Unit Price (€)': format_currency(FIYATLAR["kitchen_installation_piece"]),
-            'Total (€)': format_currency(FIYATLAR["kitchen_installation_piece"])
+    if mutfak_input_val:
+        maliyetler.append({
+            'Kalem': 'Mutfak Kurulumu',
+            'Miktar': 1,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["mutfak_kurulum_adet"]),
+            'Toplam (€)': format_currency(FIYATLAR["mutfak_kurulum_adet"])
         })
-    
-    if shower_input.value:
-        costs.append({
-            'Item': 'Shower/WC Installation',
-            'Quantity': 1,
-            'Unit Price (€)': format_currency(FIYATLAR["shower_wc_installation_piece"]),
-            'Total (€)': format_currency(FIYATLAR["shower_wc_installation_piece"])
+    if dus_input_val:
+        maliyetler.append({
+            'Kalem': 'Duş/WC Kurulumu',
+            'Miktar': 1,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["dus_wc_kurulum_adet"]),
+            'Toplam (€)': format_currency(FIYATLAR["dus_wc_kurulum_adet"])
         })
-    
-    if wc_ceramic_input.value and wc_ceramic_area.value > 0:  # Added WC ceramic
-        total_price = wc_ceramic_area.value * FIYATLAR["wc_ceramic_m2"]
-        costs.append({
-            'Item': 'WC Ceramic Floor/Walls',
-            'Quantity': f"{wc_ceramic_area.value:.2f} m²",
-            'Unit Price (€)': format_currency(FIYATLAR["wc_ceramic_m2"]),
-            'Total (€)': format_currency(total_price)
+    if elektrik_tesisat_input_val:
+        maliyetler.append({
+            'Kalem': 'Elektrik Tesisatı',
+            'Miktar': 1,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["elektrik_tesisat_fiyat"]),
+            'Toplam (€)': format_currency(FIYATLAR["elektrik_tesisat_fiyat"])
         })
-    
-    if electrical_installation_input.value: 
-        costs.append({
-            'Item': 'Electrical Installation',
-            'Quantity': 1,
-            'Unit Price (€)': format_currency(FIYATLAR["electrical_installation_price"]),
-            'Total (€)': format_currency(FIYATLAR["electrical_installation_price"])
+    if su_tesisat_input_val:
+        maliyetler.append({
+            'Kalem': 'Su Tesisatı',
+            'Miktar': 1,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["su_tesisat_fiyat"]),
+            'Toplam (€)': format_currency(FIYATLAR["su_tesisat_fiyat"])
         })
-    
-    if plumbing_installation_input.value: 
-        costs.append({
-            'Item': 'Plumbing Installation',
-            'Quantity': 1,
-            'Unit Price (€)': format_currency(FIYATLAR["plumbing_installation_price"]),
-            'Total (€)': format_currency(FIYATLAR["plumbing_installation_price"])
-        })
-    
-    if transportation_input.value:
-        costs.append({
-            'Item': 'Transportation',
-            'Quantity': 1,
-            'Unit Price (€)': format_currency(FIYATLAR["transportation"]),
-            'Total (€)': format_currency(FIYATLAR["transportation"])
+    if tasinma_input_val:
+        maliyetler.append({
+            'Kalem': 'Taşıma (Nakliye)',
+            'Miktar': 1,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["tasinma"]),
+            'Toplam (€)': format_currency(FIYATLAR["tasinma"])
         })
 
-    # Financial Calculations
-    subtotal = sum([float(item['Total (€)'].replace('€', '').replace(',', '')) 
-                     for item in costs if 'Total (€)' in item])
+    # Finansal Hesaplamalar (Financial Calculations)
+    # Convert formatted currency strings back to floats for calculation
+    ara_toplam = sum([float(item['Toplam (€)'].replace('€', '').replace('.', '').replace(',', '.'))
+                     for item in maliyetler if 'Toplam (€)' in item])
     
-    waste_cost = subtotal * FIRE_RATE
-    total_cost = subtotal + waste_cost
-    profit = total_cost * profit_rate_input.value
-    vat_base = total_cost + profit
-    vat = vat_base * vat_rate_input.value
-    sales_price = vat_base + vat
+    fire_maliyeti = ara_toplam * FIRE_ORANI
+    toplam_maliyet = ara_toplam + fire_maliyeti
+    kar = toplam_maliyet * kar_orani
+    kdv_matrahi = toplam_maliyet + kar
+    kdv = kdv_matrahi * kdv_orani
+    satis_fiyati = kdv_matrahi + kdv
     
-    financial_summary_data = [
-        ["Subtotal", subtotal],
-        [f"Waste Cost (%{FIRE_RATE*100:.0f})", waste_cost],
-        ["Total Cost (Including Waste)", total_cost],
-        [f"Profit (%{profit_rate_input.value*100:.0f})", profit],
-        [f"VAT (%{vat_rate_input.value*100:.0f})", vat],
-        ["Sales Price (VAT Included)", sales_price]
+    finansal_ozet_data = [
+        ["Ara Toplam", ara_toplam],
+        [f"Fire Payı (%{FIRE_ORANI*100:.0f})", fire_maliyeti],
+        ["Toplam Maliyet (Fire Dahil)", toplam_maliyet],
+        [f"Kar (%{kar_orani*100:.0f})", kar],
+        [f"KDV (%{kdv_orani*100:.0f})", kdv],
+        ["Satış Fiyatı (KDV Dahil)", satis_fiyati]
     ]
     
-    # Formatted financial summary
-    formatted_financial_summary = []
-    for item, amount in financial_summary_data:
-        formatted_financial_summary.append({
-            'Item': item,
-            'Amount (€)': format_currency(amount)
+    # Create formatted financial summary for display
+    formatted_finansal_ozet = []
+    for kalem, tutar in finansal_ozet_data:
+        formatted_finansal_ozet.append({
+            'Kalem': kalem,
+            'Tutar (€)': format_currency(tutar)
         })
     
-    # Process customer information
-    customer_name_value = customer_name.value.strip() or "GENERAL"
-    
-    return {
-        'cost_breakdown': pd.DataFrame(costs),
-        'financial_summary': pd.DataFrame(formatted_financial_summary),
-        'profile_analysis': pd.DataFrame(profile_analysis_details),
-        'notes': customer_notes.value,
-        'sales_price': sales_price,
-        'area': floor_area,
-        'width': width,
-        'length': length,
-        'height': height,
-        'customer_info': {
-            'name': customer_name_value,
-            'company': customer_company.value or "",
-            'address': customer_address.value or "",
-            'city': customer_city.value or "",
-            'phone': customer_phone.value or "",
-            'email': customer_email.value or ""
-        },
-        'project_details': {
-            'width': width,
-            'length': length,
-            'height': height,
-            'area': floor_area,
-            'structure_type': structure_type.value,
-            'plasterboard': plasterboard_option.value,
-            'window_count': window_input.value,
-            'window_size': window_size.value,
-            'sliding_door_count': sliding_door_input.value,
-            'sliding_door_size': sliding_door_size.value,
-            'wc_window_count': wc_window_input.value,
-            'wc_window_size': wc_window_size.value,
-            'wc_sliding_door_count': wc_sliding_door_input.value,
-            'wc_sliding_door_size': wc_sliding_door_size.value,
-            'door_count': door_input.value,
-            'door_size': door_size.value,
-            'kitchen': kitchen_input.value,
-            'shower': shower_input.value,
-            'wc_ceramic': wc_ceramic_input.value,
-            'wc_ceramic_area': wc_ceramic_area.value,
-            'electrical': electrical_installation_input.value,
-            'plumbing': plumbing_installation_input.value,
-            'transportation': transportation_input.value,
-            'heating': heating_option.value,
-            'solar': solar_option.value,
-            'solar_kw': solar_capacity.value,
-            'solar_price': solar_capacity.value * FIYATLAR['solar_per_kw'],
-            'vat_rate': vat_rate_input.value,
-            'room_configuration': room_config_input.value
-        }
+    # Process customer info, default to "GENERAL" if name is empty
+    customer_name_processed = customer_name_val.strip() or "GENERAL"
+
+    customer_info = {
+        'name': customer_name_processed,
+        'company': customer_company_val or "",
+        'address': customer_address_val or "",
+        'city': customer_city_val or "",
+        'phone': customer_phone_val or "",
+        'email': customer_email_val or ""
     }
 
-# === PDF CREATION FUNCTIONS ===
-def create_pdf_download_link(pdf_bytes, filename):
-    """Creates a download link for PDF files"""
-    b64 = base64.b64encode(pdf_bytes).decode()
-    return f'<a class="pdf-button" href="data:application/pdf;base64,{b64}" download="{filename}">Download {filename}</a>'
+    proje_bilgileri = {
+        'en': en,
+        'boy': boy,
+        'yukseklik': yukseklik,
+        'alan': zemin_alani,
+        'yapi_tipi': yapi_tipi_val,
+        'alcipan': alcipan_secenek_val,
+        'pencere_adet': pencere_ad,
+        'pencere_olcu': pencere_olcu,
+        'wc_pencere_adet': wc_pencere_ad,
+        'wc_pencere_olcu': wc_pencere_olcu,
+        'kapi_adet': kapi_ad, # General Door
+        'kapi_olcu': kapi_olcu, # General Door
+        'sliding_door_adet': sliding_door_ad, # Added
+        'sliding_door_olcu': sliding_door_olcu, # Added
+        'main_door_adet': main_door_ad, # Added
+        'main_door_olcu': main_door_olcu, # Added
+        'mutfak': mutfak_input_val,
+        'dus': dus_input_val,
+        'wc_ceramic': wc_ceramic_input_val,
+        'wc_ceramic_alan': wc_ceramic_alan_val,
+        'elektrik': elektrik_tesisat_input_val,
+        'su': su_tesisat_input_val,
+        'tasinma': tasinma_input_val,
+        'isitma': isitma_secenek_val,
+        'solar': solar_secenek_val,
+        'solar_kw': solar_kapasite_val,
+        'solar_fiyat': solar_kapasite_val * FIYATLAR['solar_per_kw'] if solar_secenek_val else 0,
+        'kdv_orani': kdv_orani,
+        'oda_konfigurasyonu': oda_konfigurasyonu
+    }
 
+    return {
+        'maliyet_dokum': pd.DataFrame(maliyetler),
+        'finansal_ozet': pd.DataFrame(formatted_finansal_ozet),
+        'profil_analizi': pd.DataFrame(profil_analizi_detaylari),
+        'notlar': musteri_notlari,
+        'satis_fiyati': satis_fiyati,
+        'alan': zemin_alani,
+        'en': en,
+        'boy': boy,
+        'yukseklik': yukseklik,
+        'customer_info': customer_info,
+        'proje_bilgileri': proje_bilgileri
+    }
+
+# === PDF OLUŞTURMA FONKSİYONLARI ===
 def get_company_logo(width=180):
-    """Gets the company logo and returns it in base64 format"""
+    """Fetches the company logo from URL and returns it as base64 encoded string."""
     try:
         response = requests.get(LOGO_URL)
+        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
         img = PILImage.open(io.BytesIO(response.content))
-        
-        # Resize the logo
         w_percent = (width / float(img.size[0]))
         h_size = int((float(img.size[1]) * float(w_percent)))
         img = img.resize((width, h_size), PILImage.LANCZOS)
-        
-        # Convert to base64
         buffered = io.BytesIO()
-        img.save(buffered, format="PNG")
+        # Save as PNG, which ReportLab supports directly
+        img.save(buffered, format="PNG") 
         return base64.b64encode(buffered.getvalue()).decode()
-    except:
-        # Return None if logo cannot be loaded
+    except requests.exceptions.RequestException as e:
+        st.warning(f"Logo URL'den alınırken hata oluştu: {e}")
+        return None
+    except Exception as e:
+        st.warning(f"Logo işlenirken hata oluştu: {e}")
         return None
 
 def draw_header(canvas, doc, logo_data):
-    """Draws the page header (logo and company information)"""
-    # Logo
+    """Draws the page header with logo and company info."""
     if logo_data:
         logo = Image(io.BytesIO(base64.b64decode(logo_data)))
-        logo.drawHeight = 40 * mm
-        logo.drawWidth = 150 * mm
-        logo.drawOn(canvas, doc.width + doc.leftMargin - 150*mm - 20, doc.height + doc.topMargin - 10*mm)
+        logo.drawHeight = 25 * mm
+        logo.drawWidth = 80 * mm 
+        logo.drawOn(canvas, doc.leftMargin, A4[1] - doc.topMargin + 5*mm)
+
+    canvas.setFont(MAIN_FONT, 8)
+    canvas.setFillColor(colors.HexColor('#2C3E50')) # Dark blue
+    canvas.drawString(A4[0] - doc.rightMargin - 60*mm, A4[1] - doc.topMargin + 20*mm, COMPANY_INFO['phone'])
+    canvas.drawString(A4[0] - doc.rightMargin - 60*mm, A4[1] - doc.topMargin + 15*mm, COMPANY_INFO['email'])
+    canvas.drawString(A4[0] - doc.rightMargin - 60*mm, A4[1] - doc.topMargin + 10*mm, COMPANY_INFO['website'])
 
 def draw_footer(canvas, doc):
-    """Draws the page footer with company info and Linktree catalog link"""
-    # Company contact information
-    footer_text = f"{COMPANY_INFO['address']} | {COMPANY_INFO['email']} | {COMPANY_INFO['phone']} | {COMPANY_INFO['website']}"
-    canvas.setFont(f"{MAIN_FONT}-Bold", 9)
-    canvas.drawCentredString(doc.width/2 + doc.leftMargin, 20*mm, footer_text)
+    """Draws the page footer with company info and page number."""
+    footer_text = f"{COMPANY_INFO['address']} | {COMPANY_INFO['email']} | {COMPANY_INFO['phone']} | {COMPANY_INFO['website']} | Linktree: {COMPANY_INFO['linktree']}"
+    canvas.setFont(f"{MAIN_FONT}-Bold", 8)
+    canvas.drawCentredString(A4[0] / 2, 15*mm, footer_text)
     
-    # Linktree catalog link
-    catalog_text = f"Catalog: {COMPANY_INFO['linktree']}"
-    canvas.setFont(f"{MAIN_FONT}", 8)
-    canvas.drawCentredString(doc.width/2 + doc.leftMargin, 15*mm, catalog_text)
-    
-    # Page number
     page_num = canvas.getPageNumber()
-    canvas.setFont(MAIN_FONT, 9)
-    canvas.drawRightString(doc.width + doc.leftMargin, 10*mm, f"Page {page_num}")
+    canvas.setFont(MAIN_FONT, 8)
+    canvas.drawString(A4[0] - doc.rightMargin, 10*mm, f"Page {page_num}")
 
-def create_customer_pdf(sales_price, project_details, notes, customer_info, logo_data):
-    """Creates a proposal PDF for the customer (English and Greek)"""
+
+def musteri_pdf_olustur(satis_fiyati, proje_bilgileri, notlar, customer_info, logo_data):
+    """Creates a customer-facing proposal PDF."""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
-        buffer, 
+        buffer,
         pagesize=A4,
         rightMargin=15*mm,
         leftMargin=15*mm,
-        topMargin=40*mm,
-        bottomMargin=25*mm
+        topMargin=40*mm, # Increased top margin to make space for header
+        bottomMargin=25*mm # Increased bottom margin for footer
     )
-    
     styles = getSampleStyleSheet()
-    
-    # Custom styles with Greek font support
-    bilingual_style = ParagraphStyle(
-        name='Bilingual',
-        parent=styles['Normal'],
-        fontSize=10,
-        leading=14,
-        spaceAfter=6,
-        fontName=MAIN_FONT
+    custom_styles = {}
+    custom_styles['Bilingual'] = ParagraphStyle(
+        name='Bilingual', parent=styles['Normal'], fontSize=10, leading=14, fontName=MAIN_FONT
     )
-    
-    bilingual_bold_style = ParagraphStyle(
-        name='BilingualBold',
-        parent=styles['Normal'],
-        fontSize=10,
-        leading=14,
-        spaceAfter=6,
-        fontName=f"{MAIN_FONT}-Bold"
+    custom_styles['BilingualBold'] = ParagraphStyle(
+        name='BilingualBold', parent=styles['Normal'], fontSize=10, leading=14, fontName=f"{MAIN_FONT}-Bold"
     )
-    
-    title_style = ParagraphStyle(
-        name='Title',
-        parent=styles['Heading1'],
-        fontSize=16,
-        alignment=TA_CENTER,
-        spaceAfter=12,
-        fontName=f"{MAIN_FONT}-Bold"
+    custom_styles['Title'] = ParagraphStyle(
+        name='Title', parent=styles['Heading1'], fontSize=16, alignment=TA_CENTER, spaceAfter=12, fontName=f"{MAIN_FONT}-Bold",
+        textColor=colors.HexColor('#2C3E50')
     )
-    
-    heading_style = ParagraphStyle(
-        name='Heading',
-        parent=styles['Heading2'],
-        fontSize=12,
-        spaceAfter=6,
-        fontName=f"{MAIN_FONT}-Bold"
+    custom_styles['Heading'] = ParagraphStyle(
+        name='Heading', parent=styles['Heading2'], fontSize=12, spaceAfter=6, fontName=f"{MAIN_FONT}-Bold",
+        textColor=colors.HexColor('#34495E')
     )
-    
-    price_style = ParagraphStyle(
-        name='Price',
-        parent=styles['Heading1'],
-        fontSize=18,
-        alignment=TA_CENTER,
-        spaceAfter=6,
-        fontName=f"{MAIN_FONT}-Bold"
+    custom_styles['Price'] = ParagraphStyle(
+        name='Price', parent=styles['Heading1'], fontSize=20, alignment=TA_CENTER, spaceAfter=6, fontName=f"{MAIN_FONT}-Bold",
+        textColor=colors.HexColor('#2C3E50')
     )
-    
+
     elements = []
-    
-    # Title
-    elements.append(Paragraph("PREFABRICATED HOUSE PROPOSAL / ΠΡΟΤΑΣΗ ΠΡΟΠΤΥΧΑΚΙΣΜΕΝΟΥ ΣΠΙΤΙΟΥ", title_style))
-    elements.append(Paragraph(f"Date / Ημερομηνία: {datetime.now().strftime('%d/%m/%Y')}", bilingual_style))
-    elements.append(Spacer(1, 12))
-    
-    # Customer Information
-    elements.append(Paragraph("CUSTOMER INFORMATION / ΠΛΗΡΟΦΟΡΙΕΣ ΠΕΛΑΤΗ", heading_style))
-    
+
+    # Müşteri ve Şirket Bilgileri (Side-by-side)
     customer_data = [
-        [f"Name / Όνομα: {customer_info['name']}"],
-        [f"Company / Εταιρεία: {customer_info['company']}" if customer_info['company'] else ""],
-        [f"Address / Διεύθυνση: {customer_info['address']}" if customer_info['address'] else ""],
-        [f"City / Πόλη: {customer_info['city']}" if customer_info['city'] else ""],
-        [f"Phone / Τηλέφωνο: {customer_info['phone']}" if customer_info['phone'] else ""],
-        [f"Email / Ηλεκτρονικό Ταχυδρομείο: {customer_info['email']}" if customer_info['email'] else ""]
+        [Paragraph("<b>MÜŞTERİ BİLGİLERİ</b>", custom_styles['BilingualBold'])],
+        [Paragraph(f"Adı Soyadı: {customer_info['name']}", custom_styles['Bilingual'])],
+        [Paragraph(f"Şirket: {customer_info['company']}", custom_styles['Bilingual'])],
+        [Paragraph(f"Adres: {customer_info['address']}", custom_styles['Bilingual'])],
+        [Paragraph(f"Şehir: {customer_info['city']}", custom_styles['Bilingual'])],
+        [Paragraph(f"Telefon: {customer_info['phone']}", custom_styles['Bilingual'])],
+        [Paragraph(f"E-posta: {customer_info['email']}", custom_styles['Bilingual'])]
     ]
-    
-    for line in customer_data:
-        if line[0]:  # Only add non-empty lines
-            elements.append(Paragraph(line[0], bilingual_style))
-    
-    elements.append(Spacer(1, 12))
-    
-    # Project Details
-    elements.append(Paragraph("PROJECT DETAILS / ΣΤΟΙΧΕΙΑ ΠΡΟΤΎΠΟΥ", heading_style))
-    
-    project_data = [
-        [f"Dimensions / Διαστάσεις: {project_details['width']}m x {project_details['length']}m x {project_details['height']}m"],
-        [f"Total Area / Συνολική Έκταση: {project_details['area']:.2f} m²"],
-        [f"Room Configuration / Διαμόρφωση Δωματίων: {project_details['room_configuration']}"],
-        [f"Estimated Delivery Time / Εκτιμώμενος Χρόνος Παράδοσης: {int(project_details['area'] / 5) + 10} days / ημέρες"]
+    company_data = [
+        [Paragraph("<b>ŞİRKET BİLGİLERİ</b>", custom_styles['BilingualBold'])],
+        [Paragraph(f"Şirket: {COMPANY_INFO['name']}", custom_styles['Bilingual'])],
+        [Paragraph(f"Adres: {COMPANY_INFO['address']}", custom_styles['Bilingual'])],
+        [Paragraph(f"Telefon: {COMPANY_INFO['phone']}", custom_styles['Bilingual'])],
+        [Paragraph(f"E-posta: {COMPANY_INFO['email']}", custom_styles['Bilingual'])],
+        [Paragraph(f"Website: {COMPANY_INFO['website']}", custom_styles['Bilingual'])],
+        [Paragraph(f"Linktree: {COMPANY_INFO['linktree']}", custom_styles['Bilingual'])]
     ]
-    
-    for line in project_data:
-        elements.append(Paragraph(line[0], bilingual_style))
-    
-    elements.append(Spacer(1, 12))
-    
-    # Technical Specifications
-    elements.append(Paragraph("TECHNICAL SPECIFICATIONS / ΤΕΧΝΙΚΑ ΧΑΡΑΚΤΗΡΙΣΤΙΚΑ", heading_style))
-    
-    specs_data = [
-        [f"Structure Type / Τύπος Κατασκευής: {project_details['structure_type']}"],
-        [f"Interior Plasterboard / Εσωτερικό Τσιμεντόβαμβακα: {'Included / Συμπεριλαμβάνεται' if project_details['plasterboard'] else 'Not included / Δεν συμπεριλαμβάνεται'}"],
-        [f"Windows / Παράθυρα: {project_details['window_count']} units / τεμάχια ({project_details['window_size']})"],
-        [f"Sliding Glass Doors / Ολισθαίνουσες Γυάλινες Πόρτες: {project_details['sliding_door_count']} units / τεμάχια ({project_details['sliding_door_size']})"],
-        [f"WC Windows / Παράθυρα WC: {project_details['wc_window_count']} units / τεμάχια ({project_details['wc_window_size']})"],
-        [f"WC Sliding Doors / Ολισθαίνουσες Πόρτες WC: {project_details['wc_sliding_door_count']} units / τεμάχια ({project_details['wc_sliding_door_size']})"],
-        [f"Doors / Πόρτες: {project_details['door_count']} units / τεμάχια ({project_details['door_size']})"],
-        [f"Kitchen / Κουζίνα: {'Included / Συμπεριλαμβάνεται' if project_details['kitchen'] else 'Not included / Δεν συμπεριλαμβάνεται'}"],
-        [f"Shower/WC / Ντους/WC: {'Included / Συμπεριλαμβάνεται' if project_details['shower'] else 'Not included / Δεν συμπεριλαμβάνεται'}"],
-        [f"WC Ceramic Floor/Walls / Κεραμικά WC: {'Included / Συμπεριλαμβάνεται' if project_details['wc_ceramic'] else 'Not included / Δεν συμπεριλαμβάνεται'}" + 
-         (f" ({project_details['wc_ceramic_area']:.2f} m²)" if project_details['wc_ceramic'] else "")],
-        [f"Electrical Installation / Ηλεκτρολογικές Εγκαταστάσεις: {'Included / Συμπεριλαμβάνεται' if project_details['electrical'] else 'Not included / Δεν συμπεριλαμβάνεται'}"],
-        [f"Plumbing / Υδραυλικές Εγκαταστάσεις: {'Included / Συμπεριλαμβάνεται' if project_details['plumbing'] else 'Not included / Δεν συμπεριλαμβάνεται'}"],
-        [f"Floor Heating / Υπόγεια Θέρμανση: {'Included / Συμπεριλαμβάνεται' if project_details['heating'] else 'Not included / Δεν συμπεριλαμβάνεται'}"],
-        [f"Solar Energy System / Ηλιακό Σύστημα: {'Included / Συμπεριλαμβάνεται' if project_details['solar'] else 'Not included / Δεν συμπεριλαμβάνεται'} ({project_details['solar_kw']} kW)"],
-        [f"Transportation / Μεταφορά: {'Included / Συμπεριλαμβάνεται' if project_details['transportation'] else 'Not included / Δεν συμπεριλαμβάνεται'}"]
+
+    # Use a Table to layout customer and company info side-by-side
+    info_table_data = [
+        [
+            Table(customer_data, colWidths=[doc.width/2], style=[
+                ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+                ('TOPPADDING', (0,0), (-1,-1), 0),
+            ]),
+            Table(company_data, colWidths=[doc.width/2], style=[
+                ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+                ('TOPPADDING', (0,0), (-1,-1), 0),
+            ])
+        ]
     ]
-    
-    for line in specs_data:
-        elements.append(Paragraph(line[0], bilingual_style))
-    
-    elements.append(Spacer(1, 15))
-    
-    # Total Sales Price
-    elements.append(Paragraph("TOTAL SALES PRICE (VAT INCLUDED) / ΣΥΝΟΛΙΚΗ ΤΙΜΗ ΠΩΛΗΣΗΣ (ΜΕ ΦΠΑ", heading_style))
-    elements.append(Paragraph(format_currency(sales_price), price_style))
-    elements.append(Paragraph(f"(VAT %{project_details['vat_rate']*100:.0f} included) / (ΦΠΑ %{project_details['vat_rate']*100:.0f} συμπεριλαμβάνεται)", bilingual_style))
-    elements.append(Spacer(1, 15))
-    
-    # Special Notes
-    if notes:
-        elements.append(Paragraph("SPECIAL NOTES / ΕΙΔΙΚΕΣ ΣΗΜΕΙΩΣΕΙΣ", heading_style))
-        elements.append(Paragraph(notes, bilingual_style))
-    
-    # Catalog Link
-    elements.append(Spacer(1, 10))
-    elements.append(Paragraph("For more models and options, please visit our catalog:", bilingual_style))
-    elements.append(Paragraph(COMPANY_INFO['linktree'], bilingual_bold_style))
-    
-    # PDF creation function
-    def on_first_page(canvas, doc):
-        draw_header(canvas, doc, logo_data)
-        draw_footer(canvas, doc)
-        
-    def on_later_pages(canvas, doc):
-        draw_footer(canvas, doc)
-    
-    doc.build(elements, onFirstPage=on_first_page, onLaterPages=on_later_pages)
-    buffer.seek(0)
+    info_table = Table(info_table_data, colWidths=[doc.width/2, doc.width/2])
+    info_table.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+        ('LEFTPADDING', (0,0), (-1,-1), 0), ('RIGHTPADDING', (0,0), (-1,-1), 0),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 0), ('TOPPADDING', (0,0), (-1,-1), 0),
+    ]))
+    elements.append(info_table)
+    elements.append(Spacer(1, 10*mm))
+
+    elements.append(Paragraph("TEKLİF FORMU", custom_styles['Title']))
+    elements.append(Paragraph(f"PROJE ALANI: {proje_bilgileri['alan']:.2f} m²", custom_styles['Heading']))
+    elements.append(Paragraph(f"YAPI TİPİ: {proje_bilgileri['yapi_tipi']}", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"ODA KONFİGÜRASYONU: {proje_bilgileri['oda_konfigurasyonu']}", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"İç Mekan Alçıpan Dahil: {'Evet' if proje_bilgileri['alcipan'] else 'Hayır'}", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"Yerden Isıtma Dahil: {'Evet' if proje_bilgileri['isitma'] else 'Hayır'}", custom_styles['Bilingual']))
+    if proje_bilgileri['solar']:
+        elements.append(Paragraph(f"Solar Enerji Sistemi ({proje_bilgileri['solar_kw']} kW) Dahil: Evet", custom_styles['Bilingual']))
+
+    elements.append(Spacer(1, 5*mm))
+    elements.append(Paragraph("KAPI & PENCERE", custom_styles['Heading']))
+    elements.append(Paragraph(f"Pencere Adedi: {proje_bilgileri['pencere_adet']} ({proje_bilgileri['pencere_olcu']})", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"WC Pencere Adedi: {proje_bilgileri['wc_pencere_adet']} ({proje_bilgileri['wc_pencere_olcu']})", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"Kapı Adedi (Genel): {proje_bilgileri['kapi_adet']} ({proje_bilgileri['kapi_olcu']})", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"Sürgülü Kapı Adedi: {proje_bilgileri['sliding_door_adet']} ({proje_bilgileri['sliding_door_olcu']})", custom_styles['Bilingual'])) # Added
+    elements.append(Paragraph(f"Ana Kapı Adedi: {proje_bilgileri['main_door_adet']} ({proje_bilgileri['main_door_olcu']})", custom_styles['Bilingual'])) # Added
+
+    elements.append(Spacer(1, 5*mm))
+    elements.append(Paragraph("EK DONANIMLAR VE TESİSATLAR", custom_styles['Heading']))
+    elements.append(Paragraph(f"Mutfak Kurulumu: {'Dahil' if proje_bilgileri['mutfak'] else 'Değil'}", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"Duş/WC Kurulumu: {'Dahil' if proje_bilgileri['dus'] else 'Değil'}", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"WC Seramik: {'Dahil' if proje_bilgileri['wc_ceramic'] else 'Değil'}", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"Elektrik Tesisatı: {'Dahil' if proje_bilgileri['elektrik'] else 'Değil'}", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"Su Tesisatı: {'Dahil' if proje_bilgileri['su'] else 'Değil'}", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"Taşıma (Nakliye): {'Dahil' if proje_bilgileri['tasinma'] else 'Değil'}", custom_styles['Bilingual']))
+
+    elements.append(Spacer(1, 10*mm))
+    elements.append(Paragraph("MÜŞTERİ NOTLARI:", custom_styles['Heading']))
+    elements.append(Paragraph(notlar if notlar else "Belirtilen özel not bulunmamaktadır.", custom_styles['Bilingual']))
+
+    elements.append(Spacer(1, 20*mm))
+    elements.append(Paragraph("TOPLAM FİYAT", custom_styles['Heading']))
+    elements.append(Paragraph(format_currency(satis_fiyati), custom_styles['Price']))
+
+    doc.build(elements, onLaterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data),
+              onFirstPage=lambda canvas, doc: draw_footer(canvas, doc)) 
     return buffer.getvalue()
 
-def create_cost_report_pdf(project_details, cost_breakdown_df, financial_summary_df, profile_analysis_df, customer_info, logo_data):
-    """Creates a cost report PDF in Turkish"""
+def maliyet_raporu_pdf_olustur(proje_bilgileri, maliyet_dokum, finansal_ozet, profil_analizi, customer_info, logo_data):
+    """Creates a detailed cost report PDF (for internal use)."""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
-        buffer, 
+        buffer,
         pagesize=A4,
         rightMargin=15*mm,
         leftMargin=15*mm,
         topMargin=40*mm,
         bottomMargin=25*mm
     )
-    
     styles = getSampleStyleSheet()
-    
-    # Custom styles
-    title_style = ParagraphStyle(
-        name='Title',
-        parent=styles['Heading1'],
-        fontSize=16,
-        alignment=TA_CENTER,
-        spaceAfter=12,
-        fontName=f"{MAIN_FONT}-Bold"
+    custom_styles = {}
+    custom_styles['Normal'] = ParagraphStyle(
+        name='Normal', parent=styles['Normal'], fontSize=9, leading=12, fontName=MAIN_FONT
     )
-    
-    heading_style = ParagraphStyle(
-        name='Heading',
-        parent=styles['Heading2'],
-        fontSize=12,
-        spaceAfter=6,
-        fontName=f"{MAIN_FONT}-Bold"
+    custom_styles['Bold'] = ParagraphStyle(
+        name='Bold', parent=styles['Normal'], fontSize=9, leading=12, fontName=f"{MAIN_FONT}-Bold"
     )
-    
-    elements = []
-    
-    # Title
-    elements.append(Paragraph("MALİYET VE MALZEME RAPORU", title_style))
-    elements.append(Paragraph(f"Oluşturulma Tarihi: {datetime.now().strftime('%d/%m/%Y %H:%M')}", styles['Normal']))
-    elements.append(Spacer(1, 12))
+    custom_styles['Heading'] = ParagraphStyle(
+        name='Heading', parent=styles['Heading2'], fontSize=12, spaceAfter=6, fontName=f"{MAIN_FONT}-Bold",
+        textColor=colors.HexColor('#34495E')
+    )
+    custom_styles['SubHeading'] = ParagraphStyle(
+        name='SubHeading', parent=styles['Heading3'], fontSize=10, spaceAfter=4, fontName=f"{MAIN_FONT}-Bold",
+        textColor=colors.HexColor('#2C3E50')
+    )
+    custom_styles['Title'] = ParagraphStyle(
+        name='Title', parent=styles['Heading1'], fontSize=16, alignment=TA_CENTER, spaceAfter=12, fontName=f"{MAIN_FONT}-Bold",
+        textColor=colors.HexColor('#2C3E50')
+    )
 
-    # Customer Information
-    elements.append(Paragraph("MÜŞTERİ BİLGİLERİ", heading_style))
-    
-    customer_data = [
-        [f"Adı Soyadı: {customer_info['name']}"],
-        [f"Şirket: {customer_info['company']}" if customer_info['company'] else ""],
-        [f"Adres: {customer_info['address']}" if customer_info['address'] else ""],
-        [f"Şehir: {customer_info['city']}" if customer_info['city'] else ""],
-        [f"Telefon: {customer_info['phone']}" if customer_info['phone'] else ""],
-        [f"E-posta: {customer_info['email']}" if customer_info['email'] else ""]
-    ]
-    
-    for line in customer_data:
-        if line[0]:  # Only add non-empty lines
-            elements.append(Paragraph(line[0], styles['Normal']))
-    
-    elements.append(Spacer(1, 12))
-    
-    # Project Details
-    elements.append(Paragraph("PROJE BİLGİLERİ", heading_style))
-    
-    project_data = [
-        [f"Boyutlar: {project_details['width']}m x {project_details['length']}m x {project_details['height']}m"],
-        [f"Toplam Alan: {project_details['area']:.2f} m²"],
-        [f"Yapı Tipi: {project_details['structure_type']}"],
-        [f"Oda Konfigürasyonu: {project_details['room_configuration']}"]
-    ]
-    
-    for line in project_data:
-        elements.append(Paragraph(line[0], styles['Normal']))
-    
-    elements.append(Spacer(1, 12))
-    
-    # Steel Profile Analysis Table (For Light Steel)
-    if not profile_analysis_df.empty:
-        elements.append(Paragraph("ÇELİK PROFİL ANALİZİ", heading_style))
-        
-        data = [profile_analysis_df.columns.tolist()]
-        for row in profile_analysis_df.values.tolist():
-            formatted_row = list(row)
-            formatted_row[2] = format_currency(row[2])
-            formatted_row[3] = format_currency(row[3])
-            data.append(formatted_row)
-        
-        table = Table(data, repeatRows=1, colWidths=[5*cm, 3*cm, 4*cm, 4*cm])
+    elements = []
+
+    # Title
+    elements.append(Paragraph("MALİYET RAPORU", custom_styles['Title']))
+    elements.append(Spacer(1, 5*mm))
+    elements.append(Paragraph(f"Müşteri: {customer_info['name']} ({customer_info['company']})", custom_styles['Normal']))
+    elements.append(Paragraph(f"Proje Alanı: {proje_bilgileri['alan']:.2f} m²", custom_styles['Normal']))
+    elements.append(Paragraph(f"Yapı Tipi: {proje_bilgileri['yapi_tipi']}", custom_styles['Normal']))
+    elements.append(Spacer(1, 10*mm))
+
+    # Maliyet Dökümü
+    elements.append(Paragraph("Maliyet Dökümü", custom_styles['Heading']))
+    if not maliyet_dokum.empty:
+        # Convert DataFrame to list of lists for ReportLab Table
+        data = [maliyet_dokum.columns.tolist()] + maliyet_dokum.values.tolist()
+        table = Table(data, colWidths=[40*mm, 30*mm, 40*mm, 40*mm]) # Adjust colWidths as needed
         table.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#2C3E50')),
-            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-            ('FONTNAME', (0,0), (-1,0), f"{MAIN_FONT}-Bold"),
-            ('FONTNAME', (0,1), (-1,-1), MAIN_FONT),
-            ('BOTTOMPADDING', (0,0), (-1,0), 6),
-            ('BACKGROUND', (0,1), (-1,-1), colors.white),
-            ('GRID', (0,0), (-1,-1), 1, colors.HexColor('#ddd')),
-            ('FONTSIZE', (0,0), (-1,-1), 9),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2C3E50')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), f"{MAIN_FONT}-Bold"),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTNAME', (0, 1), (-1, -1), MAIN_FONT),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('TOPPADDING', (0, 1), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 4),
         ]))
         elements.append(table)
-        elements.append(Spacer(1, 12))
-    
-    # Cost Breakdown
-    elements.append(Paragraph("MALİYET DÖKÜMÜ", heading_style))
-    
-    data = [cost_breakdown_df.columns.tolist()]
-    for _, row in cost_breakdown_df.iterrows():
-        formatted_row = [
-            row['Item'],
-            row['Quantity'],
-            row['Unit Price (€)'],
-            row['Total (€)']
-        ]
-        data.append(formatted_row)
-    
-    table = Table(data, repeatRows=1, colWidths=[8*cm, 3*cm, 3*cm, 3*cm])
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#2C3E50')),
-        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-        ('FONTNAME', (0,0), (-1,0), f"{MAIN_FONT}-Bold"),
-        ('FONTNAME', (0,1), (-1,-1), MAIN_FONT),
-        ('BOTTOMPADDING', (0,0), (-1,0), 6),
-        ('BACKGROUND', (0,1), (-1,-1), colors.white),
-        ('GRID', (0,0), (-1,-1), 1, colors.HexColor('#ddd')),
-        ('FONTSIZE', (0,0), (-1,-1), 9),
-    ]))
-    elements.append(table)
-    elements.append(Spacer(1, 12))
-    
-    # Financial Summary
-    elements.append(Paragraph("FİNANSAL ÖZET", heading_style))
-    
-    data = [financial_summary_df.columns.tolist()]
-    for _, row in financial_summary_df.iterrows():
-        formatted_row = [row['Item'], row['Amount (€)']]
-        data.append(formatted_row)
-    
-    table = Table(data, repeatRows=1, colWidths=[12*cm, 4*cm])
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#2C3E50')),
-        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-        ('FONTNAME', (0,0), (-1,0), f"{MAIN_FONT}-Bold"),
-        ('FONTNAME', (0,1), (-1,-1), MAIN_FONT),
-        ('FONTNAME', (0,-1), (-1,-1), f"{MAIN_FONT}-Bold"),
-        ('BOTTOMPADDING', (0,0), (-1,0), 6),
-        ('BACKGROUND', (0,1), (-1,-1), colors.white),
-        ('GRID', (0,0), (-1,-1), 1, colors.HexColor('#ddd')),
-        ('FONTSIZE', (0,0), (-1,-1), 10),
-        ('LINEBELOW', (0,-2), (-1,-2), 1, colors.black),
-    ]))
-    elements.append(table)
-    
-    # PDF creation function
-    def on_first_page(canvas, doc):
-        draw_header(canvas, doc, logo_data)
-        draw_footer(canvas, doc)
-        
-    def on_later_pages(canvas, doc):
-        draw_footer(canvas, doc)
-    
-    doc.build(elements, onFirstPage=on_first_page, onLaterPages=on_later_pages)
-    buffer.seek(0)
+    else:
+        elements.append(Paragraph("Maliyet dökümü bulunmamaktadır.", custom_styles['Normal']))
+    elements.append(Spacer(1, 10*mm))
+
+    # Finansal Özet
+    elements.append(Paragraph("Finansal Özet", custom_styles['Heading']))
+    if not finansal_ozet.empty:
+        data = [finansal_ozet.columns.tolist()] + finansal_ozet.values.tolist()
+        table = Table(data, colWidths=[80*mm, 60*mm]) # Adjust colWidths as needed
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2C3E50')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), f"{MAIN_FONT}-Bold"),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTNAME', (0, 1), (-1, -1), MAIN_FONT),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('TOPPADDING', (0, 1), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 4),
+        ]))
+        elements.append(table)
+    else:
+        elements.append(Paragraph("Finansal özet bulunmamaktadır.", custom_styles['Normal']))
+    elements.append(Spacer(1, 10*mm))
+
+    # Profil Analizi (If Light Steel)
+    if proje_bilgileri['yapi_tipi'] == 'Hafif Çelik' and not profil_analizi.empty:
+        elements.append(Paragraph("Çelik Profil Analizi", custom_styles['Heading']))
+        data = [profil_analizi.columns.tolist()] + profil_analizi.values.tolist()
+        table = Table(data, colWidths=[40*mm, 20*mm, 30*mm, 30*mm]) # Adjust colWidths as needed
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2C3E50')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), f"{MAIN_FONT}-Bold"),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTNAME', (0, 1), (-1, -1), MAIN_FONT),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('TOPPADDING', (0, 1), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 4),
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 10*mm))
+
+    doc.build(elements, onLaterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data),
+              onFirstPage=lambda canvas, doc: draw_footer(canvas, doc)) 
     return buffer.getvalue()
 
-# === MAIN CALCULATION BUTTON ===
-calculate_button = widgets.Button(
-    description="Calculate and Create PDFs", 
-    button_style='success', 
-    icon='calculator',
-    layout=widgets.Layout(width='350px', height='45px')
-)
-output_area = widgets.Output()
 
-def on_calculate_clicked(b):
-    with output_area:
-        clear_output(wait=True)
+# === Streamlit UI ===
+st.set_page_config(layout="centered", page_title="Premium Plus Proje Hesaplayıcı", initial_sidebar_state="expanded")
+
+# Custom CSS for a better look (adapted from your original HTML styles)
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap');
+    html, body, [class*="st-"] {
+        font-family: 'Open Sans', sans-serif !important;
+    }
+    .st-emotion-cache-nahz7x { /* Main content padding - adjust as needed for newer Streamlit versions */
+        padding-top: 1rem;
+        padding-right: 1rem;
+        padding-bottom: 1rem;
+        padding-left: 1rem;
+    }
+    h1 { /* Main Title */
+        color: #2C3E50; 
+        border-bottom: 2px solid #3498DB;
+        padding-bottom: 5px; 
+        margin-top: 20px;
+        font-weight: 700 !important;
+    }
+    h2 { /* Section Headers */
+        color: #34495E;
+        margin-top: 15px;
+        font-weight: 700 !important;
+    }
+    h3 { /* Sub-Section Headers / Streamlit's default headers */
+        background-color: #2C3E50;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: 700 !important;
+        margin-top: 20px;
+    }
+    .stButton > button {
+        background-color: #2C3E50;
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 10px 0;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: all 0.3s;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .stButton > button:hover {
+        background-color: #3498DB;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .stAlert { /* Styles for st.warning/info */
+        background-color: #e9f7fe; /* Lighter blue */
+        border: 1px solid #3498DB;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    /* Table styling for st.dataframe if needed, although Streamlit applies its own styles */
+    .st-dataframe th, .st-dataframe td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+    }
+    .st-dataframe th {
+        background-color: #f2f2f2;
+    }
+    .st-dataframe tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Application Title
+st.title("Premium Plus Proje Hesaplayıcı")
+
+# --- Sidebar for General Settings and Company Info ---
+st.sidebar.header("Şirket Bilgileri")
+st.sidebar.info(
+    f"**{COMPANY_INFO['name']}**\n\n"
+    f"{COMPANY_INFO['address']}\n"
+    f"Email: {COMPANY_INFO['email']}\n"
+    f"Telefon: {COMPANY_INFO['phone']}\n"
+    f"Website: {COMPANY_INFO['website']}\n"
+    f"Linktree: {COMPANY_INFO['linktree']}"
+)
+
+st.sidebar.header("Fiyat Güncelleme")
+if st.sidebar.button("Fiyatları Güncelle"):
+    update_prices()
+    st.sidebar.success("Fiyatlar başarıyla güncellendi!")
+    # Optionally, display some updated prices
+    st.sidebar.write(f"- Panel montaj işçiliği: {FIYATLAR['panel_montaj_iscilik_m2']} €/m²")
+    st.sidebar.write(f"- Solar enerji: {FIYATLAR['solar_per_kw']} €/kW")
+
+st.sidebar.header("Güncel Fiyat Listesi (Örnek)")
+price_data = {
+    "Malzeme / Hizmet": [
+        "Çelik Profil (100x100x3)", "Sandviç Panel", "Plywood",
+        "Alüminyum Pencere", "WC Pencere", "Kapı (Genel)", "Sürgülü Kapı", "Ana Kapı", # Updated
+        "WC Seramik", "Panel Montaj İşçiliği", "Alçıpan İşçilik",
+        "Mutfak Kurulumu", "Duş/WC Kurulumu", "Yerden Isıtma",
+        "Solar Energy (1 kW)", "Taşıma"
+    ],
+    "Fiyat (€)": [
+        f"{FIYATLAR['celik_profil_100x100x3']} / adet",
+        f"{FIYATLAR['sandvic_panel_m2']} / m²",
+        f"{FIYATLAR['plywood_adet']} / adet",
+        f"{FIYATLAR['aluminyum_pencere_adet']} / adet",
+        f"{FIYATLAR['wc_pencere_adet']} / adet",
+        f"{FIYATLAR['kapi_adet']} / adet",
+        f"{FIYATLAR['sliding_door_adet']} / adet", # Added
+        f"{FIYATLAR['main_door_adet']} / adet", # Added
+        f"{FIYATLAR['wc_ceramic_m2']} / m²",
+        f"{FIYATLAR['panel_montaj_iscilik_m2']} / m²",
+        f"{FIYATLAR['alcipan_iscilik_m2']} / m²",
+        f"{FIYATLAR['mutfak_kurulum_adet']} / adet",
+        f"{FIYATLAR['dus_wc_kurulum_adet']} / adet",
+        f"{FIYATLAR['yerden_isitma_m2']} / m²",
+        f"{FIYATLAR['solar_per_kw']} / kW",
+        f"{FIYATLAR['tasinma']} / sefer"
+    ]
+}
+st.sidebar.table(pd.DataFrame(price_data))
+
+
+# --- Main Content Area ---
+st.header("MÜŞTERİ BİLGİLERİ (Opsiyonel)")
+st.warning("Not: Müşteri bilgileri zorunlu değildir. Boş bırakılırsa 'GENERAL' olarak işaretlenecektir.")
+col1, col2 = st.columns(2)
+customer_name = col1.text_input("Adı Soyadı:", value="GENERAL")
+customer_company = col2.text_input("Şirket:")
+col3, col4 = st.columns(2)
+customer_address = col3.text_input("Adres:")
+customer_city = col4.text_input("Şehir:")
+col5, col6 = st.columns(2)
+customer_phone = col5.text_input("Telefon:")
+customer_email = col6.text_input("E-posta:")
+
+
+st.header("PROJE DETAYLARI")
+yapi_tipi = st.radio("Yapı Tipi:", ['Hafif Çelik', 'Ağır Çelik'], horizontal=True)
+alcipan_secenek = st.checkbox("İç Mekan Alçıpan Dahil", value=True)
+col_dims1, col_dims2, col_dims3 = st.columns(3)
+en_input = col_dims1.number_input("En (m):", value=10.0, min_value=1.0)
+boy_input = col_dims2.number_input("Boy (m):", value=8.0, min_value=1.0)
+yukseklik_input = col_dims3.number_input("Yükseklik (m):", value=2.6, min_value=0.1)
+oda_konfigurasyonu_input = st.text_input("Oda Konfigürasyonu:", value="1 oda, 1 banyo, 1 mutfak")
+
+st.header("ÇELİK PROFİL ADETLERİ (Hafif Çelik İçin)")
+st.info("**(6m parça başına adet)**")
+
+if yapi_tipi == 'Hafif Çelik':
+    zemin_alani_for_defaults = en_input * boy_input
+    recommended_profiles = calculate_recommended_profiles(zemin_alani_for_defaults)
+    st.write("**:bulb: Alan bazlı önerilen profil adetleri (manuel olarak değiştirebilirsiniz):**")
+    
+    col_profil1, col_profil2 = st.columns(2)
+    profil_100x100_adet = col_profil1.number_input("100x100x3 Adet:", value=recommended_profiles["100x100x3"], min_value=0, help="6m'lik 100x100x3 profil adedi")
+    profil_100x50_adet = col_profil2.number_input("100x50x3 Adet:", value=recommended_profiles["100x50x3"], min_value=0, help="6m'lik 100x50x3 profil adedi")
+    col_profil3, col_profil4 = st.columns(2)
+    profil_40x60_adet = col_profil3.number_input("40x60x2 Adet:", value=recommended_profiles["40x60x2"], min_value=0, help="6m'lik 40x60x2 profil adedi")
+    profil_40x40_adet = col_profil4.number_input("40x40x2 Adet:", value=recommended_profiles["40x40x2"], min_value=0, help="6m'lik 40x40x2 profil adedi")
+    col_profil5, col_profil6 = st.columns(2)
+    profil_30x30_adet = col_profil5.number_input("30x30x2 Adet:", value=recommended_profiles["30x30x2"], min_value=0, help="6m'lik 30x30x2 profil adedi")
+    profil_HEA160_adet = col_profil6.number_input("HEA160 Adet:", value=recommended_profiles["HEA160"], min_value=0, help="6m'lik HEA160 profil adedi")
+else: # Ağır Çelik ise, adet inputlarını gösterme, sıfır olarak ayarla
+    profil_100x100_adet = 0
+    profil_100x50_adet = 0
+    profil_40x60_adet = 0
+    profil_40x40_adet = 0
+    profil_30x30_adet = 0
+    profil_HEA160_adet = 0
+    st.info("Ağır Çelik yapı tipinde profil adedi bilgisi girilmez.")
+
+
+st.header("KAPI & PENCERE DETAYLARI")
+col_pencere1, col_pencere2 = st.columns(2)
+pencere_input = col_pencere1.number_input("Pencere Adedi:", value=4, min_value=0)
+pencere_olcu = col_pencere2.text_input("Pencere Ölçüsü:", value="150x120 cm")
+
+col_wc_pencere1, col_wc_pencere2 = st.columns(2)
+wc_pencere_input = col_wc_pencere1.number_input("WC Pencere Adedi:", value=1, min_value=0)
+wc_pencere_olcu = col_wc_pencere2.text_input("WC Pencere Ölçüsü:", value="60x50 cm")
+
+# Yeni eklenenler: Sürgülü Kapı ve Ana Kapı
+col_sliding_door1, col_sliding_door2 = st.columns(2)
+sliding_door_input = col_sliding_door1.number_input("Sürgülü Kapı Adedi:", value=0, min_value=0)
+sliding_door_olcu = col_sliding_door2.text_input("Sürgülü Kapı Ölçüsü:", value="200x210 cm")
+
+col_main_door1, col_main_door2 = st.columns(2)
+main_door_input = col_main_door1.number_input("Ana Kapı Adedi:", value=1, min_value=0)
+main_door_olcu = col_main_door2.text_input("Ana Kapı Ölçüsü:", value="90x210 cm")
+
+# Genel Kapı, eğer hala ayrı bir genel kapı girişi isteniyorsa
+col_kapi1, col_kapi2 = st.columns(2)
+kapi_input = col_kapi1.number_input("Diğer İç Kapılar Adedi (Genel):", value=1, min_value=0)
+kapi_olcu = col_kapi2.text_input("Diğer İç Kapılar Ölçüsü (Genel):", value="80x210 cm")
+
+
+
+st.header("EK DONANIM VE TESİSATLAR")
+col_ek1, col_ek2 = st.columns(2)
+mutfak_input = col_ek1.checkbox("Mutfak Dahil", value=True)
+dus_input = col_ek2.checkbox("Duş/WC Dahil", value=True)
+
+# WC Ceramic from new file
+wc_ceramic_input = st.checkbox("WC Seramik Dahil", value=True)
+wc_ceramic_area = 0.0
+if wc_ceramic_input:
+    wc_ceramic_area = st.number_input("WC Seramik Alanı (m²):", value=5.0, min_value=0.0, step=0.1)
+
+
+col_tesisat1, col_tesisat2 = st.columns(2)
+elektrik_tesisat_input = col_tesisat1.checkbox("Elektrik Tesisatı Dahil", value=False)
+su_tesisat_input = col_tesisat2.checkbox("Su Tesisatı Dahil", value=False)
+tasinma_input = st.checkbox("Taşıma Dahil (500€)", value=False)
+
+isitma_secenek = st.checkbox("Yerden Isıtma Dahil (50€/m²)", value=False)
+
+solar_secenek = st.checkbox("Solar Energy System", value=False)
+if solar_secenek:
+    col_solar1, col_solar2 = st.columns(2)
+    solar_kapasite = col_solar1.selectbox(
+        "Kapasite:", options=[5, 7.2, 11], format_func=lambda x: f"{x} kW"
+    )
+    solar_fiyat_display = solar_kapasite * FIYATLAR['solar_per_kw']
+    col_solar2.metric(label="Solar Fiyat (€):", value=format_currency(solar_fiyat_display))
+else:
+    solar_kapasite = 0 # Default to 0 if not selected
+
+st.header("FİNANSAL AYARLAR")
+kar_orani_input = st.slider(
+    "Kar Oranı:",
+    min_value=0.0,
+    max_value=0.50,
+    value=0.20,
+    step=0.01
+)
+kdv_input = st.slider(
+    "KDV Oranı:",
+    min_value=0.0,
+    max_value=0.25,
+    value=KDV_ORANI,
+    step=0.01
+)
+
+st.header("MÜŞTERİ ÖZEL İSTEKLERİ VE NOTLAR")
+musteri_notlari = st.text_area("Müşteri Notları:", value='')
+
+# --- Calculation and PDF Generation Button ---
+if st.button("Hesapla ve PDF Oluştur"):
+    with st.spinner('Hesaplanıyor ve PDF oluşturuluyor...'):
         try:
-            result = calculate()
-            
-            # Show results
-            display(HTML(f"<h3>Project Report: {result['width']}m x {result['length']}m = {result['area']:.2f} m²</h3>"))
-            
-            if not result['profile_analysis'].empty:
-                display(HTML("<h4>Steel Profile Analysis</h4>"))
-                display(result['profile_analysis'])
-            
-            display(HTML("<h4>Cost Breakdown</h4>"))
-            display(result['cost_breakdown'])
-            
-            display(HTML("<h4>Financial Summary</h4>"))
-            display(result['financial_summary'])
-            
-            if result['notes']:
-                display(HTML(f"<h4>Special Notes</h4><p><i>{result['notes']}</i></p>"))
-            
-            # Get logo data
+            result = calculate_costs(
+                yapi_tipi, alcipan_secenek, en_input, boy_input, yukseklik_input, oda_konfigurasyonu_input,
+                profil_100x100_adet, profil_100x50_adet, profil_40x60_adet, profil_40x40_adet, profil_30x30_adet, profil_HEA160_adet,
+                isitma_secenek, solar_secenek, solar_kapasite,
+                pencere_input, pencere_olcu, wc_pencere_input, wc_pencere_olcu, 
+                kapi_input, kapi_olcu, # General door
+                sliding_door_input, sliding_door_olcu, # Added
+                main_door_input, main_door_olcu,       # Added
+                mutfak_input, dus_input, wc_ceramic_input, wc_ceramic_area,
+                elektrik_tesisat_input, su_tesisat_input, tasinma_input,
+                kar_orani_input, kdv_input, musteri_notlari,
+                customer_name, customer_company, customer_address, customer_city, customer_phone, customer_email
+            )
+
+            st.subheader("Hesaplama Sonuçları")
+            col_res1, col_res2 = st.columns(2)
+            col_res1.metric(label="Tahmini Satış Fiyatı (KDV Dahil)", value=format_currency(result['satis_fiyati']))
+            col_res2.metric(label="Proje Alanı", value=f"{result['alan']:.2f} m²")
+
+            st.subheader("Maliyet Dökümü")
+            st.dataframe(result['maliyet_dokum'], use_container_width=True)
+
+            st.subheader("Finansal Özet")
+            st.dataframe(result['finansal_ozet'], use_container_width=True)
+
+            if yapi_tipi == 'Hafif Çelik':
+                st.subheader("Çelik Profil Analizi")
+                st.dataframe(result['profil_analizi'], use_container_width=True)
+
+            # --- PDF Generation ---
             logo_data = get_company_logo()
-            
-            # Create PDFs
-            proposal_pdf = create_customer_pdf(
-                result['sales_price'], 
-                result['project_details'], 
-                result['notes'],
+
+            teklif_pdf = musteri_pdf_olustur(
+                result['satis_fiyati'],
+                result['proje_bilgileri'],
+                result['notlar'],
+                result['customer_info'],
+                logo_data
+            )
+
+            maliyet_pdf = maliyet_raporu_pdf_olustur(
+                result['proje_bilgileri'],
+                result['maliyet_dokum'],
+                result['finansal_ozet'],
+                result['profil_analizi'],
                 result['customer_info'],
                 logo_data
             )
             
-            cost_pdf = create_cost_report_pdf(
-                result['project_details'],
-                result['cost_breakdown'],
-                result['financial_summary'],
-                result['profile_analysis'],
-                result['customer_info'],
-                logo_data
-            )
             # PDF download links
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            proposal_filename = f"Proposal_Form_{timestamp}.pdf"
-            cost_filename = f"Cost_Report_{timestamp}.pdf"
+            teklif_filename = f"Teklif_Formu_{timestamp}.pdf"
+            maliyet_filename = f"Maliyet_Raporu_{timestamp}.pdf"
+
+            st.markdown("---")
+            st.subheader("PDF Dosyalarını İndir")
             
-            display(HTML(f"""
-            <div class="pdf-container">
-                <h4>DOWNLOAD PDF FILES</h4>
-                {create_pdf_download_link(proposal_pdf, proposal_filename)}
-                {create_pdf_download_link(cost_pdf, cost_filename)}
-                <p style="margin-top: 20px; font-size: 14px; color: #555;">
-                    Use the buttons above to download PDF files.<br>
-                    Your browser may prefer to open PDFs directly.
-                </p>
-            </div>
-            """))
-            
+            col_pdf1, col_pdf2 = st.columns(2)
+            col_pdf1.download_button(
+                label=f"⬇️ {teklif_filename} İndir",
+                data=teklif_pdf,
+                file_name=teklif_filename,
+                mime="application/pdf"
+            )
+            col_pdf2.download_button(
+                label=f"⬇️ {maliyet_filename} İndir",
+                data=maliyet_pdf,
+                file_name=maliyet_filename,
+                mime="application/pdf"
+            )
+            st.info("PDF'leri indirmek için yukarıdaki butonları kullanın. Tarayıcınız PDF'leri doğrudan açmayı tercih edebilir.")
+
         except Exception as e:
-            import traceback
-            display(HTML(f"<div style='color:red; background-color:#ffe8e8; padding:15px; border-radius:8px; margin-top:20px;'><b>Error:</b> {str(e)}<br>{traceback.format_exc()}</div>"))
-
-calculate_button.on_click(on_calculate_clicked)
-
-# === UI LAYOUT ===
-# Customer Information Section
-customer_section = widgets.VBox([
-    widgets.HTML("<div class='card'>"),
-    customer_title,
-    customer_note,
-    customer_name,
-    customer_company,
-    customer_address,
-    customer_city,
-    customer_phone,
-    customer_email,
-    widgets.HTML("</div>")
-], layout=widgets.Layout(margin='0 0 20px 0'))
-
-# Project Details Section
-project_section = widgets.VBox([
-    widgets.HTML("<div class='card'>"),
-    widgets.HTML("<div class='section-title'>PROJECT DETAILS</div>"),
-    widgets.HBox([structure_type, plasterboard_option]),
-    widgets.HBox([width_input, length_input, height_input]),
-    room_config_input,
-    widgets.HTML("</div>")
-], layout=widgets.Layout(margin='0 0 20px 0'))
-
-# Windows and Doors Section
-door_window_section = widgets.VBox([
-    widgets.HTML("<div class='card'>"),
-    widgets.HTML("<div class='section-title'>WINDOWS & DOORS</div>"),
-    widgets.HBox([window_input, window_size]),
-    widgets.HBox([sliding_door_input, sliding_door_size]),
-    widgets.HBox([wc_window_input, wc_window_size]),
-    widgets.HBox([wc_sliding_door_input, wc_sliding_door_size]),
-    widgets.HBox([door_input, door_size]),
-    widgets.HTML("</div>")
-], layout=widgets.Layout(margin='0 0 20px 0'))
-
-# Steel Profile Section
-steel_profile_section = widgets.VBox([
-    widgets.HTML("<div class='card'>"),
-    widgets.HTML("<div class='section-title'>STEEL PROFILE QUANTITIES</div>"),
-    profile_count_label,
-    widgets.HBox([profile_100x100_count, profile_100x50_count]),
-    widgets.HBox([profile_40x60_count, profile_50x50_count]),
-    widgets.HBox([profile_30x30_count, profile_HEA160_count]),
-    widgets.HTML("</div>")
-], layout=widgets.Layout(margin='0 0 20px 0'))
-
-# Additional Equipment Section
-equipment_section = widgets.VBox([
-    widgets.HTML("<div class='card'>"),
-    widgets.HTML("<div class='section-title'>ADDITIONAL EQUIPMENT</div>"),
-    widgets.HBox([kitchen_input, shower_input]),
-    widgets.HBox([wc_ceramic_input, wc_ceramic_area]),
-    widgets.HBox([electrical_installation_input, plumbing_installation_input]),
-    transportation_input,
-    heating_option,
-    widgets.HBox([solar_option, solar_capacity, solar_price]),
-    widgets.HTML("</div>")
-], layout=widgets.Layout(margin='0 0 20px 0'))
-
-# Financial Settings Section
-financial_section = widgets.VBox([
-    widgets.HTML("<div class='card'>"),
-    widgets.HTML("<div class='section-title'>FINANCIAL SETTINGS</div>"),
-    profit_rate_input,
-    vat_rate_input,
-    widgets.HTML("</div>")
-], layout=widgets.Layout(margin='0 0 20px 0'))
-
-# Customer Notes Section
-notes_section = widgets.VBox([
-    widgets.HTML("<div class='card'>"),
-    widgets.HTML("<div class='section-title'>CUSTOMER SPECIAL REQUESTS AND NOTES</div>"),
-    customer_notes,
-    widgets.HTML("</div>")
-], layout=widgets.Layout(margin='0 0 20px 0'))
-
-# Main UI
-ui = widgets.VBox([
-    dark_mode_button,
-    customer_section,
-    project_section,
-    door_window_section,
-    steel_profile_section,
-    equipment_section,
-    financial_section,
-    notes_section,
-    calculate_button,
-    output_area
-], layout=widgets.Layout(width='95%', margin='0 auto'))
-
-display(ui)
+            st.error(f"Hata oluştu: {e}")
+            st.exception(e) # Display full traceback for debugging
