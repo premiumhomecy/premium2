@@ -107,6 +107,25 @@ def format_currency(value):
     s = f"{value:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
     return f"€{s}"
 
+def calculate_recommended_profiles(zemin_alani):
+    """
+    Provides a very rough estimation of recommended steel profile pieces based on floor area.
+    This is illustrative and not a precise engineering calculation.
+    """
+    # These factors are arbitrary for demonstration and can be adjusted based on typical designs.
+    # A more precise calculation would require detailed structural analysis.
+    base_factor = zemin_alani / 20.0 # Adjust this base factor as needed for a realistic number of pieces
+    
+    return {
+        "100x100x3": int(base_factor * 2),
+        "100x50x3": int(base_factor * 3),
+        "40x60x2": int(base_factor * 4),
+        "40x40x2": int(base_factor * 5),
+        "30x30x2": int(base_factor * 6),
+        "HEA160": int(base_factor * 0.5) # For heavier support, if applicable for light steel
+    }
+
+
 def calculate_costs(
     yapi_tipi_val, alcipan_secenek_val, en, boy, yukseklik, oda_konfigurasyonu,
     profil_100x100_adet, profil_100x50_adet, profil_40x60_adet, profil_40x40_adet, profil_30x30_adet, profil_HEA160_adet,
@@ -866,15 +885,29 @@ oda_konfigurasyonu_input = st.text_input("Oda Konfigürasyonu:", value="1 oda, 1
 
 st.header("ÇELİK PROFİL ADETLERİ (Hafif Çelik İçin)")
 st.info("**(6m parça başına adet)**")
-col_profil1, col_profil2 = st.columns(2)
-profil_100x100_adet = col_profil1.number_input("100x100x3 Adet:", value=0, min_value=0, help="6m'lik 100x100x3 profil adedi")
-profil_100x50_adet = col_profil2.number_input("100x50x3 Adet:", value=0, min_value=0, help="6m'lik 100x50x3 profil adedi")
-col_profil3, col_profil4 = st.columns(2)
-profil_40x60_adet = col_profil3.number_input("40x60x2 Adet:", value=0, min_value=0, help="6m'lik 40x60x2 profil adedi")
-profil_40x40_adet = col_profil4.number_input("40x40x2 Adet:", value=0, min_value=0, help="6m'lik 40x40x2 profil adedi")
-col_profil5, col_profil6 = st.columns(2)
-profil_30x30_adet = col_profil5.number_input("30x30x2 Adet:", value=0, min_value=0, help="6m'lik 30x30x2 profil adedi")
-profil_HEA160_adet = col_profil6.number_input("HEA160 Adet:", value=0, min_value=0, help="6m'lik HEA160 profil adedi")
+
+if yapi_tipi == 'Hafif Çelik':
+    zemin_alani_for_defaults = en_input * boy_input
+    recommended_profiles = calculate_recommended_profiles(zemin_alani_for_defaults)
+    st.write("**:bulb: Alan bazlı önerilen profil adetleri (manuel olarak değiştirebilirsiniz):**")
+    
+    col_profil1, col_profil2 = st.columns(2)
+    profil_100x100_adet = col_profil1.number_input("100x100x3 Adet:", value=recommended_profiles["100x100x3"], min_value=0, help="6m'lik 100x100x3 profil adedi")
+    profil_100x50_adet = col_profil2.number_input("100x50x3 Adet:", value=recommended_profiles["100x50x3"], min_value=0, help="6m'lik 100x50x3 profil adedi")
+    col_profil3, col_profil4 = st.columns(2)
+    profil_40x60_adet = col_profil3.number_input("40x60x2 Adet:", value=recommended_profiles["40x60x2"], min_value=0, help="6m'lik 40x60x2 profil adedi")
+    profil_40x40_adet = col_profil4.number_input("40x40x2 Adet:", value=recommended_profiles["40x40x2"], min_value=0, help="6m'lik 40x40x2 profil adedi")
+    col_profil5, col_profil6 = st.columns(2)
+    profil_30x30_adet = col_profil5.number_input("30x30x2 Adet:", value=recommended_profiles["30x30x2"], min_value=0, help="6m'lik 30x30x2 profil adedi")
+    profil_HEA160_adet = col_profil6.number_input("HEA160 Adet:", value=recommended_profiles["HEA160"], min_value=0, help="6m'lik HEA160 profil adedi")
+else: # Ağır Çelik ise, adet inputlarını gösterme, sıfır olarak ayarla
+    profil_100x100_adet = 0
+    profil_100x50_adet = 0
+    profil_40x60_adet = 0
+    profil_40x40_adet = 0
+    profil_30x30_adet = 0
+    profil_HEA160_adet = 0
+    st.info("Ağır Çelik yapı tipinde profil adedi bilgisi girilmez.")
 
 
 st.header("KAPI & PENCERE DETAYLARI")
