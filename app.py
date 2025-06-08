@@ -549,8 +549,7 @@ profit_rate_input = widgets.FloatSlider(
     step=0.01, 
     description="Profit Rate:", 
     readout_format='.0%',
-    style={'description
-    'description_width': '120px'},
+    style={'description_width': '120px'},
     layout={'width': '400px'}
 )
 
@@ -1333,7 +1332,7 @@ def on_calculate_clicked(b):
                 display(HTML(f"<h4>Special Notes</h4><p><i>{result['notes']}</i></p>"))
             
             # Get logo data
-                        logo_data = get_company_logo()
+            logo_data = get_company_logo()
             
             # Create PDFs
             proposal_pdf = create_customer_pdf(
