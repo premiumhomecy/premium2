@@ -60,7 +60,9 @@ def update_prices():
         "plywood_adet": 44.44,         # Plywood per piece (approx 1.22x2.44m)
         "aluminyum_pencere_adet": 250.00, # Aluminum window per piece
         "wc_pencere_adet": 120.00,      # WC window per piece
-        "kapi_adet": 280.00,            # Door per piece
+        "kapi_adet": 280.00,            # General Door per piece (Can be adjusted for specific types)
+        "sliding_door_adet": 350.00,    # Added: Sliding Door per piece
+        "main_door_adet": 400.00,       # Added: Main Door per piece
         "mutfak_kurulum_adet": 1500.00, # Kitchen installation
         "dus_wc_kurulum_adet": 1000.00, # Shower/WC installation
         "wc_ceramic_m2": 25.00,        # WC Ceramic per m² (Added from new file)
@@ -131,8 +133,11 @@ def calculate_costs(
     yapi_tipi_val, alcipan_secenek_val, en, boy, yukseklik, oda_konfigurasyonu,
     profil_100x100_adet, profil_100x50_adet, profil_40x60_adet, profil_40x40_adet, profil_30x30_adet, profil_HEA160_adet,
     isitma_secenek_val, solar_secenek_val, solar_kapasite_val,
-    pencere_ad, pencere_olcu, wc_pencere_ad, wc_pencere_olcu, kapi_ad, kapi_olcu,
-    mutfak_input_val, dus_input_val, wc_ceramic_input_val, wc_ceramic_alan_val, # Added WC Ceramic inputs
+    pencere_ad, pencere_olcu, wc_pencere_ad, wc_pencere_olcu, 
+    kapi_ad, kapi_olcu, # Renamed to general_kapi_ad, general_kapi_olcu if you want to be explicit
+    sliding_door_ad, sliding_door_olcu, # Added
+    main_door_ad, main_door_olcu,       # Added
+    mutfak_input_val, dus_input_val, wc_ceramic_input_val, wc_ceramic_alan_val,
     elektrik_tesisat_input_val, su_tesisat_input_val, tasinma_input_val,
     kar_orani, kdv_orani, musteri_notlari,
     customer_name_val, customer_company_val, customer_address_val, customer_city_val, customer_phone_val, customer_email_val
@@ -300,7 +305,9 @@ def calculate_costs(
             'Toplam (€)': format_currency(wc_ceramic_maliyet)
         })
 
-    # Kapı ve Pencereler (Doors and Windows)
+    # Kapı ve Pencereler (Doors and Windows) - DETAYLI
+    toplam_kapi_pencere_montaj_adedi = 0
+
     if pencere_ad > 0:
         toplam_fiyat = pencere_ad * FIYATLAR["aluminyum_pencere_adet"]
         maliyetler.append({
@@ -309,6 +316,8 @@ def calculate_costs(
             'Birim Fiyat (€)': format_currency(FIYATLAR["aluminyum_pencere_adet"]),
             'Toplam (€)': format_currency(toplam_fiyat)
         })
+        toplam_kapi_pencere_montaj_adedi += pencere_ad
+
     if wc_pencere_ad > 0:
         toplam_fiyat = wc_pencere_ad * FIYATLAR["wc_pencere_adet"]
         maliyetler.append({
@@ -317,21 +326,43 @@ def calculate_costs(
             'Birim Fiyat (€)': format_currency(FIYATLAR["wc_pencere_adet"]),
             'Toplam (€)': format_currency(toplam_fiyat)
         })
-    if kapi_ad > 0:
+        toplam_kapi_pencere_montaj_adedi += wc_pencere_ad
+    
+    if kapi_ad > 0: # Genel Kapı
         toplam_fiyat = kapi_ad * FIYATLAR["kapi_adet"]
         maliyetler.append({
-            'Kalem': f'Kapı ({kapi_olcu})',
+            'Kalem': f'Kapı (Genel) ({kapi_olcu})',
             'Miktar': kapi_ad,
             'Birim Fiyat (€)': format_currency(FIYATLAR["kapi_adet"]),
             'Toplam (€)': format_currency(toplam_fiyat)
         })
-    
-    toplam_kapi_pencere_adet = pencere_ad + wc_pencere_ad + kapi_ad
-    if toplam_kapi_pencere_adet > 0:
-        toplam_fiyat = toplam_kapi_pencere_adet * FIYATLAR["kapi_pencere_montaj_iscilik_adet"]
+        toplam_kapi_pencere_montaj_adedi += kapi_ad
+
+    if sliding_door_ad > 0: # Sürgülü Kapı
+        toplam_fiyat = sliding_door_ad * FIYATLAR["sliding_door_adet"]
+        maliyetler.append({
+            'Kalem': f'Sürgülü Kapı ({sliding_door_olcu})',
+            'Miktar': sliding_door_ad,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["sliding_door_adet"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
+        })
+        toplam_kapi_pencere_montaj_adedi += sliding_door_ad
+        
+    if main_door_ad > 0: # Ana Kapı
+        toplam_fiyat = main_door_ad * FIYATLAR["main_door_adet"]
+        maliyetler.append({
+            'Kalem': f'Ana Kapı ({main_door_olcu})',
+            'Miktar': main_door_ad,
+            'Birim Fiyat (€)': format_currency(FIYATLAR["main_door_adet"]),
+            'Toplam (€)': format_currency(toplam_fiyat)
+        })
+        toplam_kapi_pencere_montaj_adedi += main_door_ad
+
+    if toplam_kapi_pencere_montaj_adedi > 0:
+        toplam_fiyat = toplam_kapi_pencere_montaj_adedi * FIYATLAR["kapi_pencere_montaj_iscilik_adet"]
         maliyetler.append({
             'Kalem': 'Kapı/Pencere Montaj İşçiliği',
-            'Miktar': toplam_kapi_pencere_adet,
+            'Miktar': toplam_kapi_pencere_montaj_adedi,
             'Birim Fiyat (€)': format_currency(FIYATLAR["kapi_pencere_montaj_iscilik_adet"]),
             'Toplam (€)': format_currency(toplam_fiyat)
         })
@@ -433,12 +464,16 @@ def calculate_costs(
         'pencere_olcu': pencere_olcu,
         'wc_pencere_adet': wc_pencere_ad,
         'wc_pencere_olcu': wc_pencere_olcu,
-        'kapi_adet': kapi_ad,
-        'kapi_olcu': kapi_olcu,
+        'kapi_adet': kapi_ad, # General Door
+        'kapi_olcu': kapi_olcu, # General Door
+        'sliding_door_adet': sliding_door_ad, # Added
+        'sliding_door_olcu': sliding_door_olcu, # Added
+        'main_door_adet': main_door_ad, # Added
+        'main_door_olcu': main_door_olcu, # Added
         'mutfak': mutfak_input_val,
         'dus': dus_input_val,
-        'wc_ceramic': wc_ceramic_input_val, # Added
-        'wc_ceramic_alan': wc_ceramic_alan_val, # Added
+        'wc_ceramic': wc_ceramic_input_val,
+        'wc_ceramic_alan': wc_ceramic_alan_val,
         'elektrik': elektrik_tesisat_input_val,
         'su': su_tesisat_input_val,
         'tasinma': tasinma_input_val,
@@ -601,7 +636,9 @@ def musteri_pdf_olustur(satis_fiyati, proje_bilgileri, notlar, customer_info, lo
     elements.append(Paragraph("KAPI & PENCERE", custom_styles['Heading']))
     elements.append(Paragraph(f"Pencere Adedi: {proje_bilgileri['pencere_adet']} ({proje_bilgileri['pencere_olcu']})", custom_styles['Bilingual']))
     elements.append(Paragraph(f"WC Pencere Adedi: {proje_bilgileri['wc_pencere_adet']} ({proje_bilgileri['wc_pencere_olcu']})", custom_styles['Bilingual']))
-    elements.append(Paragraph(f"Kapı Adedi: {proje_bilgileri['kapi_adet']} ({proje_bilgileri['kapi_olcu']})", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"Kapı Adedi (Genel): {proje_bilgileri['kapi_adet']} ({proje_bilgileri['kapi_olcu']})", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"Sürgülü Kapı Adedi: {proje_bilgileri['sliding_door_adet']} ({proje_bilgileri['sliding_door_olcu']})", custom_styles['Bilingual'])) # Added
+    elements.append(Paragraph(f"Ana Kapı Adedi: {proje_bilgileri['main_door_adet']} ({proje_bilgileri['main_door_olcu']})", custom_styles['Bilingual'])) # Added
 
     elements.append(Spacer(1, 5*mm))
     elements.append(Paragraph("EK DONANIMLAR VE TESİSATLAR", custom_styles['Heading']))
@@ -847,7 +884,8 @@ st.sidebar.header("Güncel Fiyat Listesi (Örnek)")
 price_data = {
     "Malzeme / Hizmet": [
         "Çelik Profil (100x100x3)", "Sandviç Panel", "Plywood",
-        "Alüminyum Pencere", "WC Seramik", "Panel Montaj İşçiliği", "Alçıpan İşçilik",
+        "Alüminyum Pencere", "WC Pencere", "Kapı (Genel)", "Sürgülü Kapı", "Ana Kapı", # Updated
+        "WC Seramik", "Panel Montaj İşçiliği", "Alçıpan İşçilik",
         "Mutfak Kurulumu", "Duş/WC Kurulumu", "Yerden Isıtma",
         "Solar Energy (1 kW)", "Taşıma"
     ],
@@ -856,6 +894,10 @@ price_data = {
         f"{FIYATLAR['sandvic_panel_m2']} / m²",
         f"{FIYATLAR['plywood_adet']} / adet",
         f"{FIYATLAR['aluminyum_pencere_adet']} / adet",
+        f"{FIYATLAR['wc_pencere_adet']} / adet",
+        f"{FIYATLAR['kapi_adet']} / adet",
+        f"{FIYATLAR['sliding_door_adet']} / adet", # Added
+        f"{FIYATLAR['main_door_adet']} / adet", # Added
         f"{FIYATLAR['wc_ceramic_m2']} / m²",
         f"{FIYATLAR['panel_montaj_iscilik_m2']} / m²",
         f"{FIYATLAR['alcipan_iscilik_m2']} / m²",
@@ -923,12 +965,26 @@ st.header("KAPI & PENCERE DETAYLARI")
 col_pencere1, col_pencere2 = st.columns(2)
 pencere_input = col_pencere1.number_input("Pencere Adedi:", value=4, min_value=0)
 pencere_olcu = col_pencere2.text_input("Pencere Ölçüsü:", value="150x120 cm")
+
 col_wc_pencere1, col_wc_pencere2 = st.columns(2)
 wc_pencere_input = col_wc_pencere1.number_input("WC Pencere Adedi:", value=1, min_value=0)
 wc_pencere_olcu = col_wc_pencere2.text_input("WC Pencere Ölçüsü:", value="60x50 cm")
+
+# Yeni eklenenler: Sürgülü Kapı ve Ana Kapı
+col_sliding_door1, col_sliding_door2 = st.columns(2)
+sliding_door_input = col_sliding_door1.number_input("Sürgülü Kapı Adedi:", value=0, min_value=0)
+sliding_door_olcu = col_sliding_door2.text_input("Sürgülü Kapı Ölçüsü:", value="200x210 cm")
+
+col_main_door1, col_main_door2 = st.columns(2)
+main_door_input = col_main_door1.number_input("Ana Kapı Adedi:", value=1, min_value=0)
+main_door_olcu = col_main_door2.text_input("Ana Kapı Ölçüsü:", value="90x210 cm")
+
+# Genel Kapı, eğer hala ayrı bir genel kapı girişi isteniyorsa
 col_kapi1, col_kapi2 = st.columns(2)
-kapi_input = col_kapi1.number_input("Kapı Adedi:", value=2, min_value=0)
-kapi_olcu = col_kapi2.text_input("Kapı Ölçüsü:", value="90x210 cm")
+kapi_input = col_kapi1.number_input("Diğer İç Kapılar Adedi (Genel):", value=1, min_value=0)
+kapi_olcu = col_kapi2.text_input("Diğer İç Kapılar Ölçüsü (Genel):", value="80x210 cm")
+
+
 
 st.header("EK DONANIM VE TESİSATLAR")
 col_ek1, col_ek2 = st.columns(2)
@@ -987,8 +1043,11 @@ if st.button("Hesapla ve PDF Oluştur"):
                 yapi_tipi, alcipan_secenek, en_input, boy_input, yukseklik_input, oda_konfigurasyonu_input,
                 profil_100x100_adet, profil_100x50_adet, profil_40x60_adet, profil_40x40_adet, profil_30x30_adet, profil_HEA160_adet,
                 isitma_secenek, solar_secenek, solar_kapasite,
-                pencere_input, pencere_olcu, wc_pencere_input, wc_pencere_olcu, kapi_input, kapi_olcu,
-                mutfak_input, dus_input, wc_ceramic_input, wc_ceramic_area, # Passed WC Ceramic inputs
+                pencere_input, pencere_olcu, wc_pencere_input, wc_pencere_olcu, 
+                kapi_input, kapi_olcu, # General door
+                sliding_door_input, sliding_door_olcu, # Added
+                main_door_input, main_door_olcu,       # Added
+                mutfak_input, dus_input, wc_ceramic_input, wc_ceramic_area,
                 elektrik_tesisat_input, su_tesisat_input, tasinma_input,
                 kar_orani_input, kdv_input, musteri_notlari,
                 customer_name, customer_company, customer_address, customer_city, customer_phone, customer_email
