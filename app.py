@@ -28,7 +28,7 @@ except Exception:
     MAIN_FONT = 'Helvetica'
 
 # === LOGO VE ŞİRKET BİLGİLERİ ===
-LOGO_URL = "https://premiumpluscy.eu/wp-content/uploads/2024/05/pp-logo-2-1.png"
+LOGO_URL = "https://premiumpluscy.eu/wp-content/uploads/2024/05/pp-logo-2-1.png" # Lütfen bu URL'yi kontrol edin
 LINKTREE_URL = "https://linktr.ee/premiumplushome?utm_source=linktree_admin_share"
 COMPANY_INFO = {
     "name": "PREMIUM PLUS CONSTRUCTION",
@@ -133,8 +133,8 @@ def calculate_costs(
     varsayilan_parca_boyutu = 6.0 # Default length of a steel profile piece in meters
     alanlar = alan_hesapla(en, boy, yukseklik)
     zemin_alani = alanlar["zemin"]
-    duvar_alani = alanlar["duvar"]
-    cati_alani = alanlar["cati"]
+    duvar_alani = math.ceil(2 * (genislik + uzunluk) * yukseklik)
+    cati_alani = zemin_alani
     
     maliyetler = [] # List to store detailed cost items
     profil_analizi_detaylari = [] # List to store steel profile breakdown
@@ -591,8 +591,8 @@ def musteri_pdf_olustur(satis_fiyati, proje_bilgileri, notlar, customer_info, lo
     elements.append(Paragraph("TOPLAM FİYAT", custom_styles['Heading']))
     elements.append(Paragraph(format_currency(satis_fiyati), custom_styles['Price']))
 
-    doc.build(buffer, onAndAfterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data),
-              onFirstPage=lambda canvas, doc: draw_footer(canvas, doc)) # Use onFirstPage to ensure footer only once
+    doc.build(buffer, onLaterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data), # Düzeltildi: onAndAfterPages -> onLaterPages
+              onFirstPage=lambda canvas, doc: draw_footer(canvas, doc)) 
     return buffer.getvalue()
 
 def maliyet_raporu_pdf_olustur(proje_bilgileri, maliyet_dokum, finansal_ozet, profil_analizi, customer_info, logo_data):
@@ -708,8 +708,8 @@ def maliyet_raporu_pdf_olustur(proje_bilgileri, maliyet_dokum, finansal_ozet, pr
         elements.append(table)
         elements.append(Spacer(1, 10*mm))
 
-    doc.build(buffer, onAndAfterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data),
-              onFirstPage=lambda canvas, doc: draw_footer(canvas, doc)) # Use onFirstPage for footer
+    doc.build(buffer, onLaterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data), # Düzeltildi: onAndAfterPages -> onLaterPages
+              onFirstPage=lambda canvas, doc: draw_footer(canvas, doc)) 
     return buffer.getvalue()
 
 
@@ -909,7 +909,7 @@ else:
     solar_kapasite = 0 # Default to 0 if not selected
 
 st.header("FİNANSAL AYARLAR")
-# Düzeltilen kısım: format='.0%' yerine format_func kullanıldı
+# sprintf hatası için düzeltme: format='.0%' yerine format_func kullanıldı
 kar_orani_input = st.slider(
     "Kar Oranı:",
     min_value=0.0,
