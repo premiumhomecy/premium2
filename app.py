@@ -63,6 +63,7 @@ def update_prices():
         "kapi_adet": 280.00,            # Door per piece
         "mutfak_kurulum_adet": 1500.00, # Kitchen installation
         "dus_wc_kurulum_adet": 1000.00, # Shower/WC installation
+        "wc_ceramic_m2": 25.00,        # WC Ceramic per m² (Added from new file)
         "baglanti_elemani_m2": 1.50,   # Connection elements per m²
         "tasinma": 500.00,              # Transportation/Shipping
         "yerden_isitma_m2": 50.00,      # Underfloor heating per m²
@@ -113,7 +114,7 @@ def calculate_recommended_profiles(zemin_alani):
     This is illustrative and not a precise engineering calculation.
     """
     # These factors are arbitrary for demonstration and can be adjusted based on typical designs.
-    # A more precise calculation would require detailed structural analysis.
+    # Actual values would come from structural engineering design.
     base_factor = zemin_alani / 20.0 # Adjust this base factor as needed for a realistic number of pieces
     
     return {
@@ -131,7 +132,8 @@ def calculate_costs(
     profil_100x100_adet, profil_100x50_adet, profil_40x60_adet, profil_40x40_adet, profil_30x30_adet, profil_HEA160_adet,
     isitma_secenek_val, solar_secenek_val, solar_kapasite_val,
     pencere_ad, pencere_olcu, wc_pencere_ad, wc_pencere_olcu, kapi_ad, kapi_olcu,
-    mutfak_input_val, dus_input_val, elektrik_tesisat_input_val, su_tesisat_input_val, tasinma_input_val,
+    mutfak_input_val, dus_input_val, wc_ceramic_input_val, wc_ceramic_alan_val, # Added WC Ceramic inputs
+    elektrik_tesisat_input_val, su_tesisat_input_val, tasinma_input_val,
     kar_orani, kdv_orani, musteri_notlari,
     customer_name_val, customer_company_val, customer_address_val, customer_city_val, customer_phone_val, customer_email_val
 ):
@@ -287,6 +289,16 @@ def calculate_costs(
             'Birim Fiyat (€)': format_currency(solar_fiyat_deger),
             'Toplam (€)': format_currency(solar_fiyat_deger)
         })
+    
+    # WC Ceramic (Added from new file)
+    if wc_ceramic_input_val and wc_ceramic_alan_val > 0:
+        wc_ceramic_maliyet = wc_ceramic_alan_val * FIYATLAR["wc_ceramic_m2"]
+        maliyetler.append({
+            'Kalem': 'WC Seramik',
+            'Miktar': f'{wc_ceramic_alan_val:.2f} m²',
+            'Birim Fiyat (€)': format_currency(FIYATLAR["wc_ceramic_m2"]),
+            'Toplam (€)': format_currency(wc_ceramic_maliyet)
+        })
 
     # Kapı ve Pencereler (Doors and Windows)
     if pencere_ad > 0:
@@ -425,13 +437,15 @@ def calculate_costs(
         'kapi_olcu': kapi_olcu,
         'mutfak': mutfak_input_val,
         'dus': dus_input_val,
+        'wc_ceramic': wc_ceramic_input_val, # Added
+        'wc_ceramic_alan': wc_ceramic_alan_val, # Added
         'elektrik': elektrik_tesisat_input_val,
         'su': su_tesisat_input_val,
         'tasinma': tasinma_input_val,
         'isitma': isitma_secenek_val,
         'solar': solar_secenek_val,
         'solar_kw': solar_kapasite_val,
-        'solar_fiyat': solar_kapasite_val * FIYATLAR['solar_per_kw'],
+        'solar_fiyat': solar_kapasite_val * FIYATLAR['solar_per_kw'] if solar_secenek_val else 0,
         'kdv_orani': kdv_orani,
         'oda_konfigurasyonu': oda_konfigurasyonu
     }
@@ -461,8 +475,7 @@ def get_company_logo(width=180):
         h_size = int((float(img.size[1]) * float(w_percent)))
         img = img.resize((width, h_size), PILImage.LANCZOS)
         buffered = io.BytesIO()
-        # Save as WEBP if the original was WEBP, otherwise PNG/JPEG is safer for ReportLab
-        # ReportLab's Image only directly supports JPEG/PNG, so converting.
+        # Save as PNG, which ReportLab supports directly
         img.save(buffered, format="PNG") 
         return base64.b64encode(buffered.getvalue()).decode()
     except requests.exceptions.RequestException as e:
@@ -476,14 +489,10 @@ def draw_header(canvas, doc, logo_data):
     """Draws the page header with logo and company info."""
     if logo_data:
         logo = Image(io.BytesIO(base64.b64decode(logo_data)))
-        # Adjust drawHeight and drawWidth as needed to fit.
-        # Keep aspect ratio.
         logo.drawHeight = 25 * mm
         logo.drawWidth = 80 * mm 
-        # Position logo: 15mm from left, 15mm from top margin (approx)
         logo.drawOn(canvas, doc.leftMargin, A4[1] - doc.topMargin + 5*mm)
 
-    # Company Contact Info at the top right
     canvas.setFont(MAIN_FONT, 8)
     canvas.setFillColor(colors.HexColor('#2C3E50')) # Dark blue
     canvas.drawString(A4[0] - doc.rightMargin - 60*mm, A4[1] - doc.topMargin + 20*mm, COMPANY_INFO['phone'])
@@ -494,12 +503,10 @@ def draw_footer(canvas, doc):
     """Draws the page footer with company info and page number."""
     footer_text = f"{COMPANY_INFO['address']} | {COMPANY_INFO['email']} | {COMPANY_INFO['phone']} | {COMPANY_INFO['website']} | Linktree: {COMPANY_INFO['linktree']}"
     canvas.setFont(f"{MAIN_FONT}-Bold", 8)
-    # Position: Centered horizontally, 15mm from bottom
     canvas.drawCentredString(A4[0] / 2, 15*mm, footer_text)
     
     page_num = canvas.getPageNumber()
     canvas.setFont(MAIN_FONT, 8)
-    # Position page number: 10mm from bottom, 15mm from right margin
     canvas.drawString(A4[0] - doc.rightMargin, 10*mm, f"Page {page_num}")
 
 
@@ -600,6 +607,7 @@ def musteri_pdf_olustur(satis_fiyati, proje_bilgileri, notlar, customer_info, lo
     elements.append(Paragraph("EK DONANIMLAR VE TESİSATLAR", custom_styles['Heading']))
     elements.append(Paragraph(f"Mutfak Kurulumu: {'Dahil' if proje_bilgileri['mutfak'] else 'Değil'}", custom_styles['Bilingual']))
     elements.append(Paragraph(f"Duş/WC Kurulumu: {'Dahil' if proje_bilgileri['dus'] else 'Değil'}", custom_styles['Bilingual']))
+    elements.append(Paragraph(f"WC Seramik: {'Dahil' if proje_bilgileri['wc_ceramic'] else 'Değil'}", custom_styles['Bilingual']))
     elements.append(Paragraph(f"Elektrik Tesisatı: {'Dahil' if proje_bilgileri['elektrik'] else 'Değil'}", custom_styles['Bilingual']))
     elements.append(Paragraph(f"Su Tesisatı: {'Dahil' if proje_bilgileri['su'] else 'Değil'}", custom_styles['Bilingual']))
     elements.append(Paragraph(f"Taşıma (Nakliye): {'Dahil' if proje_bilgileri['tasinma'] else 'Değil'}", custom_styles['Bilingual']))
@@ -839,7 +847,7 @@ st.sidebar.header("Güncel Fiyat Listesi (Örnek)")
 price_data = {
     "Malzeme / Hizmet": [
         "Çelik Profil (100x100x3)", "Sandviç Panel", "Plywood",
-        "Alüminyum Pencere", "Panel Montaj İşçiliği", "Alçıpan İşçilik",
+        "Alüminyum Pencere", "WC Seramik", "Panel Montaj İşçiliği", "Alçıpan İşçilik",
         "Mutfak Kurulumu", "Duş/WC Kurulumu", "Yerden Isıtma",
         "Solar Energy (1 kW)", "Taşıma"
     ],
@@ -848,6 +856,7 @@ price_data = {
         f"{FIYATLAR['sandvic_panel_m2']} / m²",
         f"{FIYATLAR['plywood_adet']} / adet",
         f"{FIYATLAR['aluminyum_pencere_adet']} / adet",
+        f"{FIYATLAR['wc_ceramic_m2']} / m²",
         f"{FIYATLAR['panel_montaj_iscilik_m2']} / m²",
         f"{FIYATLAR['alcipan_iscilik_m2']} / m²",
         f"{FIYATLAR['mutfak_kurulum_adet']} / adet",
@@ -925,6 +934,14 @@ st.header("EK DONANIM VE TESİSATLAR")
 col_ek1, col_ek2 = st.columns(2)
 mutfak_input = col_ek1.checkbox("Mutfak Dahil", value=True)
 dus_input = col_ek2.checkbox("Duş/WC Dahil", value=True)
+
+# WC Ceramic from new file
+wc_ceramic_input = st.checkbox("WC Seramik Dahil", value=True)
+wc_ceramic_area = 0.0
+if wc_ceramic_input:
+    wc_ceramic_area = st.number_input("WC Seramik Alanı (m²):", value=5.0, min_value=0.0, step=0.1)
+
+
 col_tesisat1, col_tesisat2 = st.columns(2)
 elektrik_tesisat_input = col_tesisat1.checkbox("Elektrik Tesisatı Dahil", value=False)
 su_tesisat_input = col_tesisat2.checkbox("Su Tesisatı Dahil", value=False)
@@ -944,7 +961,6 @@ else:
     solar_kapasite = 0 # Default to 0 if not selected
 
 st.header("FİNANSAL AYARLAR")
-# Düzeltildi: format_func kaldırıldı
 kar_orani_input = st.slider(
     "Kar Oranı:",
     min_value=0.0,
@@ -972,7 +988,8 @@ if st.button("Hesapla ve PDF Oluştur"):
                 profil_100x100_adet, profil_100x50_adet, profil_40x60_adet, profil_40x40_adet, profil_30x30_adet, profil_HEA160_adet,
                 isitma_secenek, solar_secenek, solar_kapasite,
                 pencere_input, pencere_olcu, wc_pencere_input, wc_pencere_olcu, kapi_input, kapi_olcu,
-                mutfak_input, dus_input, elektrik_tesisat_input, su_tesisat_input, tasinma_input,
+                mutfak_input, dus_input, wc_ceramic_input, wc_ceramic_area, # Passed WC Ceramic inputs
+                elektrik_tesisat_input, su_tesisat_input, tasinma_input,
                 kar_orani_input, kdv_input, musteri_notlari,
                 customer_name, customer_company, customer_address, customer_city, customer_phone, customer_email
             )
