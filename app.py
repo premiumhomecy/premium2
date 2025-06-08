@@ -133,7 +133,7 @@ def calculate_costs(
     varsayilan_parca_boyutu = 6.0 # Default length of a steel profile piece in meters
     alanlar = alan_hesapla(en, boy, yukseklik)
     zemin_alani = alanlar["zemin"]
-    duvar_alani = math.ceil(2 * (genislik + uzunluk) * yukseklik)
+    duvar_alani = math.ceil(2 * (en + boy) * yukseklik) # Corrected to use en and boy
     cati_alani = zemin_alani
     
     maliyetler = [] # List to store detailed cost items
@@ -909,22 +909,20 @@ else:
     solar_kapasite = 0 # Default to 0 if not selected
 
 st.header("FİNANSAL AYARLAR")
-# Düzeltildi: format_func kullanımı daha robust hale getirildi
+# Düzeltildi: format_func kaldırıldı
 kar_orani_input = st.slider(
     "Kar Oranı:",
     min_value=0.0,
     max_value=0.50,
     value=0.20,
-    step=0.01,
-    format_func=lambda x: f"{x * 100:.0f}%" # Değişiklik burada
+    step=0.01
 )
 kdv_input = st.slider(
     "KDV Oranı:",
     min_value=0.0,
     max_value=0.25,
     value=KDV_ORANI,
-    step=0.01,
-    format_func=lambda x: f"{x * 100:.0f}%" # Değişiklik burada
+    step=0.01
 )
 
 st.header("MÜŞTERİ ÖZEL İSTEKLERİ VE NOTLAR")
