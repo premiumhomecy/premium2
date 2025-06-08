@@ -591,7 +591,7 @@ def musteri_pdf_olustur(satis_fiyati, proje_bilgileri, notlar, customer_info, lo
     elements.append(Paragraph("TOPLAM FİYAT", custom_styles['Heading']))
     elements.append(Paragraph(format_currency(satis_fiyati), custom_styles['Price']))
 
-    doc.build(buffer, onLaterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data), # Düzeltildi: onAndAfterPages -> onLaterPages
+    doc.build(buffer, onLaterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data),
               onFirstPage=lambda canvas, doc: draw_footer(canvas, doc)) 
     return buffer.getvalue()
 
@@ -708,7 +708,7 @@ def maliyet_raporu_pdf_olustur(proje_bilgileri, maliyet_dokum, finansal_ozet, pr
         elements.append(table)
         elements.append(Spacer(1, 10*mm))
 
-    doc.build(buffer, onLaterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data), # Düzeltildi: onAndAfterPages -> onLaterPages
+    doc.build(buffer, onLaterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data),
               onFirstPage=lambda canvas, doc: draw_footer(canvas, doc)) 
     return buffer.getvalue()
 
@@ -909,14 +909,14 @@ else:
     solar_kapasite = 0 # Default to 0 if not selected
 
 st.header("FİNANSAL AYARLAR")
-# sprintf hatası için düzeltme: format='.0%' yerine format_func kullanıldı
+# Düzeltildi: format_func kullanımı daha robust hale getirildi
 kar_orani_input = st.slider(
     "Kar Oranı:",
     min_value=0.0,
     max_value=0.50,
     value=0.20,
     step=0.01,
-    format_func=lambda x: f"{x:.0%}"
+    format_func=lambda x: f"{x * 100:.0f}%" # Değişiklik burada
 )
 kdv_input = st.slider(
     "KDV Oranı:",
@@ -924,7 +924,7 @@ kdv_input = st.slider(
     max_value=0.25,
     value=KDV_ORANI,
     step=0.01,
-    format_func=lambda x: f"{x:.0%}"
+    format_func=lambda x: f"{x * 100:.0f}%" # Değişiklik burada
 )
 
 st.header("MÜŞTERİ ÖZEL İSTEKLERİ VE NOTLAR")
