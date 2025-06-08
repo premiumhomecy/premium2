@@ -28,7 +28,7 @@ except Exception:
     MAIN_FONT = 'Helvetica'
 
 # === LOGO VE ŞİRKET BİLGİLERİ ===
-LOGO_URL = "https://premiumpluscy.eu/wp-content/uploads/2024/05/pp-logo-2-1.png" # Lütfen bu URL'yi kontrol edin
+LOGO_URL = "https://premiumpluscy.eu/wp-content/uploads/2023/08/Logo-dark.webp" # Yeni logo URL'si
 LINKTREE_URL = "https://linktr.ee/premiumplushome?utm_source=linktree_admin_share"
 COMPANY_INFO = {
     "name": "PREMIUM PLUS CONSTRUCTION",
@@ -442,7 +442,9 @@ def get_company_logo(width=180):
         h_size = int((float(img.size[1]) * float(w_percent)))
         img = img.resize((width, h_size), PILImage.LANCZOS)
         buffered = io.BytesIO()
-        img.save(buffered, format="PNG")
+        # Save as WEBP if the original was WEBP, otherwise PNG/JPEG is safer for ReportLab
+        # ReportLab's Image only directly supports JPEG/PNG, so converting.
+        img.save(buffered, format="PNG") 
         return base64.b64encode(buffered.getvalue()).decode()
     except requests.exceptions.RequestException as e:
         st.warning(f"Logo URL'den alınırken hata oluştu: {e}")
@@ -591,7 +593,7 @@ def musteri_pdf_olustur(satis_fiyati, proje_bilgileri, notlar, customer_info, lo
     elements.append(Paragraph("TOPLAM FİYAT", custom_styles['Heading']))
     elements.append(Paragraph(format_currency(satis_fiyati), custom_styles['Price']))
 
-    doc.build(buffer, onLaterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data),
+    doc.build(elements, onLaterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data),
               onFirstPage=lambda canvas, doc: draw_footer(canvas, doc)) 
     return buffer.getvalue()
 
@@ -708,7 +710,7 @@ def maliyet_raporu_pdf_olustur(proje_bilgileri, maliyet_dokum, finansal_ozet, pr
         elements.append(table)
         elements.append(Spacer(1, 10*mm))
 
-    doc.build(buffer, onLaterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data),
+    doc.build(elements, onLaterPages=lambda canvas, doc: draw_header(canvas, doc, logo_data),
               onFirstPage=lambda canvas, doc: draw_footer(canvas, doc)) 
     return buffer.getvalue()
 
