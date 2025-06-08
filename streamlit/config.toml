@@ -14,3 +14,19 @@ maxUploadSize = 10 # MB (adjust if your logo or other assets are large)
 [client]
 showErrorDetails = true
 toolbarMode = "minimal" # For mobile, reduces clutter
+[theme]
+primaryColor="#2C3E50" # Dark blue from your styles
+backgroundColor="#F8F9FA" # Light grey from your styles
+secondaryBackgroundColor="#E9F7FE" # Light blue from your styles
+textColor="#212529" # Dark text
+font="sans serif"
+
+[browser]
+gatherUsageStats = false
+
+[server]
+maxUploadSize = 10 # MB (adjust if your logo or other assets are large)
+
+[client]
+showErrorDetails = true
+toolbarMode = "minimal" # For mobile, reduces clutter
