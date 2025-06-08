@@ -52,7 +52,7 @@ def update_prices():
         "celik_profil_40x60x2": 14.00,
         "celik_profil_40x40x2": 11.00,
         "celik_profil_30x30x2": 8.50,
-        "celik_profil_hea160": 155.00, # Corrected to lowercase 'hea160' for consistency with lookup
+        "celik_profil_HEA160": 155.00,
 
         # Malzeme Fiyatları
         "celik_agir_m2": 400.00,       # Heavy steel per m²
@@ -186,12 +186,9 @@ def calculate_costs(
         for profil_tipi, adet_parca in manuel_profil_adetleri.items():
             if adet_parca > 0:
                 # Get the base price per 6m piece for the steel profile type
-                # Ensure the lookup key matches the definition in FIYATLAR (e.g., 'hea160' vs 'HEA160')
-                lookup_key = f"celik_profil_{profil_tipi.replace('x', '_').lower()}"
-                birim_fiyat_6m_parca = FIYATLAR.get(lookup_key)
-                
+                birim_fiyat_6m_parca = FIYATLAR.get(f"celik_profil_{profil_tipi.replace('x', '_').lower()}")
                 if birim_fiyat_6m_parca is None:
-                    # Fallback if specific key is not found, though it should be with corrected HEA160
+                    # Fallback if specific key is not found, though it should be
                     birim_fiyat_6m_parca = 0.0
                 
                 toplam_fiyat = adet_parca * birim_fiyat_6m_parca
