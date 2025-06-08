@@ -1,3 +1,11 @@
+# Gerekli kütüphaneleri yükle (eğer yüklü değilse)
+try:
+    import reportlab
+    from reportlab.platypus import SimpleDocTemplate # Ekledik
+except ImportError:
+    print("Gerekli 'reportlab' kütüphanesi kuruluyor...")
+    !pip install reportlab
+    print("Kurulum tamamlandı. Lütfen hücreyi tekrar çalıştırın.")
 import math
 import pandas as pd
 import base64
