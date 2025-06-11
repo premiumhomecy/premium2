@@ -3,5 +3,6 @@ your-repo-name/premium2
 │   └── config.toml  (Optional: for Streamlit theme/settings)
 ├── app.py
 ├── requirements.txt
-├── Arial.ttf        (Optional, for consistent PDF fonts)
-└── Arial Bold.ttf   (Optional, for consistent PDF fonts)
+└── fonts/
+    ├── FreeSans.ttf
+    └── FreeSansBold.ttf
