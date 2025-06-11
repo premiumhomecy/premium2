@@ -2,4 +2,3 @@ streamlit
 pandas
 reportlab
 Pillow
-requests
