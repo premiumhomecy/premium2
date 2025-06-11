@@ -1,16 +1,32 @@
-[theme]
-primaryColor="#2C3E50" # Dark blue from your styles
-backgroundColor="#F8F9FA" # Light grey from your styles
-secondaryBackgroundColor="#E9F7FE" # Light blue from your styles
-textColor="#212529" # Dark text
-font="sans serif"
-
-[browser]
-gatherUsageStats = false
-
 [server]
-maxUploadSize = 10 # MB (adjust if your logo or other assets are large)
+# Port to run the web server on.
+port = 8501
+# The address the server will listen on.
+# Set this to 0.0.0.0 to make the app accessible from other machines in the network or from the internet.
+address = "0.0.0.0"
+
+[global]
+# When true, Streamlit will load all custom components and resources only once.
+# This can improve performance for some apps.
+# Generally, keep this true unless you have specific reasons.
+# showWarningOnDirectExecution = true # Streamlit 1.12.0 ve sonrası için kaldırıldı.
 
 [client]
-showErrorDetails = true
-toolbarMode = "minimal" # For mobile, reduces clutter
+# Whether to display the Streamlit header.
+# showSidebar = true # Default: true. False yaparsanız sidebar gizlenir.
+
+[browser]
+# Default theme for the browser.
+# theme = "light" # Streamlit'in kendi tema ayarlarını kullanmak genellikle daha iyidir.
+
+[theme]
+# Primary accent color for your app.
+primaryColor = "#3182ce" # Mavi tonu
+# Background color for the main content area.
+backgroundColor = "#f8f9fa" # Açık mod için açık gri
+# Background color for the sidebar and other widgets.
+secondaryBackgroundColor = "#edf2f7" # Açık mod için biraz daha koyu gri
+# Font color for the text.
+textColor = "#2d3748" # Koyu gri/siyah
+# Font family for the app.
+# font = "sans serif" # Varsayılan olarak Inter fontunu kullandığınız için bunu değiştirmeyebilirsiniz.
