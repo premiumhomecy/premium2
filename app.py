@@ -1595,7 +1595,7 @@ def run_streamlit_app():
             # --- Calculation Logic (Copied from your calculate() function) ---
             width, length, height = width_val, length_val, height_val
             window_count, sliding_door_count = window_input_val, sliding_door_input_val
-            wc_window_count, wc_sliding_door_count = wc_wc_window_input_val, wc_sliding_door_input_val
+            wc_window_count, wc_sliding_door_count = wc_window_input_val, wc_sliding_door_input_val
             door_count = door_input_val
 
             areas = calculate_area(width, length, height)
