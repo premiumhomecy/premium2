@@ -1,32 +1,43 @@
-[server]
-# Port to run the web server on.
-port = 8501
-# The address the server will listen on.
-# Set this to 0.0.0.0 to make the app accessible from other machines in the network or from the internet.
-address = "0.0.0.0"
+{
+  "name": "Python 3",
+  // Kullanılacak Docker imajı. Python 3.13 ile uyumlu hale getirildi.
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.13-bullseye",
 
-[global]
-# When true, Streamlit will load all custom components and resources only once.
-# This can improve performance for some apps.
-# Generally, keep this true unless you have specific reasons.
-# showWarningOnDirectExecution = true # Streamlit 1.12.0 ve sonrası için kaldırıldı.
+  "customizations": {
+    "codespaces": {
+      "openFiles": [
+        "README.md",
+        "app.py"
+      ]
+    },
+    "vscode": {
+      "settings": {},
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    }
+  },
 
-[client]
-# Whether to display the Streamlit header.
-# showSidebar = true # Default: true. False yaparsanız sidebar gizlenir.
+  // Konteyner başlatıldıktan sonra çalışacak komutlar.
+  // 'requirements.txt' içindeki tüm Python paketlerini kurar.
+  // 'streamlit' zaten requirements.txt içinde olduğu için ayrı bir kurulum komutuna gerek yoktur.
+  "updateContentCommand": "[ -f packages.txt ] && sudo apt update && sudo apt upgrade -y && sudo xargs apt install -y <packages.txt; [ -f requirements.txt ] && pip3 install --user -r requirements.txt; echo '✅ Packages installed and Requirements met'",
 
-[browser]
-# Default theme for the browser.
-# theme = "light" # Streamlit'in kendi tema ayarlarını kullanmak genellikle daha iyidir.
+  // Konteynere bağlandıktan sonra otomatik olarak çalıştırılacak komut.
+  // Streamlit uygulamasını başlatır ve CORS/XSRF korumasını devre dışı bırakır (geliştirme ortamları için yaygın).
+  "postAttachCommand": {
+    "server": "streamlit run app.py --server.enableCORS false --server.enableXsrfProtection false"
+  },
 
-[theme]
-# Primary accent color for your app.
-primaryColor = "#3182ce" # Mavi tonu
-# Background color for the main content area.
-backgroundColor = "#f8f9fa" # Açık mod için açık gri
-# Background color for the sidebar and other widgets.
-secondaryBackgroundColor = "#edf2f7" # Açık mod için biraz daha koyu gri
-# Font color for the text.
-textColor = "#2d3748" # Koyu gri/siyah
-# Font family for the app.
-# font = "sans serif" # Varsayılan olarak Inter fontunu kullandığınız için bunu değiştirmeyebilirsiniz.
+  // Port yönlendirme ayarları.
+  "portsAttributes": {
+    "8501": {
+      "label": "Application",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "forwardPorts": [
+    8501
+  ]
+}
