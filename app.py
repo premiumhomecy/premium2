@@ -1830,8 +1830,7 @@ def run_streamlit_app():
                 st.dataframe(pd.DataFrame(profile_analysis_details).style.format({'Unit Price (€)': "€{:,.2f}", 'Total (€)': "€{:,.2f}"}), use_container_width=True)
 
             st.subheader("Finansal Özet (Dahili Rapor)")
-            st.dataframe(pd.DataFrame(formatted_financial_summary).set_index('Item').style.format({"Amount (€)": "€{:,.2f}"}), use_container_width=True)
-
+            st.dataframe(pd.DataFrame(formatted_financial_summary).set_index('Item'), use_container_width=True)
             # --- PDF Generation and Download Links ---
             st.markdown("---")
             st.subheader("PDF Çıktıları")
