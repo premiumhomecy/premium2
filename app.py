@@ -1081,4 +1081,15 @@ def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, pro
     buffer.seek(0)
     return buffer.getvalue()
 
+# ... önceki kodlar ...
+
 def create_sales_contract_pdf(customer_info, house_sales_price, solar_sales_price, project_details, company_info):
+    # Bu satır, def satırından 4 boşluk veya 1 tab kadar içeride olmalı.
+    buffer = io.BytesIO() # Bu satırın başında girinti olmalı
+    doc = SimpleDocTemplate( # Bu satır da girintili olmalı
+        buffer,
+        pagesize=A4,
+        # ... fonksiyonun geri kalanı da aynı girintide olmalı ...
+    )
+
+# ... fonksiyonun dışındaki diğer kodlar aynı hizada devam eder ...
