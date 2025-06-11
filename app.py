@@ -1081,4 +1081,4 @@ def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, pro
     buffer.seek(0)
     return buffer.getvalue()
 
-def create_sales
+def create_sales_contract_pdf(customer_info, house_sales_price, solar_sales_price, project_details, company_info):
