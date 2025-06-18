@@ -36,7 +36,7 @@ except Exception as e:
     MAIN_FONT = "Helvetica"
 
 # === COMPANY INFORMATION ===
-LOGO_URL = "https://drive.google.com/uc?export=download&id=1RD27Gas035iUqe4Ucl3phFwxZPWZPWzn"
+LOGO_URL = "https://drive.google.com/uc?export=download&id=1yOH-k1Gm2Gos-ITSiZ1t3yMdq-_3MqZK" # UPDATED LOGO URL
 LINKTREE_URL = "https://linktr.ee/premiumplushome?utm_source=linktree_admin_share"
 COMPANY_INFO = {
     "name": "PREMIUM HOME LTD",
@@ -381,10 +381,25 @@ def draw_footer_with_signatures(canvas, doc, customer_name, company_name):
 
 def _header_footer_for_proposal(canvas, doc):
     """Callback for drawing header/footer on proposal pages."""
+    # Logo for subsequent pages (top right)
+    try:
+        logo_width = 30 * mm
+        logo_height = 15 * mm # Maintain aspect ratio roughly
+        canvas.drawImage(LOGO_URL, doc.width + doc.leftMargin - logo_width, doc.height + doc.topMargin - logo_height, width=logo_width, height=logo_height)
+    except Exception as e:
+        # st.warning(f"Logo yüklenemedi: {e}") # Streamlit uyarısı PDF'e yazılmaz
+        pass
     draw_footer_with_signatures(canvas, doc, doc.customer_name, doc.company_name)
 
 def _contract_header_footer_for_contract(canvas, doc):
     """Callback for drawing header/footer on contract pages (simplified signatures)."""
+    # Logo for subsequent pages (top right)
+    try:
+        logo_width = 30 * mm
+        logo_height = 15 * mm # Maintain aspect ratio roughly
+        canvas.drawImage(LOGO_URL, doc.width + doc.leftMargin - logo_width, doc.height + doc.topMargin - logo_height, width=logo_width, height=logo_height)
+    except Exception as e:
+        pass
     footer_text = f"{COMPANY_INFO['address']} | {COMPANY_INFO['email']} | {COMPANY_INFO['phone']} | {COMPANY_INFO['website']}"
     canvas.setFont(f"{MAIN_FONT}", 8)
     canvas.drawCentredString(doc.width/2 + doc.leftMargin, 18*mm, footer_text)
@@ -609,7 +624,17 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     elements = []
 
     # --- Cover Page ---
-    elements.append(Spacer(1, 40*mm))
+    elements.append(Spacer(1, 10*mm)) # Space for logo
+    # Logo for first page (top center)
+    try:
+        logo_width_cover = 50 * mm
+        logo_height_cover = 25 * mm # Maintain aspect ratio roughly
+        elements.append(Image(LOGO_URL, width=logo_width_cover, height=logo_height_cover, hAlign='CENTER'))
+    except Exception as e:
+        # st.warning(f"Logo yüklenemedi: {e}")
+        pass
+    elements.append(Spacer(1, 10*mm))
+
     elements.append(Paragraph("PREFABRICATED HOUSE PROPOSAL", title_style))
     elements.append(Paragraph("ΠΡΟΤΑΣΗ ΠΡΟΚΑΤΑΣΚΕΥΑΣΜΕΝΟΥ ΣΠΙΤΙΟΥ", title_style))
     elements.append(Spacer(1, 20*mm))
@@ -712,52 +737,43 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     elements.append(interior_insulation_table)
     elements.append(Spacer(1, 5*mm))
 
-    # Openings (Corporate Structure)
-    openings_table_data = [
-        [Paragraph('<b>Windows / Παράθυρα</b>', corporate_table_header_style), Paragraph(f"{project_details['window_count']} units ({project_details['window_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])],
-        [Paragraph('<b>Sliding Glass Doors / Συρόμενες Γυάλινες Πόρτες</b>', corporate_table_header_style), Paragraph(f"{project_details['sliding_door_count']} units ({project_details['sliding_door_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])],
-        [Paragraph('<b>WC Windows / Παράθυρα WC</b>', corporate_table_header_style), Paragraph(f"{project_details['wc_window_count']} units ({project_details['wc_window_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])],
-        [Paragraph('<b>WC Sliding Doors / Συρόμενες Πόρτες WC</b>', corporate_table_header_style), Paragraph(f"{project_details['wc_sliding_door_count']} units ({project_details['wc_sliding_door_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])],
-        [Paragraph('<b>Doors / Πόρτες</b>', corporate_table_header_style), Paragraph(f"{project_details['door_count']} units ({project_details['door_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])],
-    ]
-    openings_table = Table(openings_table_data, colWidths=[60*mm, 110*mm])
-    openings_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
-    elements.append(openings_table)
-    elements.append(Spacer(1, 5*mm))
-
-    # Kitchen remains on the current page if it's the last item before PageBreak
-    kitchen_table_data = [
-        [Paragraph('<b>Kitchen / Κουζίνα</b>', corporate_table_header_style), Paragraph(project_details['kitchen_type_display_en_gr'], styles['NormalBilingual'])],
-    ]
-    if project_details['kitchen']:
-        kitchen_table_data.append([Paragraph('<b>Kitchen Materials / Υλικά Κουζίνας</b>', corporate_table_header_style), Paragraph(KITCHEN_MATERIALS_EN, styles['NormalBilingual'])])
-    
-    kitchen_table = Table(kitchen_table_data, colWidths=[60*mm, 110*mm])
-    kitchen_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
-    elements.append(kitchen_table)
-    elements.append(Spacer(1, 5*mm))
-
-    # New Page for the rest of the Technical Specifications (Duş/WC, Electrical, Plumbing, Extra Additions)
+    # New Page for the rest of the Technical Specifications (Kitchen, Shower/WC, Electrical, Plumbing, Windows/Doors, Extra Additions)
     elements.append(PageBreak())
     elements.append(Paragraph("TECHNICAL SPECIFICATIONS (CONTINUED) / ΤΕΧΝΙΚΑ ΧΑΡΑΚΤΗΡΙΣΤΙΚΑ (ΣΥΝΕΧΕΙΑ)", styles['Heading']))
     
     other_features_table_data = []
+
+    # Kitchen
+    other_features_table_data.append([Paragraph('<b>Kitchen / Κουζίνα</b>', corporate_table_header_style), Paragraph(project_details['kitchen_type_display_en_gr'], styles['NormalBilingual'])])
+    if project_details['kitchen']:
+        other_features_table_data.append([Paragraph('<b>Kitchen Materials / Υλικά Κουζίνας</b>', corporate_table_header_style), Paragraph(KITCHEN_MATERIALS_EN, styles['NormalBilingual'])])
     
+    # Shower/WC
     other_features_table_data.append([Paragraph('<b>Shower/WC / Ντους/WC</b>', corporate_table_header_style), Paragraph(get_yes_no_empty_en_gr(project_details['shower']), styles['NormalBilingual'])])
     if project_details['shower']:
         other_features_table_data.append([Paragraph('<b>Shower/WC Materials / Υλικά Ντους/WC</b>', corporate_table_header_style), Paragraph(SHOWER_WC_MATERIALS_EN, styles['NormalBilingual'])])
 
+    # Electrical
     if project_details['electrical']:
         other_features_table_data.append([Paragraph('<b>Electrical / Ηλεκτρολογικά</b>', corporate_table_header_style), Paragraph(ELECTRICAL_MATERIALS_EN.strip(), styles['NormalBilingual'])])
     else:
         other_features_table_data.append([Paragraph('<b>Electrical / Ηλεκτρολογικά</b>', corporate_table_header_style), Paragraph('', styles['NormalBilingual'])])
 
+    # Plumbing
     if project_details['plumbing']:
         other_features_table_data.append([Paragraph('<b>Plumbing / Υδραυλικά</b>', corporate_table_header_style), Paragraph(PLUMBING_MATERIALS_EN.strip(), styles['NormalBilingual'])])
     else:
         other_features_table_data.append([Paragraph('<b>Plumbing / Υδραυλικά</b>', corporate_table_header_style), Paragraph('', styles['NormalBilingual'])])
 
-    # Ekstra Genel İlaveler (koşullu olarak ayrı tabloya)
+    # Openings
+    other_features_table_data.append([Paragraph('<b>Windows / Παράθυρα</b>', corporate_table_header_style), Paragraph(f"{project_details['window_count']} units ({project_details['window_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])])
+    other_features_table_data.append([Paragraph('<b>Sliding Glass Doors / Συρόμενες Γυάλινες Πόρτες</b>', corporate_table_header_style), Paragraph(f"{project_details['sliding_door_count']} units ({project_details['sliding_door_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])])
+    other_features_table_data.append([Paragraph('<b>WC Windows / Παράθυρα WC</b>', corporate_table_header_style), Paragraph(f"{project_details['wc_window_count']} units ({project_details['wc_window_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])])
+    other_features_table_data.append([Paragraph('<b>WC Sliding Doors / Συρόμενες Πόρτες WC</b>', corporate_table_header_style), Paragraph(f"{project_details['wc_sliding_door_count']} units ({project_details['wc_sliding_door_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])])
+    other_features_table_data.append([Paragraph('<b>Doors / Πόρτες</b>', corporate_table_header_style), Paragraph(f"{project_details['door_count']} units ({project_details['door_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])])
+
+
+    # Ekstra Genel İlaveler
     extra_general_additions_list_en_gr = []
     if project_details['heating']:
         extra_general_additions_list_en_gr.append(f"Floor Heating: {get_yes_no_empty_en_gr(project_details['heating'])}")
@@ -768,7 +784,6 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     
     if extra_general_additions_list_en_gr:
         other_features_table_data.append([Paragraph('<b>Extra General Additions / Έξτρα Γενικές Προσθήκες</b>', corporate_table_header_style), Paragraph("<br/>".join(extra_general_additions_list_en_gr), styles['NormalBilingual'])])
-
 
     other_features_table = Table(other_features_table_data, colWidths=[60*mm, 110*mm])
     other_features_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
@@ -937,7 +952,17 @@ def create_customer_proposal_pdf_tr(house_price, solar_price, total_price, proje
 
     elements = []
     # --- Cover Page ---
-    elements.append(Spacer(1, 40*mm))
+    elements.append(Spacer(1, 10*mm)) # Space for logo
+    # Logo for first page (top center)
+    try:
+        logo_width_cover = 50 * mm
+        logo_height_cover = 25 * mm # Maintain aspect ratio roughly
+        elements.append(Image(LOGO_URL, width=logo_width_cover, height=logo_height_cover, hAlign='CENTER'))
+    except Exception as e:
+        # st.warning(f"Logo yüklenemedi: {e}")
+        pass
+    elements.append(Spacer(1, 10*mm))
+
     elements.append(Paragraph("PREFABRİK EV TEKLİFİ", title_style))
     elements.append(Spacer(1, 20*mm))
     elements.append(Paragraph(f"Müşteri: {customer_info['name']}", subtitle_style))
@@ -1033,50 +1058,41 @@ def create_customer_proposal_pdf_tr(house_price, solar_price, total_price, proje
     elements.append(interior_insulation_table_tr)
     elements.append(Spacer(1, 5*mm))
 
-    # Doğramalar (Openings) (Corporate Structure - Turkish)
-    openings_table_data_tr = [
-        [Paragraph('<b>Pencereler</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['window_count']} adet ({project_details['window_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])],
-        [Paragraph('<b>Sürme Cam Kapılar</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['sliding_door_count']} adet ({project_details['sliding_door_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])],
-        [Paragraph('<b>WC Pencereler</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['wc_window_count']} adet ({project_details['wc_window_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])],
-        [Paragraph('<b>WC Sürme Kapılar</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['wc_sliding_door_count']} adet ({project_details['wc_sliding_door_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])],
-        [Paragraph('<b>Kapılar</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['door_count']} adet ({project_details['door_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])],
-    ]
-    openings_table_tr = Table(openings_table_data_tr, colWidths=[60*mm, 110*mm])
-    openings_table_tr.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
-    elements.append(openings_table_tr)
-    elements.append(Spacer(1, 5*mm))
-
-    # Kitchen (remains on current page)
-    kitchen_table_data_tr = [
-        [Paragraph('<b>Mutfak</b>', corporate_table_header_style_tr), Paragraph(project_details['kitchen_type_display_tr'], styles['NormalTR'])],
-    ]
-    if project_details['kitchen']:
-        kitchen_table_data_tr.append([Paragraph('<b>Mutfak Malzemeleri</b>', corporate_table_header_style_tr), Paragraph(KITCHEN_MATERIALS_TR, styles['NormalTR'])])
-    
-    kitchen_table_tr = Table(kitchen_table_data_tr, colWidths=[60*mm, 110*mm])
-    kitchen_table_tr.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
-    elements.append(kitchen_table_tr)
-    elements.append(Spacer(1, 5*mm))
-
-    # New Page for the rest of the Technical Specifications (Duş/WC, Electrical, Plumbing, Extra Additions)
+    # New Page for the rest of the Technical Specifications (Kitchen, Shower/WC, Electrical, Plumbing, Windows/Doors, Extra Additions)
     elements.append(PageBreak())
     elements.append(Paragraph("TEKNİK ÖZELLİKLER (DEVAMI)", styles['Heading']))
 
     other_features_table_data_tr = []
+
+    # Kitchen
+    other_features_table_data_tr.append([Paragraph('<b>Mutfak</b>', corporate_table_header_style_tr), Paragraph(project_details['kitchen_type_display_tr'], styles['NormalTR'])])
+    if project_details['kitchen']:
+        other_features_table_data_tr.append([Paragraph('<b>Mutfak Malzemeleri</b>', corporate_table_header_style_tr), Paragraph(KITCHEN_MATERIALS_TR, styles['NormalTR'])])
     
+    # Shower/WC
     other_features_table_data_tr.append([Paragraph('<b>Duş/WC</b>', corporate_table_header_style_tr), Paragraph(get_var_yok_empty_tr(project_details['shower']), styles['NormalTR'])])
     if project_details['shower']:
         other_features_table_data_tr.append([Paragraph('<b>Duş/WC Malzemeleri</b>', corporate_table_header_style_tr), Paragraph(SHOWER_WC_MATERIALS_TR, styles['NormalTR'])])
 
+    # Electrical
     if project_details['electrical']:
         other_features_table_data_tr.append([Paragraph('<b>Elektrik Tesisatı</b>', corporate_table_header_style_tr), Paragraph(ELECTRICAL_MATERIALS_TR.strip(), styles['NormalTR'])])
     else:
         other_features_table_data_tr.append([Paragraph('<b>Elektrik Tesisatı</b>', corporate_table_header_style_tr), Paragraph('', styles['NormalTR'])])
 
+    # Plumbing
     if project_details['plumbing']:
         other_features_table_data_tr.append([Paragraph('<b>Sıhhi Tesisat</b>', corporate_table_header_style_tr), Paragraph(PLUMBING_MATERIALS_TR.strip(), styles['NormalTR'])])
     else:
         other_features_table_data_tr.append([Paragraph('<b>Sıhhi Tesisat</b>', corporate_table_header_style_tr), Paragraph('', styles['NormalTR'])])
+
+    # Openings
+    other_features_table_data_tr.append([Paragraph('<b>Pencereler</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['window_count']} adet ({project_details['window_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])])
+    other_features_table_data_tr.append([Paragraph('<b>Sürme Cam Kapılar</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['sliding_door_count']} adet ({project_details['sliding_door_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])])
+    other_features_table_data_tr.append([Paragraph('<b>WC Pencereler</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['wc_window_count']} adet ({project_details['wc_window_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])])
+    other_features_table_data_tr.append([Paragraph('<b>WC Sürme Kapılar</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['wc_sliding_door_count']} adet ({project_details['wc_sliding_door_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])])
+    other_features_table_data_tr.append([Paragraph('<b>Kapılar</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['door_count']} adet ({project_details['door_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])])
+
 
     extra_general_additions_list_tr = []
     if project_details['heating']:
@@ -1934,7 +1950,7 @@ def run_streamlit_app():
         wc_window_size_val = st.text_input("WC Pencere Boyutu:", value="60x50 cm", key="wc_window_size_input")
     with col_wc_win3:
         pass
-
+    
     col_wc_slid1, col_wc_slid2, col_wc_slid3 = st.columns(3)
     with col_wc_slid1:
         wc_sliding_door_input_val = st.number_input("WC Sürme Kapı Adedi:", value=0, min_value=0, key="wc_sliding_door_count_input")
