@@ -26,10 +26,10 @@ try:
     pdfmetrics.registerFont(TTFont("FreeSans", "./fonts/FreeSans.ttf"))
     pdfmetrics.registerFont(TTFont("FreeSans-Bold", "./fonts/FreeSansBold.ttf"))
     pdfmetrics.registerFontFamily('FreeSans',
-                                  normal='FreeSans',
-                                  bold='FreeSans-Bold',
-                                  italic='FreeSans',
-                                  boldItalic='FreeSans-Bold')
+                                    normal='FreeSans',
+                                    bold='FreeSans-Bold',
+                                    italic='FreeSans',
+                                    boldItalic='FreeSans-Bold')
     MAIN_FONT = "FreeSans"
 except Exception as e:
     st.warning(f"UYARI: FreeSans fontları yüklenemedi. Lütfen 'FreeSans.ttf' ve 'FreeSansBold.ttf' dosyalarının uygulama dizininizdeki './fonts/' klasöründe olduğundan emin olun. Helvetica kullanılacaktır. Hata: {e}")
@@ -444,9 +444,9 @@ def _create_solar_appendix_elements_tr(solar_kw, solar_price, heading_style, nor
         ["Güneş Panelleri", f"{solar_kw} kW Yüksek Verimli Monokristal Panel"],
         ["Inverter (Çevirici)", "Hibrit Inverter (Şebeke Bağlantı Özellikli)"],
         ["Bataryalar", "Lityum-İyon Batarya Depolama Sistemi (opsiyonel, ayrı fiyatlandırılır)"],
-        ["Mounting System", "Çatı kurulumu için sertifikalı montaj yapısı"],
-        ["Cabling & Connectors", "Tüm gerekli DC/AC kablolar, MC4 konnektörler ve güvenlik şalterleri"],
-        ["Installation & Commissioning", "Tam profesyonel kurulum ve sistemin devreye alınması"],
+        ["Montaj Sistemi", "Çatı kurulumu için sertifikalı montaj yapısı"],
+        ["Kablolama & Bağlantılar", "Tüm gerekli DC/AC kablolar, MC4 konnektörler ve güvenlik şalterleri"],
+        ["Kurulum & Devreye Alma", "Tam profesyonel kurulum ve sistemin devreye alınması"],
     ]
     solar_materials_p = [[Paragraph(cell, normal_tr_style) for cell in row] for row in solar_materials]
     solar_table = Table(solar_materials_p, colWidths=[60*mm, 110*mm])
@@ -599,7 +599,13 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
         name='ColoredTableHeader', parent=styles['Normal'], fontSize=8, fontName=f"{MAIN_FONT}-Bold",
         textColor=colors.white, alignment=TA_LEFT
     )
-
+    
+    # Yeni stil: Kurumsal Tablo Başlığı
+    corporate_table_header_style = ParagraphStyle(
+        name='CorporateTableHeader', parent=styles['Normal'], fontSize=9, fontName=f"{MAIN_FONT}-Bold",
+        textColor=colors.HexColor("#3182ce"), alignment=TA_LEFT, spaceAfter=4
+    )
+    
     elements = []
 
     # --- Cover Page ---
@@ -614,6 +620,15 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     elements.append(Paragraph(f"Date / Ημερομηνία: {datetime.now().strftime('%d/%m/%Y')}", subtitle_style))
     elements.append(PageBreak())
 
+    # --- Corporate Structure for Proposal ---
+    elements.append(Paragraph("PROJECT OVERVIEW / ΕΠΙΣΚΟΠΗΣΗ ΕΡΓΟΥ", styles['Heading']))
+    elements.append(Paragraph(f"Room Configuration / Διαμόρφωση Δωματίων: <b>{project_details['room_configuration']}</b>", styles['NormalBilingual']))
+    elements.append(Paragraph(f"Dimensions / Διαστάσεις: <b>{project_details['width']}m x {project_details['length']}m x {project_details['height']}m</b>", styles['NormalBilingual']))
+    elements.append(Paragraph(f"Total Area / Συνολική Επιφάνεια: <b>{project_details['area']:.2f} m²</b>", styles['NormalBilingual']))
+    elements.append(Paragraph(f"Structure Type / Τύπος Κατασκευής: <b>{project_details['structure_type']}</b>", styles['NormalBilingual']))
+    elements.append(Spacer(1, 8*mm))
+
+
     # --- Customer & Project Information Section (Tablolar halinde düzenlendi) ---
     elements.append(Paragraph("CUSTOMER & PROJECT INFORMATION / ΠΛΗΡΟΦΟΡΙΕΣ ΠΕΛΑΤΗ & ΕΡΓΟΥ", styles['Heading']))
     customer_info_table_data = [
@@ -622,112 +637,137 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
         [Paragraph("<b>Address / Διεύθυνση:</b>", styles['NormalBilingual']), Paragraph(f"{customer_info['address'] or ''}", styles['NormalBilingual'])],
         [Paragraph("<b>Phone / Τηλέφωνο:</b>", styles['NormalBilingual']), Paragraph(f"{customer_info['phone'] or ''}", styles['NormalBilingual'])],
         [Paragraph("<b>ID/Passport No / Αρ. Ταυτότητας/Διαβατηρίου:</b>", styles['NormalBilingual']), Paragraph(f"{customer_info['id_no'] or ''}", styles['NormalBilingual'])],
+        [Paragraph("<b>Room Configuration / Διαμόρφωση Δωματίων:</b>", styles['NormalBilingual']), Paragraph(f"{project_details['room_configuration']}", styles['NormalBilingual'])],
+        [Paragraph("<b>Dimensions / Διαστάσεις:</b>", styles['NormalBilingual']), Paragraph(f"{project_details['width']}m x {project_details['length']}m x {project_details['height']}m", styles['NormalBilingual'])],
+        [Paragraph("<b>Total Area / Συνολική Επιφάνεια:</b>", styles['NormalBilingual']), Paragraph(f"{project_details['area']:.2f} m²", styles['NormalBilingual'])],
+        [Paragraph("<b>Structure Type / Τύπος Κατασκευής:</b>", styles['NormalBilingual']), Paragraph(f"{project_details['structure_type']}", styles['NormalBilingual'])],
+
     ]
     customer_info_table = Table(customer_info_table_data, colWidths=[65*mm, 105*mm])
     customer_info_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
     elements.append(customer_info_table)
     elements.append(Spacer(1, 8*mm))
 
-    # --- Technical Specifications Section (Tablolar halinde düzenlendi) ---
+    # --- Technical Specifications Section (Tablolar halinde düzenlendi - Corporate Structure) ---
     elements.append(Paragraph("TECHNICAL SPECIFICATIONS / ΤΕΧΝΙΚΑ ΧΑΡΑΚΤΗΡΙΣΤΙΚΑ", styles['Heading']))
     
-    def get_yes_no(value):
+    def get_yes_no_display_en_gr(value):
         return 'Yes / Ναι' if value else 'No / Όχι'
     
-    def get_yes_no_empty(value):
+    def get_yes_no_empty_en_gr(value):
         return 'Yes / Ναι' if value else ''
 
-    # Yapı ve Malzemeler (Construction Materials)
+    # Building Structure and Materials
     building_structure_table_data = []
-    building_structure_details_en_gr = ""
+    
+    building_structure_table_data.append([Paragraph('<b>Construction Type / Τύπος Κατασκευής</b>', corporate_table_header_style), Paragraph(project_details['structure_type'], styles['NormalBilingual'])])
     if project_details['structure_type'] == 'Light Steel':
-        building_structure_details_en_gr = LIGHT_STEEL_BUILDING_STRUCTURE_EN_GR
-        building_structure_table_data.append([Paragraph('<b>Construction Type / Τύπος Κατασκευής</b>', styles['NormalBilingual']), Paragraph('Light Steel', styles['NormalBilingual'])])
-        building_structure_table_data.append([Paragraph('<b>Steel Structure Details / Λεπτομέρειες Χαλύβδινης Κατασκευής</b>', styles['NormalBilingual']), Paragraph(LIGHT_STEEL_BUILDING_STRUCTURE_EN_GR, styles['NormalBilingual'])])
-        if project_details['plasterboard_interior'] or project_details['plasterboard_all']:
-            building_structure_table_data.append([Paragraph('<b>Interior Walls / Εσωτερικοί Τοίχοι</b>', styles['NormalBilingual']), Paragraph(INTERIOR_WALLS_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
-        building_structure_table_data.append([Paragraph('<b>Roof / Στέγη</b>', styles['NormalBilingual']), Paragraph(ROOF_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
-        building_structure_table_data.append([Paragraph('<b>Exterior Walls / Εξωτερικοί Τοίχοι</b>', styles['NormalBilingual']), Paragraph(EXTERIOR_WALLS_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
+        building_structure_table_data.append([Paragraph('<b>Steel Structure Details / Λεπτομέρειες Χαλύβδινης Κατασκευής</b>', corporate_table_header_style), Paragraph(LIGHT_STEEL_BUILDING_STRUCTURE_EN_GR, styles['NormalBilingual'])])
     else: # Heavy Steel
-        building_structure_details_en_gr = HEAVY_STEEL_BUILDING_STRUCTURE_EN_GR
-        building_structure_table_data.append([Paragraph('<b>Construction Type / Τύπος Κατασκευής</b>', styles['NormalBilingual']), Paragraph('Heavy Steel', styles['NormalBilingual'])])
-        building_structure_table_data.append([Paragraph('<b>Steel Structure Details / Λεπτομέρειες Χαλύβδινης Κατασκευής</b>', styles['NormalBilingual']), Paragraph(HEAVY_STEEL_BUILDING_STRUCTURE_EN_GR, styles['NormalBilingual'])])
-        building_structure_table_data.append([Paragraph('<b>Roof / Στέγη</b>', styles['NormalBilingual']), Paragraph(ROOF_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
+        building_structure_table_data.append([Paragraph('<b>Steel Structure Details / Λεπτομέρειες Χαλύβδινης Κατασκευής</b>', corporate_table_header_style), Paragraph(HEAVY_STEEL_BUILDING_STRUCTURE_EN_GR, styles['NormalBilingual'])])
+    
+    building_structure_table_data.append([Paragraph('<b>Roof / Στέγη</b>', corporate_table_header_style), Paragraph(ROOF_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
+    building_structure_table_data.append([Paragraph('<b>Exterior Walls / Εξωτερικοί Τοίχοι</b>', corporate_table_header_style), Paragraph(EXTERIOR_WALLS_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
+    
+    if project_details['plasterboard_interior'] or project_details['plasterboard_all']:
+        building_structure_table_data.append([Paragraph('<b>Interior Walls / Εσωτερικοί Τοίχοι</b>', corporate_table_header_style), Paragraph(INTERIOR_WALLS_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
     
     building_materials_table = Table(building_structure_table_data, colWidths=[60*mm, 110*mm])
     building_materials_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
     elements.append(building_materials_table)
     elements.append(Spacer(1, 5*mm))
 
-    # İç Mekan ve Yalıtım (Interior and Insulation)
-    interior_insulation_table_data = [
-        [Paragraph('<b>Interior / Εσωτερικό</b>', styles['NormalBilingual']), Paragraph(f"Floor Covering: {project_details['floor_covering_type']}.", styles['NormalBilingual'])],
-        [Paragraph('<b>Insulation / Μόνωση</b>', styles['NormalBilingual']), Paragraph(f"Floor Insulation: {get_yes_no_empty(project_details['insulation_floor'])}. Wall Insulation: {get_yes_no_empty(project_details['insulation_wall'])}.", styles['NormalBilingual'])],
-    ]
-    # Zemin yalıtım malzemeleri listesi doğrudan yalıtım bölümünün altına (TEKLİFTE BURAYA TAŞINDI)
+    # Interior and Insulation (Corporate Structure)
+    interior_insulation_table_data = []
+    
+    # Interior Covering
+    interior_insulation_table_data.append([Paragraph('<b>Interior Covering / Εσωτερική Επένδυση</b>', corporate_table_header_style), Paragraph(f"Floor Covering: {project_details['floor_covering_type']}.", styles['NormalBilingual'])])
+
+    # Insulation
+    insulation_details_text = f"Floor Insulation: {get_yes_no_empty_en_gr(project_details['insulation_floor'])}. Wall Insulation: {get_yes_no_empty_en_gr(project_details['insulation_wall'])}."
+    interior_insulation_table_data.append([Paragraph('<b>Insulation / Μόνωση</b>', corporate_table_header_style), Paragraph(insulation_details_text, styles['NormalBilingual'])])
+
+    # Floor Insulation Materials (moved here directly under insulation for proposal)
     if project_details['insulation_floor']:
-        floor_insulation_details_display_en_gr = [Paragraph(FLOOR_INSULATION_MATERIALS_EN_GR, styles['NormalBilingual'])]
+        floor_insulation_materials_list = [Paragraph(FLOOR_INSULATION_MATERIALS_EN_GR, styles['NormalBilingual'])]
         if project_details['skirting_length_val'] > 0:
-            floor_insulation_details_display_en_gr.append(Paragraph(f"• Skirting / Σοβατεπί ({project_details['skirting_length_val']:.2f} m)", styles['NormalBilingual']))
+            floor_insulation_materials_list.append(Paragraph(f"• Skirting / Σοβατεπί ({project_details['skirting_length_val']:.2f} m)", styles['NormalBilingual']))
         if project_details['laminate_flooring_m2_val'] > 0:
-            floor_insulation_details_display_en_gr.append(Paragraph(f"• Laminate Flooring 12mm / Laminate Δάπεδο 12mm ({project_details['laminate_flooring_m2_val']:.2f} m²)", styles['NormalBilingual']))
+            floor_insulation_materials_list.append(Paragraph(f"• Laminate Flooring 12mm / Laminate Δάπεδο 12mm ({project_details['laminate_flooring_m2_val']:.2f} m²)", styles['NormalBilingual']))
         if project_details['under_parquet_mat_m2_val'] > 0:
-            floor_insulation_details_display_en_gr.append(Paragraph(f"• Under Parquet Mat 4mm / Υπόστρωμα Πακέτου 4mm ({project_details['under_parquet_mat_m2_val']:.2f} m²)", styles['NormalBilingual']))
+            floor_insulation_materials_list.append(Paragraph(f"• Under Parquet Mat 4mm / Υπόστρωμα Πακέτου 4mm ({project_details['under_parquet_mat_m2_val']:.2f} m²)", styles['NormalBilingual']))
         if project_details['osb2_18mm_count_val'] > 0:
-            floor_insulation_details_display_en_gr.append(Paragraph(f"• OSB2 18mm or Concrete Panel 18mm / OSB2 18mm ή Πάνελ Σκυροδέματος 18mm ({project_details['osb2_18mm_count_val']} pcs)", styles['NormalBilingual']))
+            floor_insulation_materials_list.append(Paragraph(f"• OSB2 18mm or Concrete Panel 18mm / OSB2 18mm ή Πάνελ Σκυροδέματος 18mm ({project_details['osb2_18mm_count_val']} pcs)", styles['NormalBilingual']))
         if project_details['galvanized_sheet_m2_val'] > 0:
-            floor_insulation_details_display_en_gr.append(Paragraph(f"• 5mm Galvanized Sheet / 5mm Γαλβανισμένο Φύλλο ({project_details['galvanized_sheet_m2_val']:.2f} m²)", styles['NormalBilingual']))
-        floor_insulation_details_display_en_gr.append(Paragraph("<i>Note: Insulation thickness can be increased. Ceramic coating can be preferred. (without concrete, special floor system)</i>", styles['NormalBilingual']))
+            floor_insulation_materials_list.append(Paragraph(f"• 5mm Galvanized Sheet / 5mm Γαλβανισμένο Φύλλο ({project_details['galvanized_sheet_m2_val']:.2f} m²)", styles['NormalBilingual']))
+        floor_insulation_materials_list.append(Paragraph("<i>Note: Insulation thickness can be increased. Ceramic coating can be preferred. (without concrete, special floor system)</i>", styles['NormalBilingual']))
         
-        # Ekstra satır olarak tabloya ekleniyor
-        interior_insulation_table_data.append([Paragraph('<b>Floor Insulation Materials / Υλικά Μόνωσης Δαπέδου:</b>', styles['NormalBilingual']), Paragraph("<br/>".join([p.text for p in floor_insulation_details_display_en_gr]), styles['NormalBilingual'])])
+        # Combine all floor insulation details into one cell
+        floor_insulation_combined_text = "<br/>".join([p.text for p in floor_insulation_materials_list])
+        interior_insulation_table_data.append([Paragraph('<b>Floor Insulation Materials / Υλικά Μόνωσης Δαπέδου:</b>', corporate_table_header_style), Paragraph(floor_insulation_combined_text, styles['NormalBilingual'])])
+
 
     interior_insulation_table = Table(interior_insulation_table_data, colWidths=[60*mm, 110*mm])
     interior_insulation_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
     elements.append(interior_insulation_table)
     elements.append(Spacer(1, 5*mm))
 
-    # Doğramalar (Openings)
+    # Openings (Corporate Structure)
     openings_table_data = [
-        [Paragraph('<b>Openings / Ανοίγματα</b>', styles['NormalBilingual']), Paragraph(f"Windows: {project_details['window_count']} ({project_details['window_size']} - {project_details['window_door_color']})<br/>Doors: {project_details['door_count']} ({project_details['door_size']} - {project_details['window_door_color']})<br/>Sliding Doors: {project_details['sliding_door_count']} ({project_details['sliding_door_size']} - {project_details['window_door_color']})<br/>WC Windows: {project_details['wc_window_count']} ({project_details['wc_window_size']} - {project_details['window_door_color']}){'' if project_details['wc_sliding_door_count'] == 0 else '<br/>WC Sliding Doors: ' + str(project_details['wc_sliding_door_count']) + ' (' + project_details['wc_sliding_door_size'] + ' - ' + project_details['window_door_color'] + ')'}", styles['NormalBilingual'])],
+        [Paragraph('<b>Windows / Παράθυρα</b>', corporate_table_header_style), Paragraph(f"{project_details['window_count']} units ({project_details['window_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])],
+        [Paragraph('<b>Sliding Glass Doors / Συρόμενες Γυάλινες Πόρτες</b>', corporate_table_header_style), Paragraph(f"{project_details['sliding_door_count']} units ({project_details['sliding_door_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])],
+        [Paragraph('<b>WC Windows / Παράθυρα WC</b>', corporate_table_header_style), Paragraph(f"{project_details['wc_window_count']} units ({project_details['wc_window_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])],
+        [Paragraph('<b>WC Sliding Doors / Συρόμενες Πόρτες WC</b>', corporate_table_header_style), Paragraph(f"{project_details['wc_sliding_door_count']} units ({project_details['wc_sliding_door_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])],
+        [Paragraph('<b>Doors / Πόρτες</b>', corporate_table_header_style), Paragraph(f"{project_details['door_count']} units ({project_details['door_size']}) - Color: {project_details['window_door_color']}", styles['NormalBilingual'])],
     ]
     openings_table = Table(openings_table_data, colWidths=[60*mm, 110*mm])
     openings_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
     elements.append(openings_table)
     elements.append(Spacer(1, 5*mm))
 
-    # Diğer Özellikler (Kitchen, Shower/WC, Electrical, Plumbing, Extra Additions)
-    other_features_table_data = [
-        [Paragraph('<b>Kitchen / Κουζίνα</b>', styles['NormalBilingual']), Paragraph(project_details['kitchen_type_display_en_gr'], styles['NormalBilingual'])],
+    # Kitchen remains on the current page if it's the last item before PageBreak
+    kitchen_table_data = [
+        [Paragraph('<b>Kitchen / Κουζίνα</b>', corporate_table_header_style), Paragraph(project_details['kitchen_type_display_en_gr'], styles['NormalBilingual'])],
     ]
     if project_details['kitchen']:
-        other_features_table_data.append([Paragraph('<b>Kitchen Materials / Υλικά Κουζίνας</b>', styles['NormalBilingual']), Paragraph(KITCHEN_MATERIALS_EN, styles['NormalBilingual'])])
+        kitchen_table_data.append([Paragraph('<b>Kitchen Materials / Υλικά Κουζίνας</b>', corporate_table_header_style), Paragraph(KITCHEN_MATERIALS_EN, styles['NormalBilingual'])])
+    
+    kitchen_table = Table(kitchen_table_data, colWidths=[60*mm, 110*mm])
+    kitchen_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
+    elements.append(kitchen_table)
+    elements.append(Spacer(1, 5*mm))
 
-    other_features_table_data.append([Paragraph('<b>Shower/WC / Ντους/WC</b>', styles['NormalBilingual']), Paragraph(get_yes_no_empty(project_details['shower']), styles['NormalBilingual'])])
+    # New Page for the rest of the Technical Specifications (Duş/WC, Electrical, Plumbing, Extra Additions)
+    elements.append(PageBreak())
+    elements.append(Paragraph("TECHNICAL SPECIFICATIONS (CONTINUED) / ΤΕΧΝΙΚΑ ΧΑΡΑΚΤΗΡΙΣΤΙΚΑ (ΣΥΝΕΧΕΙΑ)", styles['Heading']))
+    
+    other_features_table_data = []
+    
+    other_features_table_data.append([Paragraph('<b>Shower/WC / Ντους/WC</b>', corporate_table_header_style), Paragraph(get_yes_no_empty_en_gr(project_details['shower']), styles['NormalBilingual'])])
     if project_details['shower']:
-        other_features_table_data.append([Paragraph('<b>Shower/WC Materials / Υλικά Ντους/WC</b>', styles['NormalBilingual']), Paragraph(SHOWER_WC_MATERIALS_EN, styles['NormalBilingual'])])
+        other_features_table_data.append([Paragraph('<b>Shower/WC Materials / Υλικά Ντους/WC</b>', corporate_table_header_style), Paragraph(SHOWER_WC_MATERIALS_EN, styles['NormalBilingual'])])
 
     if project_details['electrical']:
-        other_features_table_data.append([Paragraph('<b>Electrical / Ηλεκτρολογικά</b>', styles['NormalBilingual']), Paragraph(ELECTRICAL_MATERIALS_EN.strip(), styles['NormalBilingual'])])
+        other_features_table_data.append([Paragraph('<b>Electrical / Ηλεκτρολογικά</b>', corporate_table_header_style), Paragraph(ELECTRICAL_MATERIALS_EN.strip(), styles['NormalBilingual'])])
     else:
-        other_features_table_data.append([Paragraph('<b>Electrical / Ηλεκτρολογικά</b>', styles['NormalBilingual']), Paragraph('', styles['NormalBilingual'])])
+        other_features_table_data.append([Paragraph('<b>Electrical / Ηλεκτρολογικά</b>', corporate_table_header_style), Paragraph('', styles['NormalBilingual'])])
 
     if project_details['plumbing']:
-        other_features_table_data.append([Paragraph('<b>Plumbing / Υδραυλικά</b>', styles['NormalBilingual']), Paragraph(PLUMBING_MATERIALS_EN.strip(), styles['NormalBilingual'])])
+        other_features_table_data.append([Paragraph('<b>Plumbing / Υδραυλικά</b>', corporate_table_header_style), Paragraph(PLUMBING_MATERIALS_EN.strip(), styles['NormalBilingual'])])
     else:
-        other_features_table_data.append([Paragraph('<b>Plumbing / Υδραυλικά</b>', styles['NormalBilingual']), Paragraph('', styles['NormalBilingual'])])
+        other_features_table_data.append([Paragraph('<b>Plumbing / Υδραυλικά</b>', corporate_table_header_style), Paragraph('', styles['NormalBilingual'])])
 
     # Ekstra Genel İlaveler (koşullu olarak ayrı tabloya)
     extra_general_additions_list_en_gr = []
     if project_details['heating']:
-        extra_general_additions_list_en_gr.append(f"Floor Heating: {get_yes_no_empty(project_details['heating'])}")
+        extra_general_additions_list_en_gr.append(f"Floor Heating: {get_yes_no_empty_en_gr(project_details['heating'])}")
     if project_details['solar']:
-        extra_general_additions_list_en_gr.append(f"Solar System: {get_yes_no_empty(project_details['solar'])} ({project_details['solar_kw']} kW)" if project_details['solar'] else '')
+        extra_general_additions_list_en_gr.append(f"Solar System: {get_yes_no_empty_en_gr(project_details['solar'])} ({project_details['solar_kw']} kW)" if project_details['solar'] else '')
     if project_details['wheeled_trailer_included']:
-        extra_general_additions_list_en_gr.append(f"Wheeled Trailer: {get_yes_no_empty(project_details['wheeled_trailer_included'])} ({format_currency(project_details['wheeled_trailer_price'])})" if project_details['wheeled_trailer_included'] else '')
+        extra_general_additions_list_en_gr.append(f"Wheeled Trailer: {get_yes_no_empty_en_gr(project_details['wheeled_trailer_included'])} ({format_currency(project_details['wheeled_trailer_price'])})" if project_details['wheeled_trailer_included'] else '')
     
     if extra_general_additions_list_en_gr:
-        other_features_table_data.append([Paragraph('<b>Extra General Additions / Έξτρα Γενικές Προσθήκες</b>', styles['NormalBilingual']), Paragraph("<br/>".join(extra_general_additions_list_en_gr), styles['NormalBilingual'])])
+        other_features_table_data.append([Paragraph('<b>Extra General Additions / Έξτρα Γενικές Προσθήκες</b>', corporate_table_header_style), Paragraph("<br/>".join(extra_general_additions_list_en_gr), styles['NormalBilingual'])])
 
 
     other_features_table = Table(other_features_table_data, colWidths=[60*mm, 110*mm])
@@ -735,7 +775,7 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     elements.append(other_features_table)
     elements.append(Spacer(1, 5*mm))
 
-    # Tahmini Teslimat
+    # Estimated Delivery (retained on the current page for context)
     elements.append(Paragraph('<b>Estimated Delivery / Εκτιμώμενη Παράδοση</b>', styles['NormalBilingual']))
     elements.append(Paragraph(f"Approx. {project_details['delivery_duration_business_days']} business days / Περίπου {project_details['delivery_duration_business_days']} εργάσιμες ημέρες", styles['NormalBilingual']))
     elements.append(Spacer(1, 8*mm))
@@ -786,7 +826,7 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     final_page_elements.append(Paragraph("Our prefabricated living spaces have a 3-year warranty. Hot and cold balance is provided with polyurethane panels, fire class is A quality and energy consumption is A+++. / Οι προκατασκευασμένοι χώροι διαβίωσης μας έχουν 3ετή εγγύηση. Η ισορροπία ζεστού και κρύου επιτυγχάνεται με πάνελ πολυουρεθάνης, η κλάση πυρός είναι Α ποιότητας και η κατανάλωση ενέργειας είναι Α+++.", styles['NormalBilingual']))
     
     final_page_elements.append(Spacer(1, 8*mm))
-    final_page_elements.append(Paragraph(f"<b>Estimated Delivery / Εκτιμώμενη Παράδοση:</b> Approx. {project_details['delivery_duration_business_days']} business days / Περίy{project_details['delivery_duration_business_days']} εργάσιμες ημέρες", payment_heading_style))
+    final_page_elements.append(Paragraph(f"<b>Estimated Delivery / Εκτιμώμενη Παράδοση:</b> Approx. {project_details['delivery_duration_business_days']} business days / Περίπου {project_details['delivery_duration_business_days']} εργάσιμες ημέρες", payment_heading_style))
     final_page_elements.append(Spacer(1, 8*mm))
 
 
@@ -798,18 +838,18 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
 
     payment_data = [
         [Paragraph("1. Down Payment / Προκαταβολή (40%)", payment_heading_style), Paragraph(format_currency(down_payment), payment_heading_style)],
-        [Paragraph("   - Due upon contract signing / Με την υπογραφή της σύμβασης.", styles['NormalBilingual']), ""],
+        [Paragraph("   - Due upon contract signing / Με την υπογραφή της σύμβασης.", styles['NormalBilingual']), ""],
         [Paragraph("2. 1st Installment / 1η Δόση", payment_heading_style), Paragraph(format_currency(installment_amount), payment_heading_style)],
-        [Paragraph("   - Due upon completion of structure / Με την ολοκλήρωση της κατασκευής.", styles['NormalBilingual']), ""],
+        [Paragraph("   - Due upon completion of structure / Με την ολοκλήρωση της κατασκευής.", styles['NormalBilingual']), ""],
         [Paragraph("3. 2nd Installment / 2η Δόση", payment_heading_style), Paragraph(format_currency(installment_amount), payment_heading_style)],
-        [Paragraph("   - Due upon completion of interior works / Με την ολοκλήρωση των εσωτερικών εργασιών.", styles['NormalBilingual']), ""],
+        [Paragraph("   - Due upon completion of interior works / Με την ολοκλήρωση των εσωτερικών εργασιών.", styles['NormalBilingual']), ""],
         [Paragraph("4. Final Payment / Τελική Εξόφληση", payment_heading_style), Paragraph(format_currency(installment_amount), payment_heading_style)],
-        [Paragraph("   - Due upon final delivery / Με την τελική παράδοση.", styles['NormalBilingual']), ""],
+        [Paragraph("   - Due upon final delivery / Με την τελική παράδοση.", styles['NormalBilingual']), ""],
     ]
 
     if solar_price > 0:
         payment_data.append([Paragraph("Solar System / Ηλιακό Σύστημα", payment_heading_style), Paragraph(format_currency(solar_price), payment_heading_style)])
-        payment_data.append([Paragraph("   - Due upon contract signing / Με την υπογραφή της σύμβασης.", styles['NormalBilingual']), ""])
+        payment_data.append([Paragraph("   - Due upon contract signing / Με την υπογραφή της σύμβασης.", styles['NormalBilingual']), ""])
 
     payment_table = Table(payment_data, colWidths=[120*mm, 50*mm])
     payment_table.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'LEFT'), ('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
@@ -888,6 +928,12 @@ def create_customer_proposal_pdf_tr(house_price, solar_price, total_price, proje
         name='ColoredTableHeaderTR', parent=styles['Normal'], fontSize=8, fontName=f"{MAIN_FONT}-Bold",
         textColor=colors.white, alignment=TA_LEFT
     )
+    
+    # Yeni stil: Kurumsal Tablo Başlığı (Türkçe)
+    corporate_table_header_style_tr = ParagraphStyle(
+        name='CorporateTableHeaderTR', parent=styles['Normal'], fontSize=9, fontName=f"{MAIN_FONT}-Bold",
+        textColor=colors.HexColor("#3182ce"), alignment=TA_LEFT, spaceAfter=4
+    )
 
     elements = []
     # --- Cover Page ---
@@ -901,6 +947,15 @@ def create_customer_proposal_pdf_tr(house_price, solar_price, total_price, proje
     elements.append(Paragraph(f"Tarih: {datetime.now().strftime('%d/%m/%Y')}", subtitle_style))
     elements.append(PageBreak())
 
+    # --- Corporate Structure for Proposal (Turkish) ---
+    elements.append(Paragraph("PROJE GENEL BİLGİLERİ", styles['Heading']))
+    elements.append(Paragraph(f"Oda Konfigürasyonu: <b>{project_details['room_configuration']}</b>", styles['NormalTR']))
+    elements.append(Paragraph(f"Boyutlar: <b>{project_details['width']}m x {project_details['length']}m x {project_details['height']}m</b>", styles['NormalTR']))
+    elements.append(Paragraph(f"Toplam Alan: <b>{project_details['area']:.2f} m²</b>", styles['NormalTR']))
+    elements.append(Paragraph(f"Yapı Tipi: <b>{project_details['structure_type']}</b>", styles['NormalTR']))
+    elements.append(Spacer(1, 8*mm))
+
+
     # --- Customer & Project Information Section ---
     elements.append(Paragraph("MÜŞTERİ VE PROJE BİLGİLERİ", styles['Heading']))
     customer_project_table_data = [
@@ -909,107 +964,130 @@ def create_customer_proposal_pdf_tr(house_price, solar_price, total_price, proje
         [Paragraph("<b>Adres:</b>", styles['NormalTR']), Paragraph(f"{customer_info['address'] or ''}", styles['NormalTR'])],
         [Paragraph("<b>Telefon:</b>", styles['NormalTR']), Paragraph(f"{customer_info['phone'] or ''}", styles['NormalTR'])],
         [Paragraph("<b>Kimlik/Pasaport No:</b>", styles['NormalTR']), Paragraph(f"{customer_info['id_no'] or ''}", styles['NormalTR'])],
+        [Paragraph("<b>Oda Konfigürasyonu:</b>", styles['NormalTR']), Paragraph(f"{project_details['room_configuration']}", styles['NormalTR'])],
+        [Paragraph("<b>Boyutlar:</b>", styles['NormalTR']), Paragraph(f"{project_details['width']}m x {project_details['length']}m x {project_details['height']}m", styles['NormalTR'])],
+        [Paragraph("<b>Toplam Alan:</b>", styles['NormalTR']), Paragraph(f"{project_details['area']:.2f} m²", styles['NormalTR'])],
+        [Paragraph("<b>Yapı Tipi:</b>", styles['NormalTR']), Paragraph(f"{project_details['structure_type']}", styles['NormalTR'])],
     ]
     customer_project_table = Table(customer_project_table_data, colWidths=[65*mm, 105*mm])
     customer_project_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
     elements.append(customer_project_table)
     elements.append(Spacer(1, 8*mm))
 
-    # --- Technical Specifications Section ---
+    # --- Technical Specifications Section (Corporate Structure - Turkish) ---
     elements.append(Paragraph("TEKNİK ÖZELLİKLER", styles['Heading']))
 
-    def get_var_yok(value):
-        return 'Var' if value else 'Yok'
-    
-    def get_var_yok_empty(value):
+    def get_var_yok_empty_tr(value):
         return 'Var' if value else ''
 
     # Building structure details (dynamic based on type)
     building_structure_table_data_tr = []
+    
+    building_structure_table_data_tr.append([Paragraph('<b>Yapı Tipi</b>', corporate_table_header_style_tr), Paragraph(project_details['structure_type'], styles['NormalTR'])])
     if project_details['structure_type'] == 'Light Steel':
-        building_structure_table_data_tr.append([Paragraph('<b>Yapı Tipi</b>', styles['NormalTR']), Paragraph('Hafif Çelik', styles['NormalTR'])])
-        building_structure_table_data_tr.append([Paragraph('<b>Çelik Yapı Detayları</b>', styles['NormalTR']), Paragraph(LIGHT_STEEL_BUILDING_STRUCTURE_TR, styles['NormalTR'])])
-        if project_details['plasterboard_interior'] or project_details['plasterboard_all']:
-            building_structure_table_data_tr.append([Paragraph('<b>İç Duvarlar</b>', styles['NormalTR']), Paragraph(INTERIOR_WALLS_DESCRIPTION_TR, styles['NormalTR'])])
-        building_structure_table_data_tr.append([Paragraph('<b>Çatı</b>', styles['NormalTR']), Paragraph(ROOF_DESCRIPTION_TR, styles['NormalTR'])])
-        building_structure_table_data_tr.append([Paragraph('<b>Dış Duvarlar</b>', styles['NormalTR']), Paragraph(EXTERIOR_WALLS_DESCRIPTION_TR, styles['NormalTR'])])
+        building_structure_table_data_tr.append([Paragraph('<b>Çelik Yapı Detayları</b>', corporate_table_header_style_tr), Paragraph(LIGHT_STEEL_BUILDING_STRUCTURE_TR, styles['NormalTR'])])
     else: # Heavy Steel
-        building_structure_table_data_tr.append([Paragraph('<b>Yapı Tipi</b>', styles['NormalTR']), Paragraph('Ağır Çelik', styles['NormalTR'])])
-        building_structure_table_data_tr.append([Paragraph('<b>Çelik Yapı Detayları</b>', styles['NormalTR']), Paragraph(HEAVY_STEEL_BUILDING_STRUCTURE_TR, styles['NormalTR'])])
-        building_structure_table_data_tr.append([Paragraph('<b>Çatı</b>', styles['NormalTR']), Paragraph(ROOF_DESCRIPTION_TR, styles['NormalTR'])])
+        building_structure_table_data_tr.append([Paragraph('<b>Çelik Yapı Detayları</b>', corporate_table_header_style_tr), Paragraph(HEAVY_STEEL_BUILDING_STRUCTURE_TR, styles['NormalTR'])])
+    
+    building_structure_table_data_tr.append([Paragraph('<b>Çatı</b>', corporate_table_header_style_tr), Paragraph(ROOF_DESCRIPTION_TR, styles['NormalTR'])])
+    building_structure_table_data_tr.append([Paragraph('<b>Dış Duvarlar</b>', corporate_table_header_style_tr), Paragraph(EXTERIOR_WALLS_DESCRIPTION_TR, styles['NormalTR'])])
+    
+    if project_details['plasterboard_interior'] or project_details['plasterboard_all']:
+        building_structure_table_data_tr.append([Paragraph('<b>İç Duvarlar</b>', corporate_table_header_style_tr), Paragraph(INTERIOR_WALLS_DESCRIPTION_TR, styles['NormalTR'])])
     
     building_materials_table_tr = Table(building_structure_table_data_tr, colWidths=[60*mm, 110*mm])
     building_materials_table_tr.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
     elements.append(building_materials_table_tr)
     elements.append(Spacer(1, 5*mm))
 
-    # İç Mekan ve Yalıtım (Interior and Insulation)
-    interior_insulation_table_data_tr = [
-        [Paragraph('<b>İç Mekan</b>', styles['NormalTR']), Paragraph(f"Zemin Kaplama: {project_details['floor_covering_type']}.", styles['NormalTR'])],
-        [Paragraph('<b>Yalıtım</b>', styles['NormalTR']), Paragraph(f"Zemin Yalıtımı: {get_var_yok_empty(project_details['insulation_floor'])}. Duvar Yalıtımı: {get_var_yok_empty(project_details['insulation_wall'])}.", styles['NormalTR'])],
-    ]
+    # İç Mekan ve Yalıtım (Interior and Insulation) (Corporate Structure - Turkish)
+    interior_insulation_table_data_tr = []
+    
+    # Interior Covering
+    interior_insulation_table_data_tr.append([Paragraph('<b>İç Mekan Kaplama</b>', corporate_table_header_style_tr), Paragraph(f"Zemin Kaplama: {project_details['floor_covering_type']}.", styles['NormalTR'])])
+
+    # Insulation
+    insulation_details_text_tr = f"Zemin Yalıtımı: {get_var_yok_empty_tr(project_details['insulation_floor'])}. Duvar Yalıtımı: {get_var_yok_empty_tr(project_details['insulation_wall'])}."
+    interior_insulation_table_data_tr.append([Paragraph('<b>Yalıtım</b>', corporate_table_header_style_tr), Paragraph(insulation_details_text_tr, styles['NormalTR'])])
+    
     # Zemin yalıtım malzemeleri listesi doğrudan yalıtım bölümünün altına
     if project_details['insulation_floor']:
-        floor_insulation_details_display_tr = [Paragraph(FLOOR_INSULATION_MATERIALS_TR, styles['NormalTR'])]
+        floor_insulation_materials_list_tr = [Paragraph(FLOOR_INSULATION_MATERIALS_TR, styles['NormalTR'])]
         if project_details['skirting_length_val'] > 0:
-            floor_insulation_details_display_tr.append(Paragraph(f"• Süpürgelik ({project_details['skirting_length_val']:.2f} m)", styles['NormalTR']))
+            floor_insulation_materials_list_tr.append(Paragraph(f"• Süpürgelik ({project_details['skirting_length_val']:.2f} m)", styles['NormalTR']))
         if project_details['laminate_flooring_m2_val'] > 0:
-            floor_insulation_details_display_tr.append(Paragraph(f"• Laminat Parke 12mm ({project_details['laminate_flooring_m2_val']:.2f} m²)", styles['NormalTR']))
+            floor_insulation_materials_list_tr.append(Paragraph(f"• Laminat Parke 12mm ({project_details['laminate_flooring_m2_val']:.2f} m²)", styles['NormalTR']))
         if project_details['under_parquet_mat_m2_val'] > 0:
-            floor_insulation_details_display_tr.append(Paragraph(f"• Parke Altı Şilte 4mm ({project_details['under_parquet_mat_m2_val']:.2f} m²)", styles['NormalTR']))
+            floor_insulation_materials_list_tr.append(Paragraph(f"• Parke Altı Şilte 4mm ({project_details['under_parquet_mat_m2_val']:.2f} m²)", styles['NormalTR']))
         if project_details['osb2_18mm_count_val'] > 0:
-            floor_insulation_details_display_tr.append(Paragraph(f"• OSB2 18mm veya Beton Panel 18mm ({project_details['osb2_18mm_count_val']} adet)", styles['NormalTR']))
+            floor_insulation_materials_list_tr.append(Paragraph(f"• OSB2 18mm veya Beton Panel 18mm ({project_details['osb2_18mm_count_val']} adet)", styles['NormalTR']))
         if project_details['galvanized_sheet_m2_val'] > 0:
-            floor_insulation_details_display_tr.append(Paragraph(f"• 5mm Galvanizli Sac ({project_details['galvanized_sheet_m2_val']:.2f} m²)", styles['NormalTR']))
-        floor_insulation_details_display_tr.append(Paragraph("<i>Not: Zemin Yalıtımı Kalınlığı artırılabilir. Seramik kaplama tercih edilebilir. (Beton hariç özel zemin sistemi)</i>", styles['NormalTR']))
+            floor_insulation_materials_list_tr.append(Paragraph(f"• 5mm Galvanizli Sac ({project_details['galvanized_sheet_m2_val']:.2f} m²)", styles['NormalTR']))
+        floor_insulation_materials_list_tr.append(Paragraph("<i>Not: Zemin Yalıtımı Kalınlığı artırılabilir. Seramik kaplama tercih edilebilir. (Beton hariç özel zemin sistemi)</i>", styles['NormalTR']))
         
-        interior_insulation_table_data_tr.append([Paragraph('<b>Zemin Yalıtım Malzemeleri:</b>', styles['NormalTR']), Paragraph("<br/>".join([p.text for p in floor_insulation_details_display_tr]), styles['NormalTR'])])
+        floor_insulation_combined_text_tr = "<br/>".join([p.text for p in floor_insulation_materials_list_tr])
+        interior_insulation_table_data_tr.append([Paragraph('<b>Zemin Yalıtım Malzemeleri:</b>', corporate_table_header_style_tr), Paragraph(floor_insulation_combined_text_tr, styles['NormalTR'])])
 
     interior_insulation_table_tr = Table(interior_insulation_table_data_tr, colWidths=[60*mm, 110*mm])
     interior_insulation_table_tr.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
     elements.append(interior_insulation_table_tr)
     elements.append(Spacer(1, 5*mm))
 
-    # Doğramalar (Openings)
+    # Doğramalar (Openings) (Corporate Structure - Turkish)
     openings_table_data_tr = [
-        [Paragraph('<b>Doğramalar</b>', styles['NormalTR']), Paragraph(f"Pencereler: {project_details['window_count']} adet ({project_details['window_size']} - {project_details['window_door_color']})<br/>Kapılar: {project_details['door_count']} adet ({project_details['door_size']} - {project_details['window_door_color']})<br/>Sürme Kapılar: {project_details['sliding_door_count']} adet ({project_details['sliding_door_size']} - {project_details['window_door_color']})<br/>WC Pencereler: {project_details['wc_window_count']} adet ({project_details['wc_window_size']} - {project_details['window_door_color']}){'' if project_details['wc_sliding_door_count'] == 0 else '<br/>WC Sürme Kapılar: ' + str(project_details['wc_sliding_door_count']) + ' (' + project_details['wc_sliding_door_size'] + ' - ' + project_details['window_door_color'] + ')'}", styles['NormalTR'])],
+        [Paragraph('<b>Pencereler</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['window_count']} adet ({project_details['window_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])],
+        [Paragraph('<b>Sürme Cam Kapılar</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['sliding_door_count']} adet ({project_details['sliding_door_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])],
+        [Paragraph('<b>WC Pencereler</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['wc_window_count']} adet ({project_details['wc_window_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])],
+        [Paragraph('<b>WC Sürme Kapılar</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['wc_sliding_door_count']} adet ({project_details['wc_sliding_door_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])],
+        [Paragraph('<b>Kapılar</b>', corporate_table_header_style_tr), Paragraph(f"{project_details['door_count']} adet ({project_details['door_size']}) - Renk: {project_details['window_door_color']}", styles['NormalTR'])],
     ]
     openings_table_tr = Table(openings_table_data_tr, colWidths=[60*mm, 110*mm])
     openings_table_tr.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
     elements.append(openings_table_tr)
     elements.append(Spacer(1, 5*mm))
 
-    # Diğer Özellikler (Kitchen, Shower/WC, Electrical, Plumbing, Extra Additions)
-    other_features_table_data_tr = [
-        [Paragraph('<b>Mutfak</b>', styles['NormalTR']), Paragraph(project_details['kitchen_type_display_tr'], styles['NormalTR'])],
+    # Kitchen (remains on current page)
+    kitchen_table_data_tr = [
+        [Paragraph('<b>Mutfak</b>', corporate_table_header_style_tr), Paragraph(project_details['kitchen_type_display_tr'], styles['NormalTR'])],
     ]
     if project_details['kitchen']:
-        other_features_table_data_tr.append([Paragraph('<b>Mutfak Malzemeleri</b>', styles['NormalTR']), Paragraph(KITCHEN_MATERIALS_TR, styles['NormalTR'])])
+        kitchen_table_data_tr.append([Paragraph('<b>Mutfak Malzemeleri</b>', corporate_table_header_style_tr), Paragraph(KITCHEN_MATERIALS_TR, styles['NormalTR'])])
+    
+    kitchen_table_tr = Table(kitchen_table_data_tr, colWidths=[60*mm, 110*mm])
+    kitchen_table_tr.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
+    elements.append(kitchen_table_tr)
+    elements.append(Spacer(1, 5*mm))
 
-    other_features_table_data_tr.append([Paragraph('<b>Duş/WC</b>', styles['NormalTR']), Paragraph(get_var_yok_empty(project_details['shower']), styles['NormalTR'])])
+    # New Page for the rest of the Technical Specifications (Duş/WC, Electrical, Plumbing, Extra Additions)
+    elements.append(PageBreak())
+    elements.append(Paragraph("TEKNİK ÖZELLİKLER (DEVAMI)", styles['Heading']))
+
+    other_features_table_data_tr = []
+    
+    other_features_table_data_tr.append([Paragraph('<b>Duş/WC</b>', corporate_table_header_style_tr), Paragraph(get_var_yok_empty_tr(project_details['shower']), styles['NormalTR'])])
     if project_details['shower']:
-        other_features_table_data_tr.append([Paragraph('<b>Duş/WC Malzemeleri</b>', styles['NormalTR']), Paragraph(SHOWER_WC_MATERIALS_TR, styles['NormalTR'])])
+        other_features_table_data_tr.append([Paragraph('<b>Duş/WC Malzemeleri</b>', corporate_table_header_style_tr), Paragraph(SHOWER_WC_MATERIALS_TR, styles['NormalTR'])])
 
     if project_details['electrical']:
-        other_features_table_data_tr.append([Paragraph('<b>Elektrik Tesisatı</b>', styles['NormalTR']), Paragraph(ELECTRICAL_MATERIALS_TR.strip(), styles['NormalTR'])])
+        other_features_table_data_tr.append([Paragraph('<b>Elektrik Tesisatı</b>', corporate_table_header_style_tr), Paragraph(ELECTRICAL_MATERIALS_TR.strip(), styles['NormalTR'])])
     else:
-        other_features_table_data_tr.append([Paragraph('<b>Elektrik Tesisatı</b>', styles['NormalTR']), Paragraph('', styles['NormalTR'])])
+        other_features_table_data_tr.append([Paragraph('<b>Elektrik Tesisatı</b>', corporate_table_header_style_tr), Paragraph('', styles['NormalTR'])])
 
     if project_details['plumbing']:
-        other_features_table_data_tr.append([Paragraph('<b>Sıhhi Tesisat</b>', styles['NormalTR']), Paragraph(PLUMBING_MATERIALS_TR.strip(), styles['NormalTR'])])
+        other_features_table_data_tr.append([Paragraph('<b>Sıhhi Tesisat</b>', corporate_table_header_style_tr), Paragraph(PLUMBING_MATERIALS_TR.strip(), styles['NormalTR'])])
     else:
-        other_features_table_data_tr.append([Paragraph('<b>Sıhhi Tesisat</b>', styles['NormalTR']), Paragraph('', styles['NormalTR'])])
+        other_features_table_data_tr.append([Paragraph('<b>Sıhhi Tesisat</b>', corporate_table_header_style_tr), Paragraph('', styles['NormalTR'])])
 
     extra_general_additions_list_tr = []
     if project_details['heating']:
-        extra_general_additions_list_tr.append(f"Yerden Isıtma: {get_var_yok_empty(project_details['heating'])}")
+        extra_general_additions_list_tr.append(f"Yerden Isıtma: {get_var_yok_empty_tr(project_details['heating'])}")
     if project_details['solar']:
-        extra_general_additions_list_tr.append(f"Güneş Enerjisi: {get_var_yok_empty(project_details['solar'])} ({project_details['solar_kw']} kW)" if project_details['solar'] else '')
+        extra_general_additions_list_tr.append(f"Güneş Enerjisi: {get_var_yok_empty_tr(project_details['solar'])} ({project_details['solar_kw']} kW)" if project_details['solar'] else '')
     if project_details['wheeled_trailer_included']:
-        extra_general_additions_list_tr.append(f"Tekerlekli Römork: {get_var_yok_empty(project_details['wheeled_trailer_included'])} ({format_currency(project_details['wheeled_trailer_price'])})" if project_details['wheeled_trailer_included'] else '')
+        extra_general_additions_list_tr.append(f"Tekerlekli Römork: {get_var_yok_empty_tr(project_details['wheeled_trailer_included'])} ({format_currency(project_details['wheeled_trailer_price'])})" if project_details['wheeled_trailer_included'] else '')
     
     if extra_general_additions_list_tr:
-        other_features_table_data_tr.append([Paragraph('<b>Ekstra Genel İlaveler</b>', styles['NormalTR']), Paragraph("<br/>".join(extra_general_additions_list_tr), styles['NormalTR'])])
+        other_features_table_data_tr.append([Paragraph('<b>Ekstra Genel İlaveler</b>', corporate_table_header_style_tr), Paragraph("<br/>".join(extra_general_additions_list_tr), styles['NormalTR'])])
 
     other_features_table_tr = Table(other_features_table_data_tr, colWidths=[60*mm, 110*mm])
     other_features_table_tr.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
@@ -1018,7 +1096,6 @@ def create_customer_proposal_pdf_tr(house_price, solar_price, total_price, proje
 
     # Tahmini Teslimat
     elements.append(Paragraph('<b>Tahmini Teslimat</b>', styles['NormalTR']))
-    # Hata veren satır buydu, Türkçe açıklamanın sonundaki 'y' harfi kaldırıldı
     elements.append(Paragraph(f"Yaklaşık {project_details['delivery_duration_business_days']} iş günü", styles['NormalTR']))
     elements.append(Spacer(1, 8*mm))
 
@@ -1080,17 +1157,17 @@ def create_customer_proposal_pdf_tr(house_price, solar_price, total_price, proje
 
     payment_data = [
         [Paragraph("1. Peşinat (%40)", payment_heading_style), Paragraph(format_currency(down_payment), payment_heading_style)],
-        [Paragraph("   - Sözleşme anında ödenir.", styles['NormalTR']), ""],
+        [Paragraph("   - Sözleşme anında ödenir.", styles['NormalTR']), ""],
         [Paragraph("2. 1. Ara Ödeme", payment_heading_style), Paragraph(format_currency(installment_amount), payment_heading_style)],
-        [Paragraph("   - Karkas imalatı bitiminde ödenir.", styles['NormalTR']), ""],
+        [Paragraph("   - Karkas imalatı bitiminde ödenir.", styles['NormalTR']), ""],
         [Paragraph("3. 2. Ara Ödeme", payment_heading_style), Paragraph(format_currency(installment_amount), payment_heading_style)],
-        [Paragraph("   - İç imalatlar bitiminde ödenir.", styles['NormalTR']), ""],
+        [Paragraph("   - İç imalatlar bitiminde ödenir.", styles['NormalTR']), ""],
         [Paragraph("4. Son Ödeme", payment_heading_style), Paragraph(format_currency(installment_amount), payment_heading_style)],
-        [Paragraph("   - Teslimat sırasında ödenir.", styles['NormalTR']), ""],
+        [Paragraph("   - Teslimat sırasında ödenir.", styles['NormalTR']), ""],
     ]
     if solar_price > 0:
         payment_data.append([Paragraph("Güneş Enerjisi Sistemi", payment_heading_style), Paragraph(format_currency(solar_price), payment_heading_style)])
-        payment_data.append([Paragraph("   - Sözleşme anında ödenir.", styles['NormalTR']), ""])
+        payment_data.append([Paragraph("   - Sözleşme anında ödenir.", styles['NormalTR']), ""])
 
     payment_table = Table(payment_data, colWidths=[120*mm, 50*mm])
     payment_table.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'LEFT'), ('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
@@ -1111,7 +1188,7 @@ def create_customer_proposal_pdf_tr(house_price, solar_price, total_price, proje
     buffer.seek(0)
     return buffer.getvalue()
 
-def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, profile_analysis_df, project_details, customer_info):
+def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, project_details, customer_info):
     """Creates an internal cost report PDF in Turkish."""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -1183,9 +1260,15 @@ def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, pro
     elements.append(Paragraph("MALİYET DAĞILIMI", section_heading_style))
 
     # Helper to create a styled table
-    def create_cost_table(data_list, title):
+    def create_cost_table(data_list, title, start_on_new_page=False):
         if not data_list:
             return []
+        
+        table_elements = []
+        if start_on_new_page:
+            table_elements.append(PageBreak())
+            table_elements.append(Paragraph("MALİYET DAĞILIMI (DEVAM)", section_heading_style)) # Yeni sayfa başlığı
+        
         table_data = [[Paragraph(c, table_header_style) for c in ['Kalem', 'Miktar', 'Birim Fiyat (€)', 'Toplam (€)']]]
         total_section_cost = 0.0 # Tablo toplamı için
         for item in data_list:
@@ -1217,7 +1300,8 @@ def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, pro
             ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#2c5282")), # Toplam satırı için arka plan
             ('TEXTCOLOR', (0,-1), (-1,-1), colors.white),
         ]))
-        return [Paragraph(f"<b>{title}</b>", subsection_heading_style), table, Spacer(1, 5*mm)]
+        table_elements.extend([Paragraph(f"<b>{title}</b>", subsection_heading_style), table, Spacer(1, 5*mm)])
+        return table_elements
 
     # Categorize costs for detailed tables
     steel_costs = []
@@ -1281,8 +1365,9 @@ def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, pro
     if wall_plasterboard_costs:
         elements.extend(create_cost_table(wall_plasterboard_costs, "Duvarlar (Alçıpan) Detayları"))
 
+    # 'Sandviç Panel Detayları' ve sonrasını yeni sayfada göster
     if sandwich_panel_costs:
-        elements.extend(create_cost_table(sandwich_panel_costs, "Sandviç Panel Detayları"))
+        elements.extend(create_cost_table(sandwich_panel_costs, "Sandviç Panel Detayları", start_on_new_page=True))
 
     if kitchen_costs:
         elements.extend(create_cost_table(kitchen_costs, "Mutfak Detayları"))
@@ -1293,31 +1378,16 @@ def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, pro
     if electrical_costs:
         elements.extend(create_cost_table(electrical_costs, "Elektrik Tesisatı Detayları"))
 
+    # 'Sıhhi Tesisat Detayları' ve sonrasını yeni sayfada göster
     if plumbing_costs:
-        elements.extend(create_cost_table(plumbing_costs, "Sıhhi Tesisat Detayları"))
+        elements.extend(create_cost_table(plumbing_costs, "Sıhhi Tesisat Detayları", start_on_new_page=True))
 
     if door_window_costs:
         elements.extend(create_cost_table(door_window_costs, "Pencere ve Kapı Detayları"))
 
     if other_general_costs:
         elements.extend(create_cost_table(other_general_costs, "Diğer Maliyet Kalemleri"))
-        
-    # --- Steel Profile Analysis (if any) on a NEW PAGE ---
-    if not profile_analysis_df.empty and project_details['structure_type'] == 'Light Steel':
-        elements.append(PageBreak())
-        elements.append(Paragraph("ÇELİK PROFİL ANALİZİ", section_heading_style))
-        profile_data = [[Paragraph(c, table_header_style) for c in profile_analysis_df.columns]]
-        for _, row in profile_analysis_df.iterrows():
-            profile_data.append([
-                Paragraph(str(row['Profile Type']), table_cell_style),
-                Paragraph(str(row['Count']), center_table_cell_style),
-                Paragraph(format_currency(row['Unit Price (€)']), right_table_cell_style),
-                Paragraph(format_currency(row['Total (€)']), right_table_cell_style)
-            ])
-        profile_table = Table(profile_data, colWidths=[55*mm, 25*mm, 45*mm, 45*mm])
-        profile_table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,0), colors.HexColor("#3182ce")),('GRID', (0,0), (-1,-1), 0.5, colors.grey),('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor("#f7fafc"), colors.white])]))
-        elements.append(profile_table)
-
+            
     # --- Financials on a NEW PAGE ---
     elements.append(PageBreak())
     elements.append(Paragraph("FİNANSAL ÖZET", section_heading_style))
@@ -1429,10 +1499,10 @@ def create_sales_contract_pdf(customer_info, house_sales_price, solar_sales_pric
     elements.append(Paragraph("2.3. The Buyer will pay the following amounts according to the schedule:", contract_list_style))
 
     elements.append(Paragraph(f"- Main House (Total: {format_currency(house_sales_price)})", contract_list_style, bulletText=''))
-    elements.append(Paragraph(f"   - 40% Down Payment: {format_currency(down_payment)} upon contract signing.", contract_list_style, bulletText='-'))
-    elements.append(Paragraph(f"   - 1st Installment: {format_currency(installment_amount)} upon completion of structure.", contract_list_style, bulletText='-'))
-    elements.append(Paragraph(f"   - 2nd Installment: {format_currency(installment_amount)} upon completion of interior works.", contract_list_style, bulletText='-'))
-    elements.append(Paragraph(f"   - Final Payment: {format_currency(installment_amount)} upon final delivery.", contract_list_style, bulletText='-'))
+    elements.append(Paragraph(f"   - 40% Down Payment: {format_currency(down_payment)} upon contract signing.", contract_list_style, bulletText='-'))
+    elements.append(Paragraph(f"   - 1st Installment: {format_currency(installment_amount)} upon completion of structure.", contract_list_style, bulletText='-'))
+    elements.append(Paragraph(f"   - 2nd Installment: {format_currency(installment_amount)} upon completion of interior works.", contract_list_style, bulletText='-'))
+    elements.append(Paragraph(f"   - Final Payment: {format_currency(installment_amount)} upon final delivery.", contract_list_style, bulletText='-'))
 
     if solar_sales_price > 0:
         elements.append(Paragraph(f"- Solar System: {format_currency(solar_sales_price)} due upon contract signing.", contract_list_style, bulletText=''))
@@ -1574,6 +1644,8 @@ def create_sales_contract_pdf(customer_info, house_sales_price, solar_sales_pric
     # Boyutlar ve Alan (Dimensions and Area)
     dimensions_area_table_data = []
     dimensions_area_table_data.append([Paragraph("<b>Dimensions and Area:</b>", contract_subheading_style), Paragraph(f"The house has dimensions of {project_details['width']}m x {project_details['length']}m x {project_details['height']}m. It has a total area of {project_details['area']:.2f} m².", contract_normal_style)])
+    dimensions_area_table_data.append([Paragraph("<b>Room Configuration:</b>", contract_subheading_style), Paragraph(f"{project_details['room_configuration']}.", contract_normal_style)])
+    
     dimensions_area_table = Table(dimensions_area_table_data, colWidths=[40*mm, 130*mm])
     dimensions_area_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
     elements.append(dimensions_area_table)
@@ -1986,8 +2058,7 @@ def run_streamlit_app():
             roof_area = areas["roof"]
 
             costs = []
-            profile_analysis_details = []
-
+            
             # Çelik Yapı Hesaplamaları
             if structure_type_val == 'Heavy Steel':
                 total_structure_price = calculate_rounded_up_cost(floor_area * FIYATLAR["heavy_steel_m2"])
@@ -2033,7 +2104,6 @@ def run_streamlit_app():
                         if unit_price_6m_piece is None: continue
                         total_price = calculate_rounded_up_cost(piece_count * unit_price_6m_piece)
                         report_length_meters = piece_count * default_piece_length
-                        profile_analysis_details.append({'Profile Type': profile_type_key, 'Count': piece_count, 'Unit Price (€)': unit_price_6m_piece, 'Total (€)': total_price})
                         costs.append({'Item': f"Steel Profile ({profile_type_key})", 'Quantity': f"{piece_count} pieces ({report_length_meters:.1f}m)", 'Unit Price (€)': unit_price_6m_piece, 'Total (€)': total_price})
                 selected_welding_labor_price = FIYATLAR[f"welding_labor_m2_{welding_labor_option_val}"]
                 total_welding_labor_price = calculate_rounded_up_cost(floor_area * selected_welding_labor_price)
@@ -2199,14 +2269,14 @@ def run_streamlit_app():
                 trailer_price = calculate_rounded_up_cost(wheeled_trailer_price_input_val)
                 costs.append({'Item': 'Tekerlekli Römork', 'Quantity': 1, 'Unit Price (€)': trailer_price, 'Total (€)': trailer_price})
 
-            house_subtotal = sum([item['Total (€)'] for item in costs if 'Solar' not in item['Item']])
+            house_subtotal = sum([item['Total (€)'] for item in costs if 'Güneş Enerjisi Sistemi' not in item['Item']])
             waste_cost = calculate_rounded_up_cost(house_subtotal * FIRE_RATE)
             total_house_cost = calculate_rounded_up_cost(house_subtotal + waste_cost)
             profit = calculate_rounded_up_cost(total_house_cost * profit_rate_val)
             house_vat_base = calculate_rounded_up_cost(total_house_cost + profit)
             house_vat = calculate_rounded_up_cost(house_vat_base * VAT_RATE)
             house_sales_price = calculate_rounded_up_cost(house_vat_base + house_vat)
-            total_sales_price = calculate_rounded_up_cost(house_sales_price + solar_price_val)
+            total_sales_price = calculate_rounded_up_cost(house_sales_price + solar_cost)
             
             delivery_duration_business_days = math.ceil((floor_area / 27.0) * 35)
             if delivery_duration_business_days < 10: delivery_duration_business_days = 10
@@ -2264,7 +2334,7 @@ def run_streamlit_app():
                 'wc_ceramic': wc_ceramic_input_val, 'wc_ceramic_area': wc_ceramic_area_val,
                 'electrical': electrical_installation_input_val, 'plumbing': plumbing_installation_input_val,
                 'transportation': transportation_input_val, 'heating': heating_option_val,
-                'solar': solar_option_val, 'solar_kw': solar_capacity_val, 'solar_price': solar_price_val,
+                'solar': solar_option_val, 'solar_kw': solar_capacity_val, 'solar_price': solar_cost,
                 'vat_rate': VAT_RATE, 'profit_rate': profit_rate_val,
                 'room_configuration': room_config_val,
                 'wheeled_trailer_included': wheeled_trailer_option_val,
@@ -2285,9 +2355,10 @@ def run_streamlit_app():
             st.subheader("Maliyet Detayları (Dahili Rapor)")
             st.dataframe(pd.DataFrame(costs).style.format({'Unit Price (€)': "€{:,.2f}", 'Total (€)': "€{:,.2f}"}), use_container_width=True)
 
-            if not pd.DataFrame(profile_analysis_details).empty and project_details_result['structure_type'] == 'Light Steel':
-                st.subheader("Çelik Profil Detaylı Analizi (Dahili Rapor)")
-                st.dataframe(pd.DataFrame(profile_analysis_details).style.format({'Unit Price (€)': "€{:,.2f}", 'Total (€)': "€{:,.2f}"}), use_container_width=True)
+            # Çelik Profil Analizi kaldırıldığı için bu kısım yorum satırı yapıldı veya kaldırıldı.
+            # if not pd.DataFrame(profile_analysis_details).empty and project_details_result['structure_type'] == 'Light Steel':
+            #     st.subheader("Çelik Profil Detaylı Analizi (Dahili Rapor)")
+            #     st.dataframe(pd.DataFrame(profile_analysis_details).style.format({'Unit Price (€)': "€{:,.2f}", 'Total (€)': "€{:,.2f}"}), use_container_width=True)
 
             st.subheader("Finansal Özet (Dahili Rapor)")
             st.dataframe(pd.DataFrame(formatted_financial_summary).set_index('Item'), use_container_width=True)
@@ -2298,7 +2369,8 @@ def run_streamlit_app():
             col_pdf1, col_pdf2, col_pdf3 = st.columns(3)
 
             with col_pdf1:
-                internal_pdf_bytes = create_internal_cost_report_pdf(pd.DataFrame(costs), pd.DataFrame(formatted_financial_summary), pd.DataFrame(profile_analysis_details), project_details_result, customer_info_result)
+                # Profil analizi kaldırıldığı için sadece cost_breakdown_df ve financial_summary_df gönderiliyor.
+                internal_pdf_bytes = create_internal_cost_report_pdf(pd.DataFrame(costs), pd.DataFrame(formatted_financial_summary), project_details_result, customer_info_result)
                 st.download_button(
                     label="Dahili Maliyet Raporu İndir (Türkçe)",
                     data=internal_pdf_bytes,
@@ -2308,7 +2380,7 @@ def run_streamlit_app():
 
             with col_pdf2:
                 if pdf_language_selector_val == 'en_gr':
-                    customer_pdf_bytes = create_customer_proposal_pdf(house_sales_price, solar_price_val, total_sales_price, project_details_result, customer_notes_val, customer_info_result)
+                    customer_pdf_bytes = create_customer_proposal_pdf(house_sales_price, solar_cost, total_sales_price, project_details_result, customer_notes_val, customer_info_result)
                     st.download_button(
                         label="Müşteri Teklifi İndir (İngilizce-Yunanca)",
                         data=customer_pdf_bytes,
@@ -2316,7 +2388,7 @@ def run_streamlit_app():
                         mime="application/pdf"
                     )
                 else: # Turkish version
-                    customer_pdf_bytes = create_customer_proposal_pdf_tr(house_sales_price, solar_price_val, total_sales_price, project_details_result, customer_notes_val, customer_info_result)
+                    customer_pdf_bytes = create_customer_proposal_pdf_tr(house_sales_price, solar_cost, total_sales_price, project_details_result, customer_notes_val, customer_info_result)
                     st.download_button(
                         label="Müşteri Teklifi İndir (Türkçe)",
                         data=customer_pdf_bytes,
@@ -2324,7 +2396,7 @@ def run_streamlit_app():
                         mime="application/pdf"
                     )
             with col_pdf3:
-                sales_contract_pdf_bytes = create_sales_contract_pdf(customer_info_result, house_sales_price, solar_price_val, project_details_result, COMPANY_INFO)
+                sales_contract_pdf_bytes = create_sales_contract_pdf(customer_info_result, house_sales_price, solar_cost, project_details_result, COMPANY_INFO)
                 st.download_button(
                     label="Satış Sözleşmesi İndir",
                     data=sales_contract_pdf_bytes,
