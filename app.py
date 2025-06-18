@@ -1706,7 +1706,8 @@ def run_streamlit_app():
         
         # Oda Konfigürasyonu seçenekleri güncellendi (sadece 'Shower/WC + Kitchen' eklendi)
         room_config_options = [
-            'Empty Model', 
+            'Empty Model',
+            'Shower / WC + Kitchen'
             '1 Room', 
             '1 Room + Shower / WC', 
             '1 Room + Kitchen',
