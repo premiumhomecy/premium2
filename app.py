@@ -35,7 +35,7 @@ except Exception as e:
     MAIN_FONT = "Helvetica"
 
 # === COMPANY INFORMATION ===
-LOGO_URL = "https://drive.google.com/uc?export=download&id=1RD27Gas035iUqe4Ucl3phFwxZPWZPWzn"
+LOGO_URL = "https://drive.google.com/file/d/1yOH-k1Gm2Gos-ITSiZ1t3yMdq-_3MqZK"
 LINKTREE_URL = "https://linktr.ee/premiumplushome?utm_source=linktree_admin_share"
 COMPANY_INFO = {
     "name": "PREMIUM HOME LTD",
