@@ -62,12 +62,11 @@ FIYATLAR = {
     "steel_profile_40x60x2": 14.00,
     "steel_profile_120x60x5mm": 60.00, # YENİ ÇELİK PROFİL EKLENDİ
     "steel_profile_50x50x2": 11.00,
-    # "steel_profile_30x30x2": 8.50, # 30X30 PROFİL ÇIKARILDI
     "steel_profile_hea160": 155.00,
     # Material Prices (Base)
     "heavy_steel_m2": 400.00,
-    "sandwich_panel_m2": 22.00,
-    "plywood_piece": 44.44, # 44.44€ korunuyor
+    "sandwich_panel_m2": 22.00, # PM'deki genel Sandviç Panel m2 fiyatı (60mm EPS için kullanılabilir)
+    "plywood_piece": 44.44,
     "aluminum_window_piece": 250.00,
     "sliding_glass_door_piece": 300.00,
     "wc_window_piece": 120.00,
@@ -79,18 +78,18 @@ FIYATLAR = {
     "connection_element_m2": 1.50,
     "transportation": 350.00,
     "floor_heating_m2": 50.00,
-    "wc_ceramic_m2_material": 20.00,
-    "wc_ceramic_m2_labor": 20.00,
+    "wc_ceramic_m2_material": 20.00, # Porselen fayans için de kullanılacak malzeme m2 fiyatı
+    "wc_ceramic_m2_labor": 20.00,   # Porselen fayans için de kullanılacak işçilik m2 fiyatı
     "electrical_per_m2": 25.00,
     "plumbing_per_m2": 25.00,
-    "osb_piece": 12.00,
-    "insulation_per_m2": 5.00,
+    "osb_piece": 12.00, # OSB (plywood türü duvar ürünü) için parça fiyatı
+    "insulation_per_m2": 5.00, # Genel Yalıtım
     # Labor Prices
     "welding_labor_m2_standard": 160.00,
     "welding_labor_m2_trmontaj": 20.00,
     "panel_assembly_labor_m2": 5.00,
-    "plasterboard_material_m2": 20.00,
-    "plasterboard_labor_m2_avg": 80.00,
+    "plasterboard_material_m2": 20.00, # Alçıpan malzeme m2 fiyatı (genel)
+    "plasterboard_labor_m2_avg": 80.00, # Alçıpan işçilik m2 fiyatı
     "plywood_flooring_labor_m2": 11.11,
     "door_window_assembly_labor_piece": 10.00,
     "solar_per_kw": 1250.00,
@@ -102,39 +101,53 @@ FIYATLAR = {
     "osb2_18mm_piece_price": 30.00,
     "galvanized_sheet_m2_price": 10.00,
 
-    # Aether Living Paket Bilgileri ve Fiyatları (Artık otomatik hesaplanacak, sabit fiyatlar kaldırıldı)
-    # Yeni Ürün Malzeme Fiyatları ve Bilgi Kalemleri (UI'dan kaldırılanların price'ları silindi, sadece info'lar kaldı)
+    # Aether Living/Yeni Ürün ve Diğer Yeni Eklenen Kalemler Fiyatları
     "smart_home_systems_total_price": 350.00,
-    "white_goods_total_price": 800.00,
+    "white_goods_total_price": 800.00, # Buzdolabı ve TV dahil
     "sofa_total_price": 400.00,
     "security_camera_total_price": 650.00,
-    "exterior_cladding_price_per_m2": 150.00,
+    "exterior_cladding_price_per_m2": 150.00, # Knauf Aquapanel, vb. için m2 fiyatı
     "bedroom_set_total_price": 800.00,
-    "terrace_laminated_wood_flooring_price_per_m2": 40.00,
-    "porcelain_tile_m2_price": 25.00,
+    "terrace_laminated_wood_flooring_price_per_m2": 40.00, # İşlenmiş çam zemin kaplama (teras) m2 fiyatı
     "concrete_panel_floor_price_per_m2": 50.00,
     "premium_faucets_total_price": 200.00,
     "designer_furniture_total_price": 1000.00,
     "italian_sofa_total_price": 800.00,
-    "inclass_chairs_unit_price": 150.00,
-    "exterior_wood_cladding_m2_price": 150.00,
-    "brushed_grey_granite_countertops_price_m2_avg": 425.00, # Granit Tezgahlar ortalama m2 fiyatı
+    "inclass_chairs_unit_price": 150.00, # Tane başı fiyat
+    "exterior_wood_cladding_m2_price": 150.00, # Dış cephe ahşap kaplama (işçilik ve malzeme dahil m2)
+    "brushed_grey_granite_countertops_price_m2_avg": 425.00, # Ortalama m2 fiyatı
+    "100mm_eps_isothermal_panel_unit_price": 27.00, # 100mm Yüksek Performanslı Panellerin m2 fiyatı (tahmini)
 
-    # Malzeme Bilgi Kalemleri (Fiyatı olmayanlar veya başka bir yerde fiyatı olanlar - Sadece listeleme ve PDF'e detay ekleme için)
+    # Alçıpan modellerinin birim fiyatları (Ivan'dan gelen)
+    "gypsum_board_white_per_unit_price": 8.65, # Ivan, adet. İç cephe için kullanılacak
+    "gypsum_board_green_per_unit_price": 11.95, # Ivan, adet. Banyo/WC için kullanılacak
+    "gypsum_board_blue_per_unit_price": 18.98, # Ivan, adet. Dış cephe için kullanılacak
+
+    # Ivan'dan gelen diğer malzeme birim fiyatları
+    "otb_stone_wool_price": 19.80, # Taşyünü fiyatı (birim/adet), OTB
+    "glass_wool_5cm_packet_price": 19.68, # Cam yünü 5cm paket fiyatı (10m2 için)
+    "tn25_screws_price_per_unit": 5.58, # TN25 vidalar fiyatı (adet)
+    "cdx400_material_price": 3.40, # CDX400 malzeme fiyatı (adet)
+    "ud_material_price": 1.59, # UD malzeme fiyatı (adet)
+    "oc50_material_price": 2.20, # OC50 malzeme fiyatı (adet)
+    "oc100_material_price": 3.96, # OC100 malzeme fiyatı (adet)
+    "ch100_material_price": 3.55, # ch100 malzeme fiyatı (adet)
+
+    # Material Info Keys (for reporting purposes) - "Ivan" ön eki kaldırıldı.
     "steel_skeleton_info": "Metal iskelet",
     "protective_automotive_paint_info": "Koruyucu otomotiv boyası",
-    "insulation_info": "Yalıtım",
+    "insulation_info_general": "Genel Yalıtım (EPS/Poliüretan)",
     "60mm_eps_sandwich_panel_info": "Standart 60mm EPS veya Poliüretan Sandviç Paneller (beyaz)",
     "100mm_eps_isothermal_panel_info": "Yüksek performanslı 100mm EPS veya Poliüretan İzotermik Paneller",
-    "galvanized_sheet_info": "Galvanizli sac",
+    "galvanized_sheet_info": "Galvanizli sac (Zemin)",
     "plywood_osb_floor_panel_info": "Kontraplak/OSB zemin paneli",
     "12mm_laminate_parquet_info": "12mm Laminat Parke",
     "induction_hob_info": "İndüksiyonlu ocak",
     "electric_faucet_info": "Elektrikli batarya",
     "kitchen_sink_info": "Mutfak evyesi",
-    "fully_functional_bathroom_fixtures_info": "Tam fonksiyonel banyo armatürleri (klozet, lavabo, elektrikli duş)",
+    "fully_functional_bathroom_fixtures_info": "Tam fonksiyonel banyo armatürleri",
     "kitchen_bathroom_countertops_info": "Mutfak ve banyo tezgahları",
-    "treated_pine_floor_info": "İşlenmiş Çam Zemin Kaplaması (Teras Seçeneği ile)",
+    "treated_pine_floor_info": "İşlenmiş Çam Zemin Kaplaması (Teras)",
     "porcelain_tiles_info": "Porselen Fayans",
     "concrete_panel_floor_info": "Beton Panel Zemin",
     "premium_faucets_info": "Premium Bataryalar (örn. Hansgrohe)",
@@ -143,9 +156,26 @@ FIYATLAR = {
     "italian_sofa_info": "İtalyan Kanepe",
     "inclass_chairs_info": "Inclass Sandalyeler",
     "smart_home_systems_info": "Akıllı Ev Sistemleri",
-    "advanced_security_camera_pre_installation_info": "Gelişmiş güvenlik kamerası ön kurulumu",
+    "advanced_security_camera_pre_installation_info": "Gelişmiş Güvenlik Kamerası Ön Kurulumu",
     "exterior_wood_cladding_lambiri_info": "Dış cephe ahşap kaplama - Lambiri",
     "brushed_grey_granite_countertops_info": "Fırçalanmış Gri Kale Granit Mutfak/Banyo Tezgahları",
+    
+    "gypsum_board_white_info": "İç Alçıpan (Beyaz)",
+    "gypsum_board_green_info": "Yeşil Alçıpan (Banyo/WC)",
+    "gypsum_board_blue_info": "Mavi Alçıpan (Dış Cephe)",
+    "knauf_aquapanel_gypsum_board_info": "Knauf Aquapanel Alçıpan",
+    "eps_styrofoam_info": "EPS STYROFOAM",
+    "knauf_mineralplus_insulation_info": "Knauf MineralPlus İzolasyon (Taşyünü)", # OTB karşılığı olarak güncellendi
+    "knauf_guardex_gypsum_board_info": "Knauf Guardex Alçıpan",
+    "satin_plaster_paint_info": "Saten sıva ve boya",
+    "otb_stone_wool_info_report": "OTB (Taşyünü)", # Raporlama için Ivan'ın orijinal ismi
+    "glass_wool_5cm_packet_info_report": "Cam Yünü 5cm Paket", # Raporlama için Ivan'ın orijinal ismi
+    "tn25_screws_info_report": "TN25 Vidalar",
+    "cdx400_material_info_report": "CDX400 Malzeme",
+    "ud_material_info_report": "UD Malzeme",
+    "oc50_material_info_report": "OC50 Malzeme",
+    "oc100_material_info_report": "OC100 Malzeme",
+    "ch100_material_info_report": "ch100 Malzeme",
 
     "electrical_cable_info": "Elektrik Kabloları (3x2.5 mm², 3x1.5 mm²)",
     "electrical_conduits_info": "Kablolama için Spiral Borular ve Kanallar",
@@ -153,7 +183,7 @@ FIYATLAR = {
     "electrical_distribution_board_info": "Sigorta Kutusu (Dağıtım Panosu)",
     "electrical_circuit_breakers_info": "Sigortalar & Kaçak Akım Rölesi",
     "electrical_sockets_switches_info": "Prizler ve Anahtarlar",
-    "electrical_lighting_fixtures_info": "İç Aydınlatma Armatürleri (LED Spot / Tavan Lambası)",
+    "electrical_lighting_fixtures_info": "İç Aydınlatma Armatürleri (LED Spots / Tavan Lambası)",
     "electrical_grounding_info": "Topraklama Sistemi Bileşenleri",
 
     "plumbing_pprc_pipes_info": "Sıcak/Soğuk Su için PPRC Borular",
@@ -168,7 +198,7 @@ FIYATLAR = {
     "wc_towel_rail_info": "Havluluk",
     "wc_mirror_info": "Ayna",
     "wc_accessories_info": "Banyo Aksesuarları",
-    "wc_shower_unit_info": "Duş Ünitesi (Duş Başlığı ve Batarya)",
+    "wc_shower_unit_info": "Duş Ünitesi (Duş Başlığı ve Bataryası)",
 
     "kitchen_mdf_info": "Parlak Beyaz Renk MDF Malzeme",
     "kitchen_cabinets_info": "Özel Üretim Mutfak Dolapları (özel ölçülerde)",
@@ -182,6 +212,7 @@ MONTHLY_ACCOUNTING_EXPENSES = 180.00
 MONTHLY_OFFICE_RENT = 280.00
 ANNUAL_INCOME_TAX_RATE = 0.235
 OSB_PANEL_AREA_M2 = 1.22 * 2.44
+GYPSUM_BOARD_UNIT_AREA_M2 = 2.88 # 1.2m x 2.4m standart alçıpan levha alanı
 
 # === MATERIAL LISTS FOR PROPOSAL PDF ===
 ELECTRICAL_MATERIALS_EN = """
@@ -530,7 +561,7 @@ def _create_heating_appendix_elements_en_gr(styles):
         ["Subfloor Materials / Υλικά Υποδαπέδου", heating_materials_en_lines[5].strip() + " / " + heating_materials_gr_lines[5].strip()],
     ]
     heating_table_p = [[Paragraph(cell, normal_bilingual_style) for cell in row] for row in heating_materials]
-    heating_table = Table(heating_table_p, colWidths=[70*mm, 100*mm])
+    heating_table = Table(heating_materials_p, colWidths=[70*mm, 100*mm])
     heating_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#4a5568")),
         ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
@@ -689,8 +720,7 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     if project_details['structure_type'] == 'Light Steel':
         building_structure_table_data.append([Paragraph('<b>Construction Type / Τύπος Κατασκευής</b>', styles['NormalBilingual']), Paragraph('Light Steel', styles['NormalBilingual'])])
         building_structure_table_data.append([Paragraph('<b>Steel Structure Details / Λεπτομέρειες Χαλύβδινης Κατασκευής</b>', styles['NormalBilingual']), Paragraph(LIGHT_STEEL_BUILDING_STRUCTURE_EN_GR, styles['NormalBilingual'])])
-        # İç duvar ve dış duvar özellikleri, eğer seçildiyse Yapı Malzemeleri altına eklendi
-        if project_details['plasterboard_interior'] or project_details['plasterboard_all']:
+        if project_details['plasterboard_interior'] or project_details['plasterboard_all']: # Koşullu ekleme
             building_structure_table_data.append([Paragraph('<b>Interior Walls / Εσωτερικοί Τοίχοι</b>', styles['NormalBilingual']), Paragraph(INTERIOR_WALLS_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
         building_structure_table_data.append([Paragraph('<b>Roof / Στέγη</b>', styles['NormalBilingual']), Paragraph(ROOF_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
         building_structure_table_data.append([Paragraph('<b>Exterior Walls / Εξωτερικοί Τοίχοι</b>', styles['NormalBilingual']), Paragraph(EXTERIOR_WALLS_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
@@ -748,16 +778,14 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     # Diğer Teknik Özellikler (Mutfak, Duş/WC, Elektrik, Sıhhi Tesisat, Ekstra Genel İlaveler)
     elements.append(Paragraph("ADDITIONAL TECHNICAL FEATURES / ΠΡΟΣΘΕΤΑ ΤΕΧΝΙΚΑ ΧΑΡΑΚΤΗΡΙΣΤΙΚΑ", styles['Heading'])) # Yeni başlık
 
-    other_features_table_data = [
-        [Paragraph('<b>Kitchen / Κουζίνα</b>', styles['NormalBilingual']), Paragraph(project_details['kitchen_type_display_en_gr'], styles['NormalBilingual'])],
-    ]
+    other_features_table_data = []
+    
+    # Mutfak ve Duş/WC (eğer pakete dahil değilse ve seçiliyse)
     if project_details['kitchen']:
-        other_features_table_data.append([Paragraph('<b>Kitchen Materials / Υλικά Κουζίνας</b>', styles['NormalBilingual']), Paragraph(KITCHEN_MATERIALS_EN, styles['NormalBilingual'])])
-
-    other_features_table_data.append([Paragraph('<b>Shower/WC / Ντους/WC</b>', styles['NormalBilingual']), Paragraph(get_yes_no_empty(project_details['shower']), styles['NormalBilingual'])])
+        other_features_table_data.append([Paragraph('<b>Kitchen / Κουζίνα</b>', styles['NormalBilingual']), Paragraph(project_details['kitchen_type_display_en_gr'], styles['NormalBilingual'])])
     if project_details['shower']:
-        other_features_table_data.append([Paragraph('<b>Shower/WC Materials / Υλικά Ντους/WC</b>', styles['NormalBilingual']), Paragraph(SHOWER_WC_MATERIALS_EN, styles['NormalBilingual'])])
-
+        other_features_table_data.append([Paragraph('<b>Shower/WC / Ντους/WC</b>', styles['NormalBilingual']), Paragraph(get_yes_no_empty(project_details['shower']), styles['NormalBilingual'])])
+    
     if project_details['electrical']:
         other_features_table_data.append([Paragraph('<b>Electrical / Ηλεκτρολογικά</b>', styles['NormalBilingual']), Paragraph(ELECTRICAL_MATERIALS_EN.strip(), styles['NormalBilingual'])])
     else:
@@ -1063,14 +1091,14 @@ def create_customer_proposal_pdf_tr(house_price, solar_price, total_price, proje
 
     # Doğramalar
     openings_table_data_tr = [
-        [Paragraph('<b>Doğramalar</b>', styles['NormalTR']), Paragraph(f"Pencereler: {project_details['window_count']} adet ({project_details['window_size']} - {project_details['window_door_color']})<br/>Kapılar: {project_details['door_count']} adet ({project_details['door_size']} - {project_details['window_door_color']})<br/>Sürme Kapılar: {project_details['sliding_door_count']} adet ({project_details['sliding_door_size']} - {project_details['window_door_color']})<br/>WC Pencereler: {project_details['wc_window_count']} adet ({project_details['wc_window_size']} - {project_details['window_door_color']}){'' if project_details['wc_sliding_door_count'] == 0 else '<br/>WC Sürme Kapılar: ' + str(project_details['wc_sliding_door_count']) + ' (' + project_details['wc_sliding_door_size'] + ' - ' + project_details['window_door_color'] + ')'}", styles['NormalTR'])],
+        [Paragraph('<b>Doğramalar</b>', styles['NormalTR']), Paragraph(f"Pencereler: {project_details['window_count']} adet ({project_details['window_size']} - {project_details['window_door_color']})<br/>Kapılar: {project_details['door_count']} adet ({project_details['door_size']} - {project_details['window_door_color']})<br/>Sürme Kapılar: {project_details['sliding_door_count']} adet ({project_details['sliding_door_size']} - {project_details['window_door_color']})<br/>WC Pencereler: {project_details['wc_window_count']} adet ({project_details['wc_window_size']} - {project_details['wc_window_color']}){'' if project_details['wc_sliding_door_count'] == 0 else '<br/>WC Sürme Kapılar: ' + str(project_details['wc_sliding_door_count']) + ' (' + project_details['wc_sliding_door_size'] + ' - ' + project_details['wc_window_color'] + ')'}", styles['NormalTR'])],
     ]
     openings_table_tr = Table(openings_table_data_tr, colWidths=[60*mm, 110*mm])
     openings_table_tr.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
     elements.append(openings_table_tr)
     elements.append(Spacer(1, 5*mm))
 
-    # --- Sayfa Sonu: Teknik Özellikler Bölümünün Kalanı Yeni Sayfada (GÜNCELLENDİ) ---
+    # --- Sayfa Sonu: Teknik Özellikler Bölümünün Kalanı Yeni Sayfada ---
     elements.append(PageBreak())
 
     # Diğer Teknik Özellikler (Mutfak, Duş/WC, Elektrik, Sıhhi Tesisat, Ekstra Genel İlaveler)
@@ -1326,16 +1354,13 @@ def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, pro
 
     for item in cost_breakdown_df.to_dict('records'):
         item_name = str(item['Item'])
-        if item_name.startswith(("Steel Profile", "Heavy Steel Construction", "Steel Welding Labor", FIYATLAR['steel_skeleton_info'], FIYATLAR['protective_automotive_paint_info'])):
+        if item_name.startswith(("Steel Profile", "Heavy Steel Construction", "Steel Welding Labor")):
             steel_costs.append(item)
-        elif item_name.startswith(("Zemin", "Floor", "WC Seramik", FIYATLAR['skirting_meter_info'], FIYATLAR['laminate_flooring_m2_info'],
-                           FIYATLAR['under_parquet_mat_m2_info'], FIYATLAR['osb2_18mm_piece_info'],
-                           FIYATLAR['galvanized_sheet_m2_info'], FIYATLAR['treated_pine_floor_info'],
-                           FIYATLAR['porcelain_tiles_info'], FIYATLAR['concrete_panel_floor_info'])):
+        elif item_name.startswith(("Zemin", "Floor", "WC Seramik", "Süpürgelik", "Laminat Parke", "Parke Altı Şilte", "OSB2 18mm", "5mm Galvanizli Sac", "Beton Panel Zemin", "İşlenmiş Çam Zemin Kaplaması", "Porselen Fayans", "Yerden Isıtma Sistemi")): # Yerden ısıtma da zeminle ilgili
             floor_and_insulation_costs.append(item)
-        elif item_name.startswith(("Alçıpan", "Plasterboard", FIYATLAR['knauf_aquapanel_gypsum_board_info'], FIYATLAR['eps_styrofoam_info'], FIYATLAR['knauf_mineralplus_insulation_info'], FIYATLAR['knauf_guardex_gypsum_board_info'], FIYATLAR['satin_plaster_paint_info'])):
+        elif item_name.startswith(("Alçıpan", "Plasterboard", "Knauf Aquapanel Alçıpan", "EPS STYROFOAM", "Knauf MineralPlus İzolasyon", "Knauf Guardex Alçıpan", "Saten sıva ve boya", "Dış cephe ahşap kaplama - Lambiri", "Dış Cephe Kaplama", "Taşyünü", "Cam Yünü")): # Yalıtım malzemeleri buraya
             wall_plasterboard_costs.append(item)
-        elif item_name.startswith(("Roof (Sandwich Panel)", "Facade (Sandwich Panel)", "Panel Assembly Labor", FIYATLAR['60mm_eps_sandwich_panel_info'], FIYATLAR['100mm_eps_isothermal_panel_info'])):
+        elif item_name.startswith(("Roof (Sandwich Panel)", "Facade (Sandwich Panel)", "Panel Assembly Labor", "Standart 60mm EPS", "Yüksek performanslı 100mm EPS")):
             sandwich_panel_costs.append(item)
         elif item_name.startswith("Mutfak Kurulumu") or \
              item_name in [FIYATLAR[k] for k in FIYATLAR if k.startswith('kitchen_') and k.endswith('_info')]:
@@ -1361,10 +1386,9 @@ def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, pro
         elements.extend(create_cost_table(floor_and_insulation_costs, "Zemin ve Yalıtım Detayları"))
 
     if wall_plasterboard_costs:
-        elements.extend(create_cost_table(wall_plasterboard_costs, "Duvarlar (Alçıpan) Detayları"))
+        elements.extend(create_cost_table(wall_plasterboard_costs, "Duvarlar (Alçıpan, Kaplamalar ve Yalıtım) Detayları"))
 
-    # Sandviç Panel Detayları ve sonrası yeni sayfada (GÜNCELLENDİ)
-    # Koşul, sadece bu bölümlerden sonra sayfa sonu eklemek için.
+    # Sandviç Panel Detayları ve sonrası yeni sayfada
     if sandwich_panel_costs or kitchen_costs or shower_wc_costs or electrical_costs or plumbing_costs or door_window_costs or other_general_costs:
         elements.append(PageBreak())
 
@@ -1377,7 +1401,7 @@ def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, pro
     if shower_wc_costs:
         elements.extend(create_cost_table(shower_wc_costs, "Duş/WC Detayları"))
 
-    # Elektrik Tesisatı Detayları ve sonrası yeni sayfada (GÜNCELLENDİ)
+    # Elektrik Tesisatı Detayları ve sonrası yeni sayfada
     if electrical_costs or plumbing_costs or door_window_costs or other_general_costs:
         elements.append(PageBreak())
 
@@ -1877,36 +1901,44 @@ def run_streamlit_app():
         key="aether_package_select"
     )
 
-    # Varsayılan değerleri tanımla (KEYERROR DÜZELTMESİ İÇİN BU DEĞERLER BAŞTA TANIMLANMALI)
+    # Varsayılan değerleri tanımla (UnboundLocalError düzeltmesi için bu değerler BAŞTA VE KOŞULSUZ olarak tanımlanmalı)
     default_kitchen_choice_radio = 'Mutfak Yok'
     default_shower_val = False
     default_wc_ceramic_val = False
     default_electrical_val = False
     default_plumbing_val = False
     default_insulation_floor_val = False
-    default_insulation_wall_val = False # Düzeltildi
+    default_insulation_wall_val = False
     default_floor_covering = 'Laminate Parquet'
     default_heating_val = False
     default_solar_val = False
     default_wheeled_trailer_val = False
     
-    default_ext_cladding_val = False
-    default_porcelain_tiles_val = False
-    default_concrete_panel_floor_val = False
-    default_wood_cladding_val = False
-    default_bed_set_val = False
-    default_sofa_val = False
-    default_smart_home_val = False
-    default_security_cam_val = False
-    default_white_goods_val = False
-    default_premium_faucets_val = False
-    default_integrated_fridge_val = False
-    default_designer_furniture_val = False
-    default_italian_sofa_val = False
-    default_inclass_chairs_val = 0
-    default_brushed_granite_countertops_val = False
-
-    # Aether Living Paketlerine göre default ayarlar (otomatik seçimi tetiklemek için)
+    # UI'dan kaldırılan elemanlar için varsayılan değerler
+    exterior_cladding_m2_option_val = False
+    exterior_cladding_m2_val = 0.0
+    exterior_wood_cladding_m2_option_val = False
+    exterior_wood_cladding_m2_val = 0.0
+    porcelain_tiles_option_val = False
+    porcelain_tiles_m2_val = 0.0
+    concrete_panel_floor_option_val = False
+    concrete_panel_floor_m2_val = 0.0
+    bedroom_set_option_val = False
+    sofa_option_val = False
+    smart_home_systems_option_val = False
+    security_camera_option_val = False
+    white_goods_fridge_tv_option_val = False
+    premium_faucets_option_val = False
+    integrated_fridge_option_val = False
+    designer_furniture_option_val = False
+    italian_sofa_option_val = False
+    inclass_chairs_option_val = False
+    inclass_chairs_count_val = 0
+    brushed_granite_countertops_option_val = False
+    brushed_granite_countertops_m2_val = 0.0
+    
+    # Aether Living Paketlerine göre default ayarları güncelle
+    # Bu blok, üstteki default değerleri paket seçimine göre override eder.
     if aether_package_choice == 'Aether Living | Loft Standard (BASICS)':
         default_kitchen_choice_radio = 'Standart Mutfak'
         default_shower_val = True
@@ -1922,11 +1954,10 @@ def run_streamlit_app():
         default_plumbing_val = True
         default_insulation_floor_val = True
         default_insulation_wall_val = True
-        default_floor_covering = 'Laminate Parquet' # İşlenmiş çam zemin kaplaması (varsayılanı değiştirebilir)
+        default_floor_covering = 'Laminate Parquet'
         default_bed_set_val = True
         default_brushed_granite_countertops_val = True
-        default_terrace_laminated_val = True # Premium Pakette geliyorsa
-        default_porcelain_tiles_val = False # Premium Pakette geliyorsa
+        terrace_laminated_wood_flooring_option_val = True
     elif aether_package_choice == 'Aether Living | Loft Elite (LUXURY)':
         default_kitchen_choice_radio = 'Special Design Mutfak'
         default_shower_val = True
@@ -1937,18 +1968,19 @@ def run_streamlit_app():
         default_floor_covering = 'Ceramic'
         default_heating_val = True
         default_solar_val = True
-        default_ext_cladding_val = True
-        default_wood_cladding_val = False # Ahşap kaplama isteğe bağlı
-        default_concrete_panel_floor_val = True
+        exterior_cladding_m2_option_val = True
+        exterior_wood_cladding_m2_option_val = False
+        concrete_panel_floor_option_val = True
         default_premium_faucets_val = True
-        default_integrated_fridge_val = True # Bu ayrı bir fiyatlandırma kalemi olmasa da pakete dahil bilgi
+        integrated_fridge_option_val = True
         default_designer_furniture_val = True
         default_italian_sofa_val = True
+        inclass_chairs_option_val = True
         default_inclass_chairs_val = 1
         default_smart_home_val = True
         default_security_cam_val = True
         default_white_goods_val = True
-        # Elite'de Premium özellikler de varsayılan olarak seçili olabilir (zemin vs.)
+
 
     col1, col2 = st.columns(2)
     with col1:
@@ -2184,13 +2216,11 @@ def run_streamlit_app():
             profile_analysis_details = []
             
             # Aether Living Paket Fiyatlandırması ve Malzeme Hesaplaması
-            aether_package_total_cost = 0.0 # Paketin toplam maliyetini tutacak
+            aether_package_total_cost = 0.0
 
-            # Pakete dahil olan temel ve ek malzemelerin maliyetlerini toplama mantığı
-            # Her paketin kendi içinde standartları ve ekstra yükseltmeleri olacak
+            # --- Aether Living Paket Seçimine Göre Maliyet Ekleme Mantığı ---
             if aether_package_choice == 'Aether Living | Loft Standard (BASICS)':
                 # Yapı (Metal iskelet, koruyucu otomotiv boyası)
-                # Varsayılan Light Steel profillerini kullanıyoruz
                 basics_100x100_count = math.ceil(floor_area * (12 / 27.0))
                 basics_50x50_count = math.ceil(floor_area * (6 / 27.0))
                 
@@ -2208,7 +2238,7 @@ def run_streamlit_app():
                 aether_package_total_cost += sandwich_panel_60mm_cost
                 
                 # Zemin (Galvanizli sac, yalıtım, Kontraplak/OSB zemin paneli, 12mm Laminat Parke)
-                costs.append({'Item': FIYATLAR['insulation_info'], 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': FIYATLAR["insulation_per_m2"], 'Total (€)': calculate_rounded_up_cost(floor_area * FIYATLAR["insulation_per_m2"])})
+                costs.append({'Item': FIYATLAR['insulation_info_general'], 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': FIYATLAR["insulation_per_m2"], 'Total (€)': calculate_rounded_up_cost(floor_area * FIYATLAR["insulation_per_m2"])})
                 costs.append({'Item': FIYATLAR['galvanized_sheet_info'], 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': FIYATLAR["galvanized_sheet_m2_price"], 'Total (€)': calculate_rounded_up_cost(floor_area * FIYATLAR["galvanized_sheet_m2_price"])})
                 costs.append({'Item': FIYATLAR['plywood_osb_floor_panel_info'], 'Quantity': f"{plywood_pieces_needed} adet", 'Unit Price (€)': FIYATLAR["plywood_piece"], 'Total (€)': calculate_rounded_up_cost(plywood_pieces_needed * FIYATLAR["plywood_piece"])})
                 costs.append({'Item': FIYATLAR['12mm_laminate_parquet_info'], 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': FIYATLAR["laminate_flooring_m2_price"], 'Total (€)': calculate_rounded_up_cost(floor_area * FIYATLAR["laminate_flooring_m2_price"])})
@@ -2229,8 +2259,8 @@ def run_streamlit_app():
             elif aether_package_choice == 'Aether Living | Loft Premium (ESSENTIAL)':
                 # Premium pakete özel eklemeler (Standard özelliklere ek olarak)
                 # Dış/İç Kaplamalar (Yüksek performanslı 100mm EPS veya Poliüretan İzotermik Paneller)
-                sandwich_panel_100mm_cost = calculate_rounded_up_cost((wall_area + roof_area) * FIYATLAR["sandwich_panel_m2"]) # Örnek: Varsayılan sandviç panel fiyatı + ekstra maliyet olabilir
-                costs.append({'Item': FIYATLAR['100mm_eps_isothermal_panel_info'], 'Quantity': f"{wall_area + roof_area:.2f} m²", 'Unit Price (€)': FIYATLAR["sandwich_panel_m2"], 'Total (€)': sandwich_panel_100mm_cost}) # Buradaki Unit Price'ı FIYATLAR["100mm_eps_isothermal_panel_info"] değil, birim fiyat olmalı. Yukarıdaki FIYATLAR sözlüğünde güncelledim.
+                sandwich_panel_100mm_cost = calculate_rounded_up_cost((wall_area + roof_area) * FIYATLAR["100mm_eps_isothermal_panel_unit_price"])
+                costs.append({'Item': FIYATLAR['100mm_eps_isothermal_panel_info'], 'Quantity': f"{wall_area + roof_area:.2f} m²", 'Unit Price (€)': FIYATLAR["100mm_eps_isothermal_panel_unit_price"], 'Total (€)': sandwich_panel_100mm_cost})
                 aether_package_total_cost += sandwich_panel_100mm_cost
                 
                 # Zemin: İşlenmiş çam zemin kaplaması (teras seçeneği) veya porselen fayans
@@ -2298,7 +2328,7 @@ def run_streamlit_app():
                     aether_package_total_cost += calculate_rounded_up_cost(FIYATLAR['premium_faucets_total_price'])
 
                 # Yükseltilmiş mutfak cihazları (örn. entegre buzdolabı) - Zaten beyaz eşya içinde değerlendiriliyor, ayrıca eklenmeyecek.
-                if integrated_fridge_option_val: # Sadece bilgi olarak ekleniyor
+                if integrated_fridge_option_val:
                     costs.append({'Item': FIYATLAR['integrated_refrigerator_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
 
                 # Mobilyalar: Entegre özel tasarım mobilyalar, seçkin oturma grupları
@@ -2322,214 +2352,12 @@ def run_streamlit_app():
                     aether_package_total_cost += calculate_rounded_up_cost(FIYATLAR['security_camera_total_price'])
             
             # Ana Maliyet Hesaplamaları
-            # Eğer bir Aether Living paketi seçiliyse, house_subtotal paketin otomatik toplanan maliyeti olur.
-            # Aksi takdirde, diğer manuel seçilenlerin toplamı olur.
-            # ÖNEMLİ: Eğer aether_package_choice == 'Yok' ise, aşağıdaki mevcut hesaplamalar devreye girer.
-            # Paket seçiliyken bu mevcut hesaplamaların KESİNLİKLE yapılmaması gerekiyor.
-
-            if aether_package_choice == 'Yok':
-                # Eğer paket seçilmediyse, eski manuel seçimlere göre maliyetleri topla
-                # Bu bölümün, yukarıdaki paket hesaplamalarından ayrı çalışması sağlanmalı
-                
-                # Çelik Yapı Hesaplamaları
-                if structure_type_val == 'Heavy Steel':
-                    total_structure_price = calculate_rounded_up_cost(floor_area * FIYATLAR["heavy_steel_m2"])
-                    costs.append({'Item': 'Heavy Steel Construction (Structure)', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["heavy_steel_m2"], 'Total (€)': total_structure_price})
-                    selected_welding_labor_price = FIYATLAR[f"welding_labor_m2_{welding_labor_option_val}"]
-                    total_welding_labor_price = calculate_rounded_up_cost(floor_area * selected_welding_labor_price)
-                    costs.append({'Item': f'Steel Welding Labor ({welding_labor_option_val.upper()})', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': selected_welding_labor_price, 'Total (€)': total_welding_labor_price})
-                else: # Light Steel
-                    # Burada varsayılan olarak seçilen çelik profiller veya manuel girilenler kullanılacak
-                    manual_profile_counts_for_calc = {
-                        "100x100x3": profile_100x100_count_val, "100x50x3": profile_100x50_count_val,
-                        "40x60x2": profile_40x60_count_val, "50x50x2": profile_50x50_count_val,
-                        "120x60x5mm": profile_120x60x5mm_count_val, "HEA160": profile_HEA160_count_val,
-                    }
-                    default_piece_length = 6.0
-                    for profile_type_key, piece_count in manual_profile_counts_for_calc.items():
-                        if piece_count > 0:
-                            profile_dict_key = f"steel_profile_{profile_type_key.replace('.', '').replace('mm', '')}" # Anahtar düzeltme
-                            unit_price_6m_piece = FIYATLAR.get(profile_dict_key)
-                            if unit_price_6m_piece is None: continue
-                            total_price = calculate_rounded_up_cost(piece_count * unit_price_6m_piece)
-                            report_length_meters = piece_count * default_piece_length
-                            profile_analysis_details.append({'Profile Type': profile_type_key, 'Count': piece_count, 'Unit Price (€)': unit_price_6m_piece, 'Total (€)': total_price})
-                            costs.append({'Item': f"Steel Profile ({profile_type_key})", 'Quantity': f"{piece_count} pieces ({report_length_meters:.1f}m)", 'Unit Price (€)': unit_price_6m_piece, 'Total (€)': total_price})
-                    selected_welding_labor_price = FIYATLAR[f"welding_labor_m2_{welding_labor_option_val}"]
-                    total_welding_labor_price = calculate_rounded_up_cost(floor_area * selected_welding_labor_price)
-                    costs.append({'Item': f'Steel Welding Labor ({welding_labor_option_val.upper()})', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': selected_welding_labor_price, 'Total (€)': total_welding_labor_price})
-
-                # Sandviç Panel ve Montaj
-                total_price = calculate_rounded_up_cost(roof_area * FIYATLAR["sandwich_panel_m2"])
-                costs.append({'Item': 'Roof (Sandwich Panel)', 'Quantity': f'{roof_area:.2f} m²', 'Unit Price (€)': FIYATLAR["sandwich_panel_m2"], 'Total (€)': total_price})
-                if structure_type_val == 'Light Steel' or (structure_type_val == 'Heavy Steel' and facade_sandwich_panel_calc):
-                    total_price = calculate_rounded_up_cost(wall_area * FIYATLAR["sandwich_panel_m2"])
-                    costs.append({'Item': 'Facade (Sandwich Panel)', 'Quantity': f'{wall_area:.2f} m²', 'Unit Price (€)': FIYATLAR["sandwich_panel_m2"], 'Total (€)': total_price})
-                total_panel_assembly_area = wall_area + roof_area
-                total_price = calculate_rounded_up_cost(total_panel_assembly_area * FIYATLAR["panel_assembly_labor_m2"])
-                costs.append({'Item': "Panel Assembly Labor", 'Quantity': f"{(total_panel_assembly_area):.2f} m²", 'Unit Price (€)': FIYATLAR["panel_assembly_labor_m2"], 'Total (€)': total_price})
-                
-                # İç Duvar OSB
-                if osb_inner_wall_calc:
-                    inner_wall_area_for_osb_calc = (wall_area / 2)
-                    osb_area_to_cover = inner_wall_area_for_osb_calc + roof_area
-                    osb_pieces_needed = math.ceil(osb_area_to_cover / OSB_PANEL_AREA_M2)
-                    if osb_pieces_needed > 0:
-                        costs.append({'Item': 'Inner Wall OSB Material', 'Quantity': f"{osb_pieces_needed} pieces ({osb_area_to_cover:.2f} m²)", 'Unit Price (€)': FIYATLAR["osb_piece"], 'Total (€)': calculate_rounded_up_cost(osb_pieces_needed * FIYATLAR["osb_piece"])})
-
-                # Alçıpan
-                plasterboard_total_area = 0
-                plasterboard_labor_m2 = FIYATLAR["plasterboard_labor_m2_avg"]
-                if structure_type_val == 'Light Steel' and plasterboard_interior_calc:
-                    plasterboard_total_area = wall_area + roof_area
-                elif structure_type_val == 'Heavy Steel' and plasterboard_all_calc:
-                    plasterboard_total_area = (wall_area * 1.5) + roof_area
-                if plasterboard_total_area > 0:
-                    costs.append({'Item': 'Alçıpan Malzemesi', 'Quantity': f'{plasterboard_total_area:.2f} m²', 'Unit Price (€)': FIYATLAR["plasterboard_material_m2"], 'Total (€)': calculate_rounded_up_cost(plasterboard_total_area * FIYATLAR["plasterboard_material_m2"])})
-                    costs.append({'Item': 'Alçıpan İşçiliği', 'Quantity': f'{plasterboard_total_area:.2f} m²', 'Unit Price (€)': plasterboard_labor_m2, 'Total (€)': calculate_rounded_up_cost(plasterboard_total_area * plasterboard_labor_m2)})
-                
-                # Yalıtım (Zemin ve Duvar)
-                if insulation_floor_option_val:
-                    total_price = calculate_rounded_up_cost(floor_area * FIYATLAR["insulation_per_m2"])
-                    costs.append({'Item': 'Zemin Yalıtımı (Ana)', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["insulation_per_m2"], 'Total (€)': total_price})
-                    
-                    if skirting_count_val > 0:
-                        skirting_cost = calculate_rounded_up_cost(skirting_count_val * FIYATLAR["skirting_meter_price"])
-                        costs.append({'Item': FIYATLAR["skirting_meter_info"], 'Quantity': f"{skirting_count_val:.2f} m", 'Unit Price (€)': FIYATLAR["skirting_meter_price"], 'Total (€)': skirting_cost})
-
-                    if laminate_flooring_m2_val > 0:
-                        laminate_flooring_cost = calculate_rounded_up_cost(laminate_flooring_m2_val * FIYATLAR["laminate_flooring_m2_price"])
-                        costs.append({'Item': FIYATLAR["laminate_flooring_m2_info"], 'Quantity': f"{laminate_flooring_m2_val:.2f} m²", 'Unit Price (€)': FIYATLAR["laminate_flooring_m2_price"], 'Total (€)': laminate_flooring_cost})
-                    
-                    if under_parquet_mat_m2_val > 0:
-                        under_parquet_mat_cost = calculate_rounded_up_cost(under_parquet_mat_m2_val * FIYATLAR["under_parquet_mat_m2_price"])
-                        costs.append({'Item': FIYATLAR["under_parquet_mat_m2_info"], 'Quantity': f"{under_parquet_mat_m2_val:.2f} m²", 'Unit Price (€)': FIYATLAR["under_parquet_mat_m2_price"], 'Total (€)': under_parquet_mat_cost})
-
-                    if osb2_18mm_count_val > 0:
-                        osb2_18mm_cost = calculate_rounded_up_cost(osb2_18mm_count_val * FIYATLAR["osb2_18mm_piece_price"])
-                        costs.append({'Item': FIYATLAR["osb2_18mm_piece_info"], 'Quantity': f"{osb2_18mm_count_val} adet", 'Unit Price (€)': FIYATLAR["osb2_18mm_piece_price"], 'Total (€)': osb2_18mm_cost})
-
-                    if galvanized_sheet_m2_val > 0:
-                        galvanized_sheet_cost = calculate_rounded_up_cost(galvanized_sheet_m2_val * FIYATLAR["galvanized_sheet_m2_price"])
-                        costs.append({'Item': FIYATLAR["galvanized_sheet_m2_info"], 'Quantity': f"{galvanized_sheet_m2_val:.2f} m²", 'Unit Price (€)': FIYATLAR["galvanized_sheet_m2_price"], 'Total (€)': galvanized_sheet_cost})
-
-                if insulation_wall_option_val:
-                    total_price = calculate_rounded_up_cost(wall_area * FIYATLAR["insulation_per_m2"])
-                    costs.append({'Item': 'Duvar Yalıtımı', 'Quantity': f'{wall_area:.2f} m²', 'Unit Price (€)': FIYATLAR["insulation_per_m2"], 'Total (€)': total_price})
-
-                # Zemin Kaplama ve Plywood
-                plywood_pieces_needed = math.ceil(floor_area / OSB_PANEL_AREA_M2)
-                total_price = calculate_rounded_up_cost(plywood_pieces_needed * FIYATLAR["plywood_piece"])
-                costs.append({'Item': 'Zemin (Kontrplak Malzemesi)', 'Quantity': plywood_pieces_needed, 'Unit Price (€)': FIYATLAR["plywood_piece"], 'Total (€)': total_price})
-                total_price = calculate_rounded_up_cost(floor_area * FIYATLAR["plywood_flooring_labor_m2"])
-                costs.append({'Item': f'Zemin ({floor_covering_option_val} İşçiliği)', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["plywood_flooring_labor_m2"], 'Total (€)': total_price})
-
-                # WC Seramik Malzeme ve İşçilik
-                if wc_ceramic_input_val and wc_ceramic_area_val > 0:
-                    total_material_cost = calculate_rounded_up_cost(wc_ceramic_area_val * FIYATLAR["wc_ceramic_m2_material"])
-                    total_labor_cost = calculate_rounded_up_cost(wc_ceramic_area_val * FIYATLAR["wc_ceramic_m2_labor"])
-                    costs.append({'Item': 'WC Seramik Malzemesi', 'Quantity': f"{wc_ceramic_area_val:.2f} m²", 'Unit Price (€)': FIYATLAR["wc_ceramic_m2_material"], 'Total (€)': total_material_cost})
-                    costs.append({'Item': 'WC Seramik İşçiliği', 'Quantity': f"{wc_ceramic_area_val:.2f} m²", 'Unit Price (€)': FIYATLAR["wc_ceramic_m2_labor"], 'Total (€)': total_labor_cost})
-                
-                # Yerden Isıtma
-                if heating_option_val:
-                    total_price = calculate_rounded_up_cost(floor_area * FIYATLAR["floor_heating_m2"])
-                    costs.append({'Item': 'Yerden Isıtma Sistemi', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["floor_heating_m2"], 'Total (€)': total_price})
-                
-                # Güneş Enerjisi
-                solar_cost = 0 # Her zaman tanımlı
-                if solar_option_val:
-                    solar_cost = calculate_rounded_up_cost(solar_capacity_val * FIYATLAR['solar_per_kw'])
-                    costs.append({'Item': f'Güneş Enerjisi Sistemi ({solar_capacity_val} kW)', 'Quantity': 1, 'Unit Price (€)': solar_cost, 'Total (€)': solar_cost})
-                
-                # Pencere ve Kapılar
-                if window_count > 0:
-                    total_price = calculate_rounded_up_cost(window_count * FIYATLAR["aluminum_window_piece"])
-                    costs.append({'Item': f'Pencere ({window_size_val} - {window_door_color_val})', 'Quantity': window_count, 'Unit Price (€)': FIYATLAR["aluminum_window_piece"], 'Total (€)': total_price})
-                if sliding_door_count > 0:
-                    total_price = calculate_rounded_up_cost(sliding_door_count * FIYATLAR["sliding_glass_door_piece"])
-                    costs.append({'Item': f'Sürme Cam Kapı ({sliding_door_size_val} - {window_door_color_val})', 'Quantity': sliding_door_count, 'Unit Price (€)': FIYATLAR["sliding_glass_door_piece"], 'Total (€)': total_price})
-                if wc_window_count > 0:
-                    total_price = calculate_rounded_up_cost(wc_window_count * FIYATLAR["wc_window_piece"])
-                    costs.append({'Item': f'WC Pencere ({wc_window_size_val} - {window_door_color_val})', 'Quantity': wc_window_count, 'Unit Price (€)': FIYATLAR["wc_window_piece"], 'Total (€)': total_price})
-                if wc_sliding_door_count > 0:
-                    total_price = calculate_rounded_up_cost(wc_sliding_door_count * FIYATLAR["wc_sliding_door_piece"])
-                    costs.append({'Item': f'WC Sürme Kapı ({wc_sliding_door_size_val} - {window_door_color_val})', 'Quantity': wc_sliding_door_count, 'Unit Price (€)': FIYATLAR["wc_sliding_door_piece"], 'Total (€)': total_price})
-                if door_count > 0:
-                    total_price = calculate_rounded_up_cost(door_count * FIYATLAR["door_piece"])
-                    costs.append({'Item': f'Kapı ({door_size_val} - {window_door_color_val})', 'Quantity': door_count, 'Unit Price (€)': FIYATLAR["door_piece"], 'Total (€)': total_price})
-                total_door_window_count = window_count + sliding_door_count + wc_window_count + wc_sliding_door_count + door_count
-                if total_door_window_count > 0:
-                    total_price = calculate_rounded_up_cost(total_door_window_count * FIYATLAR["door_window_assembly_labor_piece"])
-                    costs.append({'Item': 'Kapı/Pencere Montaj İşçiliği', 'Quantity': total_door_window_count, 'Unit Price (€)': FIYATLAR["door_window_assembly_labor_piece"], 'Total (€)': total_price})
-            
-            # Bağlantı Elemanları (Paket dışı manuel eklemeler)
-            if aether_package_choice == 'Yok':
-                total_price = calculate_rounded_up_cost(floor_area * FIYATLAR["connection_element_m2"])
-                costs.append({'Item': "Bağlantı Elemanları", 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': FIYATLAR["connection_element_m2"], 'Total (€)': total_price})
-            
-            # Mutfak Kurulumu ve Malzemeleri (Paket dışı manuel eklemeler)
-            if aether_package_choice == 'Yok' and kitchen_input_val:
-                costs.append({'Item': f'Mutfak Kurulumu ({kitchen_choice})', 'Quantity': 1, 'Unit Price (€)': kitchen_cost_val, 'Total (€)': calculate_rounded_up_cost(kitchen_cost_val)})
-                costs.append({'Item': FIYATLAR["kitchen_mdf_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["kitchen_cabinets_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["kitchen_countertop_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["kitchen_sink_faucet_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-            
-            # Duş/WC Kurulumu ve Malzemeleri (Paket dışı manuel eklemeler)
-            if aether_package_choice == 'Yok' and shower_input_val:
-                costs.append({'Item': 'Duş/WC Kurulumu', 'Quantity': 1, 'Unit Price (€)': FIYATLAR["shower_wc_installation_piece"], 'Total (€)': calculate_rounded_up_cost(FIYATLAR["shower_wc_installation_piece"])})
-                costs.append({'Item': FIYATLAR["wc_shower_unit_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["wc_toilet_bowl_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["wc_washbasin_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["wc_towel_rail_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["wc_mirror_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["wc_accessories_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-
-            # Elektrik Tesisatı ve Malzemeleri (Paket dışı manuel eklemeler)
-            if aether_package_choice == 'Yok' and electrical_installation_input_val:
-                electrical_cost = calculate_rounded_up_cost(floor_area * FIYATLAR["electrical_per_m2"])
-                costs.append({'Item': 'Elektrik Tesisatı (Malzemelerle)', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["electrical_per_m2"], 'Total (€)': electrical_cost})
-                costs.append({'Item': FIYATLAR["electrical_cable_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["electrical_conduits_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["electrical_junction_boxes_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["electrical_distribution_board_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["electrical_circuit_breakers_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["electrical_sockets_switches_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["electrical_lighting_fixtures_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["electrical_grounding_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-
-            # Sıhhi Tesisat ve Malzemeleri (Paket dışı manuel eklemeler)
-            if aether_package_choice == 'Yok' and plumbing_installation_input_val:
-                plumbing_cost = calculate_rounded_up_cost(floor_area * FIYATLAR["plumbing_per_m2"])
-                costs.append({'Item': 'Sıhhi Tesisat (Malzemelerle)', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["plumbing_per_m2"], 'Total (€)': plumbing_cost})
-                costs.append({'Item': FIYATLAR["plumbing_pprc_pipes_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["plumbing_faucets_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["plumbing_shower_mixer_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["plumbing_valves_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["plumbing_pvc_pipes_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                costs.append({'Item': FIYATLAR["plumbing_siphons_info"], 'Quantity': "N/A", 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-
-            # Nakliye (Paket dışı manuel eklemeler)
-            if aether_package_choice == 'Yok' and transportation_input_val:
-                costs.append({'Item': 'Nakliye', 'Quantity': 1, 'Unit Price (€)': FIYATLAR["transportation"], 'Total (€)': calculate_rounded_up_cost(FIYATLAR["transportation"])})
-            
-            # Tekerlekli Römork (Paket dışı manuel eklemeler)
-            if aether_package_choice == 'Yok' and wheeled_trailer_option_val and wheeled_trailer_price_input_val > 0:
-                trailer_price = calculate_rounded_up_cost(wheeled_trailer_price_input_val)
-                costs.append({'Item': 'Tekerlekli Römork', 'Quantity': 1, 'Unit Price (€)': trailer_price, 'Total (€)': trailer_price})
-
-            # Eğer solar_option_val True ise ve Aether Living paketi seçili değilse solar_cost'u hesapla
-            solar_cost = 0 # solar_cost'u her zaman tanımlı hale getir (NameError düzeltmesi)
-            if aether_package_choice == 'Yok' and solar_option_val:
-                solar_cost = calculate_rounded_up_cost(solar_capacity_val * FIYATLAR['solar_per_kw'])
-                costs.append({'Item': f'Güneş Enerjisi Sistemi ({solar_capacity_val} kW)', 'Quantity': 1, 'Unit Price (€)': solar_cost, 'Total (€)': solar_cost})
-
-
-            # Ana Maliyet Hesaplamaları
             # Paket seçiliyse house_subtotal, paketin otomatik toplanan maliyeti olur.
-            # Paket seçilmediyse, yukarıdaki manuel seçilenlerin toplamı olur.
-            house_subtotal = sum([item['Total (€)'] for item in costs if 'Solar' not in item['Item']]) # Tüm kalemlerin toplamı
+            # Aksi takdirde, diğer manuel seçilenlerin toplamı olur.
+            if aether_package_choice != 'Yok':
+                house_subtotal = aether_package_total_cost
+            else: # Eğer Aether Living paketi seçili değilse, mevcut manuel seçimlere göre topla
+                house_subtotal = sum([item['Total (€)'] for item in costs if 'Solar' not in item['Item']])
 
             waste_cost = calculate_rounded_up_cost(house_subtotal * FIRE_RATE)
             total_house_cost = calculate_rounded_up_cost(house_subtotal + waste_cost)
@@ -2537,7 +2365,13 @@ def run_streamlit_app():
             house_vat_base = calculate_rounded_up_cost(total_house_cost + profit)
             house_vat = calculate_rounded_up_cost(house_vat_base * VAT_RATE)
             house_sales_price = calculate_rounded_up_cost(house_vat_base + house_vat)
-            total_sales_price = calculate_rounded_up_cost(house_sales_price + solar_cost) # solar_cost artık hep tanımlı
+            
+            solar_cost = 0 # solar_cost'u her zaman tanımlı hale getir (NameError düzeltmesi)
+            if solar_option_val:
+                solar_cost = calculate_rounded_up_cost(solar_capacity_val * FIYATLAR['solar_per_kw'])
+                costs.append({'Item': f'Güneş Enerjisi Sistemi ({solar_capacity_val} kW)', 'Quantity': 1, 'Unit Price (€)': solar_cost, 'Total (€)': solar_cost})
+
+            total_sales_price = calculate_rounded_up_cost(house_sales_price + solar_cost)
 
             delivery_duration_business_days = math.ceil((floor_area / 27.0) * 35)
             if delivery_duration_business_days < 10: delivery_duration_business_days = 10
@@ -2595,7 +2429,7 @@ def run_streamlit_app():
                 'wc_ceramic': wc_ceramic_input_val, 'wc_ceramic_area': wc_ceramic_area_val,
                 'electrical': electrical_installation_input_val, 'plumbing': plumbing_installation_input_val,
                 'transportation': transportation_input_val, 'heating': heating_option_val,
-                'solar': solar_option_val, 'solar_kw': solar_capacity_val, 'solar_price': solar_cost, # solar_price buraya solar_cost olarak düzeltildi
+                'solar': solar_option_val, 'solar_kw': solar_capacity_val, 'solar_price': solar_cost,
                 'vat_rate': VAT_RATE, 'profit_rate': profit_rate_val,
                 'room_configuration': room_config_val,
                 'wheeled_trailer_included': wheeled_trailer_option_val,
@@ -2623,17 +2457,17 @@ def run_streamlit_app():
                 'concrete_panel_floor_m2_val': concrete_panel_floor_m2_val,
                 'bedroom_set_option': bedroom_set_option_val,
                 'sofa_option': sofa_option_val,
+                'smart_home_systems_option': smart_home_systems_option_val,
+                'security_camera_option': security_camera_option_val,
                 'white_goods_fridge_tv_option': white_goods_fridge_tv_option_val,
                 'premium_faucets_option': premium_faucets_option_val,
                 'integrated_fridge_option': integrated_fridge_option_val,
                 'designer_furniture_option': designer_furniture_option_val,
                 'italian_sofa_option': italian_sofa_option_val,
                 'inclass_chairs_option': inclass_chairs_option_val,
-                'inclass_chairs_count': inclass_chairs_count_val, # Adet bilgisi eklendi
+                'inclass_chairs_count': inclass_chairs_count_val,
                 'brushed_granite_countertops_option': brushed_granite_countertops_option_val,
                 'brushed_granite_countertops_m2_val': brushed_granite_countertops_m2_val,
-                'smart_home_systems_option': smart_home_systems_option_val,
-                'security_camera_option': security_camera_option_val,
                 'terrace_laminated_wood_flooring_option': terrace_laminated_wood_flooring_option_val,
                 'terrace_laminated_wood_flooring_m2_val': terrace_laminated_wood_flooring_m2_val,
             }
