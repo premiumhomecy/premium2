@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 import math
 import pandas as pd
 import io
@@ -133,7 +133,7 @@ FIYATLAR = {
     "oc100_material_price": 3.96, # OC100 malzeme fiyatı (adet)
     "ch100_material_price": 3.55, # ch100 malzeme fiyatı (adet)
 
-    # Material Info Keys (for reporting purposes) - "Ivan" ön eki kaldırıldı.
+    # Material Info Keys (for reporting purposes)
     "steel_skeleton_info": "Metal iskelet",
     "protective_automotive_paint_info": "Koruyucu otomotiv boyası",
     "insulation_info_general": "Genel Yalıtım (EPS/Poliüretan)",
@@ -165,7 +165,7 @@ FIYATLAR = {
     "gypsum_board_blue_info": "Mavi Alçıpan (Dış Cephe)",
     "knauf_aquapanel_gypsum_board_info": "Knauf Aquapanel Alçıpan",
     "eps_styrofoam_info": "EPS STYROFOAM",
-    "knauf_mineralplus_insulation_info": "Knauf MineralPlus İzolasyon (Taşyünü)",
+    "knauf_mineralplus_insulation_info": "Knauf MineralPlus İzolasyon (Taşyünü)", # OTB (Taşyünü) için karşılık
     "knauf_guardex_gypsum_board_info": "Knauf Guardex Alçıpan",
     "satin_plaster_paint_info": "Saten sıva ve boya",
     "otb_stone_wool_info_report": "OTB (Taşyünü)",
@@ -183,7 +183,7 @@ FIYATLAR = {
     "electrical_distribution_board_info": "Sigorta Kutusu (Dağıtım Panosu)",
     "electrical_circuit_breakers_info": "Sigortalar & Kaçak Akım Rölesi",
     "electrical_sockets_switches_info": "Prizler ve Anahtarlar",
-    "electrical_lighting_fixtures_info": "İç Aydınlatma Armutürleri (LED Spots / Tavan Lambası)",
+    "electrical_lighting_fixtures_info": "İç Aydınlatma Armatürleri (LED Spots / Tavan Lambası)",
     "electrical_grounding_info": "Topraklama Sistemi Bileşenleri",
 
     "plumbing_pprc_pipes_info": "Sıcak/Soğuk Su için PPRC Borular",
@@ -516,7 +516,7 @@ def _create_solar_appendix_elements_tr(solar_kw, solar_price, heading_style, nor
         ["<b>Bileşen</b>", "<b>Açıklama</b>"],
         ["Güneş Panelleri", f"{solar_kw} kW Yüksek Verimli Monokristal Panel"],
         ["Inverter (Çevirici)", "Hibrit Inverter (Şebeke Bağlantı Özellikli)"],
-        ["Bataryalar", "Lityum-İyon Batarya Depolama Sistemi (opsiyonel, ayrı fiyatlandırılır)"],
+        ["Bataryalar", "Lityum-İيون Batarya Depolama Sistemi (opsiyonel, ayrı fiyatlandırılır)"],
         ["Mounting System", "Çatı kurulumu için sertifikalı montaj yapısı"],
         ["Cabling & Connectors", "Tüm gerekli DC/AC kablolar, MC4 konnektörler ve güvenlik şalterleri"],
         ["Installation & Commissioning", "Tam profesyonel kurulum ve sistemin devreye alınması"],
@@ -830,15 +830,15 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     if project_details['integrated_fridge_option']:
         extra_general_additions_list_en_gr.append(f"Integrated Refrigerator: {get_yes_no_en(project_details['integrated_fridge_option'])}")
     if project_details['designer_furniture_option']:
-        extra_general_additions_list_en_gr.append(f"Integrated Custom Design Furniture: {get_yes_no_en(project_details['designer_furniture_option'])}")
+        additional_features_table_data.append([Paragraph("<b>Integrated Custom Design Furniture:</b>", contract_subheading_style), Paragraph(get_yes_no_en(project_details['designer_furniture_option']), contract_normal_style)])
     if project_details['italian_sofa_option']:
-        extra_general_additions_list_en_gr.append(f"Italian Sofa: {get_yes_no_en(project_details['italian_sofa_option'])}")
+        additional_features_table_data.append([Paragraph("<b>Italian Sofa:</b>", contract_subheading_style), Paragraph(get_yes_no_en(project_details['italian_sofa_option']), contract_normal_style)])
     if project_details['inclass_chairs_option']:
-        extra_general_additions_list_en_gr.append(f"Inclass Chairs: Yes ({project_details['inclass_chairs_count']} pcs)",)
+        additional_features_table_data.append([Paragraph("<b>Inclass Chairs:</b>", contract_subheading_style), Paragraph(f"Yes ({project_details['inclass_chairs_count']} pcs)", contract_normal_style)])
     if project_details['brushed_granite_countertops_option']:
-        extra_general_additions_list_en_gr.append(f"Brushed Granite Countertops: Yes ({project_details['brushed_granite_countertops_m2_val']:.2f} m²)",)
+        additional_features_table_data.append([Paragraph("<b>Brushed Granite Countertops:</b>", contract_subheading_style), Paragraph(f"Yes ({project_details['brushed_granite_countertops_m2_val']:.2f} m²)", contract_normal_style)])
     if project_details['exterior_wood_cladding_m2_option']:
-        extra_general_additions_list_en_gr.append(f"Exterior Wood Cladding (Lambiri): Yes ({project_details['exterior_wood_cladding_m2_val']:.2f} m²)")
+        additional_features_table_data.append([Paragraph("<b>Exterior Wood Cladding (Lambiri):</b>", contract_subheading_style), Paragraph(f"Yes ({project_details['exterior_wood_cladding_m2_val']:.2f} m²)", contract_normal_style)])
 
 
     if extra_general_additions_list_en_gr:
@@ -1355,11 +1355,11 @@ def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, pro
 
     for item in cost_breakdown_df.to_dict('records'):
         item_name = str(item['Item'])
-        if item_name.startswith(("Steel Profile", "Heavy Steel Construction", "Steel Welding Labor")):
+        if item_name.startswith(("Steel Profile", "Heavy Steel Construction", "Steel Welding Labor", FIYATLAR['steel_skeleton_info'], FIYATLAR['protective_automotive_paint_info'])):
             steel_costs.append(item)
-        elif item_name.startswith(("Zemin", "Floor", "WC Seramik", "Süpürgelik", "Laminat Parke", "Parke Altı Şilte", "OSB2 18mm", "5mm Galvanizli Sac", "Beton Panel Zemin", "İşlenmiş Çam Zemin Kaplaması", "Porselen Fayans", "Yerden Isıtma Sistemi")): # Yerden ısıtma da zeminle ilgili
+        elif item_name.startswith(("Zemin", "Floor", "WC Seramik", "Süpürgelik", "Laminat Parke", "Parke Altı Şilte", "OSB2 18mm", "5mm Galvanizli Sac", "Beton Panel Zemin", "İşlenmiş Çam Zemin Kaplaması", "Porselen Fayans", "Yerden Isıtma Sistemi")):
             floor_and_insulation_costs.append(item)
-        elif item_name.startswith(("Alçıpan", "Plasterboard", "Knauf Aquapanel Alçıpan", "EPS STYROFOAM", "Knauf MineralPlus İzolasyon", "Knauf Guardex Alçıpan", "Saten sıva ve boya", "Dış cephe ahşap kaplama - Lambiri", "Dış Cephe Kaplama", "Taşyünü", "Cam Yünü")): # Yalıtım malzemeleri buraya
+        elif item_name.startswith(("Alçıpan", "Plasterboard", "Knauf Aquapanel Alçıpan", "EPS STYROFOAM", "Knauf MineralPlus İzolasyon", "Knauf Guardex Alçıpan", "Saten sıva ve boya", "Dış cephe ahşap kaplama - Lambiri", "Dış Cephe Kaplama", "Taşyünü", "Cam Yünü")):
             wall_plasterboard_costs.append(item)
         elif item_name.startswith(("Roof (Sandwich Panel)", "Facade (Sandwich Panel)", "Panel Assembly Labor", "Standart 60mm EPS", "Yüksek performanslı 100mm EPS")):
             sandwich_panel_costs.append(item)
@@ -1729,7 +1729,7 @@ def create_sales_contract_pdf(customer_info, house_sales_price, solar_sales_pric
 
     # Zemin Kaplamaları ve Çatı Kaplaması (Floor Coverings and Roof Covering)
     coverings_table_data = [
-        [Paragraph("<b>Floor Coverings:</b>", contract_subheading_style), Paragraph(f"{project_details['floor_covering_type']} will be used for floor coverings.", contract_normal_style)],
+        [Paragraph("<b>Floor Coverings:</b>", contract_subheading_style), Paragraph(f"Used for floor coverings: {project_details['floor_covering_type']}.", contract_normal_style)], # Added text for clarity
         [Paragraph("<b>Roof Covering:</b>", contract_subheading_style), Paragraph("100mm Sandwich Panel will be used for the roof.", contract_normal_style)],
     ]
     coverings_table = Table(coverings_table_data, colWidths=[40*mm, 130*mm])
@@ -1903,6 +1903,7 @@ def run_streamlit_app():
     )
 
     # --- TÜM default_..._val değişkenlerinin koşulsuz başlatılması (UnboundLocalError düzeltmesi) ---
+    # Bu değişkenler, UI widget'larının value parametrelerinde kullanılacak ve daima tanımlı olmaları gerekir.
     default_kitchen_choice_radio = 'Mutfak Yok'
     default_shower_val = False
     default_wc_ceramic_val = False
@@ -1915,7 +1916,7 @@ def run_streamlit_app():
     default_solar_val = False
     default_wheeled_trailer_val = False
     
-    # Aether Living'e özel UI elementleri için varsayılanlar
+    # UI'dan kaldırılan ancak mantıkta hala kullanılan veya paketle default olan elemanlar için varsayılan değerler
     exterior_cladding_m2_option_val = False
     exterior_cladding_m2_val = 0.0
     exterior_wood_cladding_m2_option_val = False
@@ -1930,11 +1931,11 @@ def run_streamlit_app():
     security_camera_option_val = False
     white_goods_fridge_tv_option_val = False
     premium_faucets_option_val = False
-    integrated_fridge_option_val = False
+    integrated_fridge_option_val = False 
     designer_furniture_option_val = False
     italian_sofa_option_val = False
     inclass_chairs_option_val = False
-    inclass_chairs_count_val = 0
+    inclass_chairs_count_val = 0 
     brushed_granite_countertops_option_val = False
     brushed_granite_countertops_m2_val = 0.0
     
@@ -1942,6 +1943,7 @@ def run_streamlit_app():
     default_insulation_type_val = 'Taş Yünü' # Varsayılan yalıtım malzemesi
     
     # --- Aether Living Paketlerine göre default ayarları güncelle ---
+    # Bu blok, üstteki KOŞULSUZ default değerleri paket seçimine göre override eder.
     if aether_package_choice == 'Aether Living | Loft Standard (BASICS)':
         default_kitchen_choice_radio = 'Standart Mutfak'
         default_shower_val = True
@@ -1950,7 +1952,7 @@ def run_streamlit_app():
         default_insulation_floor_val = True 
         default_insulation_wall_val = True
         default_floor_covering = 'Laminate Parquet'
-        default_insulation_type_val = 'Taş Yünü' # Standard pakette taş yünü varsayım
+        default_insulation_type_val = 'Taş Yünü'
 
     elif aether_package_choice == 'Aether Living | Loft Premium (ESSENTIAL)':
         default_kitchen_choice_radio = 'Standart Mutfak' 
@@ -1962,8 +1964,12 @@ def run_streamlit_app():
         default_floor_covering = 'Laminate Parquet' 
         default_bed_set_val = True
         default_brushed_granite_countertops_val = True
-        terrace_laminated_wood_flooring_option_val = True # Premium Pakette geliyorsa
-        default_insulation_type_val = 'Taş Yünü' # Premium pakette de taş yünü varsayım
+        # Premium pakette İşlenmiş Çam Zemin Kaplama veya Porselen Fayans seçilebilir.
+        # Bu durumda, kullanıcıya seçim bırakmak için default_terrace_laminated_val ve porcelain_tiles_option_val True olarak ayarlanabilir.
+        # Ancak, UI'dan kaldırıldığı için, bu tercihi burada direkt varsayılan olarak belirleyelim:
+        terrace_laminated_wood_flooring_option_val = True # Varsayılan olarak Premium pakette çam zemin gelsin
+        porcelain_tiles_option_val = False # Porselen fayans seçilmesin
+        default_insulation_type_val = 'Taş Yünü'
 
     elif aether_package_choice == 'Aether Living | Loft Elite (LUXURY)':
         default_kitchen_choice_radio = 'Special Design Mutfak'
@@ -1975,11 +1981,11 @@ def run_streamlit_app():
         default_floor_covering = 'Ceramic'
         default_heating_val = True
         default_solar_val = True
-        exterior_cladding_m2_option_val = True
-        exterior_wood_cladding_m2_option_val = False
-        concrete_panel_floor_option_val = True
+        exterior_cladding_m2_option_val = True # Knauf Aquapanel
+        exterior_wood_cladding_m2_option_val = False # Ahşap kaplama isteğe bağlı
+        concrete_panel_floor_option_val = True # Beton panel zemin
         default_premium_faucets_val = True
-        integrated_fridge_option_val = True
+        integrated_fridge_option_val = True # Beyaz eşya içinde değerlendiriliyor
         default_designer_furniture_val = True
         default_italian_sofa_val = True
         inclass_chairs_option_val = True
@@ -1987,7 +1993,7 @@ def run_streamlit_app():
         default_smart_home_val = True
         default_security_cam_val = True
         default_white_goods_val = True
-        default_insulation_type_val = 'Cam Yünü' # Elite pakette cam yünü varsayım
+        default_insulation_type_val = 'Cam Yünü'
 
 
     col1, col2 = st.columns(2)
@@ -2237,6 +2243,7 @@ def run_streamlit_app():
             aether_package_total_cost = 0.0
 
             # --- Aether Living Paket Seçimine Göre Maliyet Ekleme Mantığı ---
+            # Paket seçilmediyse ('Yok'), bu blok atlanır ve manuel girişler devreye girer.
             if aether_package_choice == 'Aether Living | Loft Standard (BASICS)':
                 # Yapı (Metal iskelet, koruyucu otomotiv boyası)
                 basics_100x100_count = math.ceil(floor_area * (12 / 27.0))
@@ -2399,7 +2406,7 @@ def run_streamlit_app():
             financial_summary_data = [
                 ["Ara Toplam (Tüm Kalemler, Güneş Dahil)", sum([item['Total (€)'] for item in costs])],
                 [f"Atık Maliyeti ({FIRE_RATE*100:.0f}%) (Sadece Ev için)", waste_cost],
-                ["Toplam Maliyet (Ev + Atık + Güneş)", total_house_cost + solar_cost],
+                ["Toplam Maliyet (Ev + Atık + + Güneş)", total_house_cost + solar_cost],
                 [f"Kar ({profit_rate_val*100:.0f}%) (Sadece Ev için)", profit],
                 ["", ""],
                 ["Ev Satış Fiyatı (KDV Dahil)", house_sales_price],
@@ -2434,12 +2441,12 @@ def run_streamlit_app():
                 'osb_inner_wall': osb_inner_wall_calc,
                 'insulation_floor': insulation_floor_option_val,
                 'insulation_wall': insulation_wall_option_val,
-                'window_count': window_count, 'window_size': window_size_val,
+                'window_count': window_input_val, 'window_size': window_size_val,
                 'window_door_color': window_door_color_val,
-                'sliding_door_count': sliding_door_count, 'sliding_door_size': sliding_door_size_val,
-                'wc_window_count': wc_window_count, 'wc_window_size': wc_window_size_val,
-                'wc_sliding_door_count': wc_sliding_door_count, 'wc_sliding_door_size': wc_sliding_door_size_val,
-                'door_count': door_count, 'door_size': door_size_val,
+                'sliding_door_count': sliding_door_input_val, 'sliding_door_size': sliding_door_size_val,
+                'wc_window_count': wc_window_input_val, 'wc_window_size': wc_window_size_val,
+                'wc_sliding_door_count': wc_sliding_door_input_val, 'wc_sliding_door_size': wc_sliding_door_size_val,
+                'door_count': door_input_val, 'door_size': door_size_val,
                 'kitchen_type_display_en_gr': kitchen_type_display_en_gr,
                 'kitchen_type_display_tr': kitchen_type_display_tr,
                 'kitchen': kitchen_input_val,
@@ -2488,7 +2495,7 @@ def run_streamlit_app():
                 'brushed_granite_countertops_m2_val': brushed_granite_countertops_m2_val,
                 'terrace_laminated_wood_flooring_option': terrace_laminated_wood_flooring_option_val,
                 'terrace_laminated_wood_flooring_m2_val': terrace_laminated_wood_flooring_m2_val,
-                'insulation_material_type': insulation_material_type_val, # Yeni yalıtım tipi
+                'insulation_material_type': insulation_material_type_val,
             }
 
             # --- Display Results in Streamlit ---
