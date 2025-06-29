@@ -145,7 +145,7 @@ FIYATLAR = {
     "induction_hob_info": "İndüksiyonlu ocak",
     "electric_faucet_info": "Elektrikli batarya",
     "kitchen_sink_info": "Mutfak evyesi",
-    "fully_functional_bathroom_fixtures_info": "Tam fonksiyonel banyo armatürleri",
+    "fully_functional_bathroom_fixtures_info": "Tam fonksiyonel banyo armutürleri",
     "kitchen_bathroom_countertops_info": "Mutfak ve banyo tezgahları",
     "treated_pine_floor_info": "İşlenmiş Çam Zemin Kaplaması (Teras)",
     "porcelain_tiles_info": "Porselen Fayans",
@@ -185,7 +185,7 @@ FIYATLAR = {
     "electrical_distribution_board_info": "Sigorta Kutusu (Dağıtım Panosu)",
     "electrical_circuit_breakers_info": "Sigortalar & Kaçak Akım Rölesi",
     "electrical_sockets_switches_info": "Prizler ve Anahtarlar",
-    "electrical_lighting_fixtures_info": "İç Aydınlatma Armatürleri (LED Spots / Tavan Lambası)",
+    "electrical_lighting_fixtures_info": "İç Aydınlatma Armutürleri (LED Spots / Tavan Lambası)",
     "electrical_grounding_info": "Topraklama Sistemi Bileşenleri",
 
     "plumbing_pprc_pipes_info": "Sıcak/Soğuk Su için PPRC Borular",
@@ -488,7 +488,7 @@ def _create_solar_appendix_elements_tr(styles):
     ]
     solar_materials = [
         ["<b>Bileşen</b>", "<b>Açıklama</b>"],
-        ["Güneş Panelleri", f"{st.session_state.solar_capacity_val} kW Yüksek Verimli Monokristal Panel"], # Use session_state
+        ["Güneş Panelleri", f"{st.session_state.solar_capacity_val} kW Yüksek Verimli Monocristal Panel"], # Use session_state
         ["Inverter (Çevirici)", "Hibrit Inverter (Şebeke Bağlantı Özellikli)"],
         ["Bataryalar", "Lityum-İyon Batarya Depolama Sistemi (opsiyonel, ayrı fiyatlandırılır)"],
         ["Mounting System", "Çatı kurulumu için sertifikalı montaj yapısı"],
@@ -681,7 +681,7 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     if project_details['insulation_floor']:
         floor_insulation_details_display_en_gr_text = [FLOOR_INSULATION_MATERIALS_EN_GR]
         if project_details['skirting_length_val'] > 0:
-            floor_insulation_details_display_en_gr_text.append(f"• Skirting / Σοβατεπί ({project_details['skirting_length_val']:.2f} m)")
+            floor_insulation_details_display_en_gr_text.append(f"• Süpürgelik / Σοβατεπί ({project_details['skirting_length_val']:.2f} m)")
         if project_details['laminate_flooring_m2_val'] > 0:
             floor_insulation_details_display_en_gr_text.append(f"• Laminate Flooring 12mm / Laminate Δάπεδο 12mm ({project_details['laminate_flooring_m2_val']:.2f} m²)")
         if project_details['under_parquet_mat_m2_val'] > 0:
@@ -741,7 +741,7 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     if project_details['solar']:
         extra_general_additions_list_en_gr.append(f"Solar System: {get_yes_no_empty(project_details['solar'])} ({project_details['solar_kw']} kW)" if project_details['solar'] else '')
     if project_details['wheeled_trailer_included']:
-        extra_general_additions_list_en_gr.append(f"Wheeled Trailer: {get_yes_no_empty(project_details['wheeled_trailer_included'])} ({format_currency(project_details['wheeled_trailer_price'])})" if project_details['wheeled_trailer_included'] else '')
+        extra_general_additions_list_en_additions_list_en_gr.append(f"Wheeled Trailer: {get_yes_no_empty(project_details['wheeled_trailer_included'])} ({format_currency(project_details['wheeled_trailer_price'])})" if project_details['wheeled_trailer_included'] else '')
     
     # Aether Living'e özel eklenenler (UI'dan kaldırılsa da raporlarda yer almalı)
     if project_details['smart_home_systems_option']:
@@ -930,8 +930,9 @@ def run_streamlit_app():
         st.session_state.insulation_floor_val = True 
         st.session_state.insulation_wall_val = True
         st.session_state.floor_covering_val = 'Laminate Parquet'
-        st.session_state.insulation_material_type_val = 'Taş Yünü'
+        st.session_state.insulation_material_type_val = 'Taş Yünü' # Standard pakette taş yünü varsayım
 
+        # Ek donanımlar için paket varsayılanları (True/False değerleri doğrudan atanır)
         st.session_state.exterior_cladding_m2_option_val = False
         st.session_state.exterior_wood_cladding_m2_option_val = False
         st.session_state.porcelain_tiles_option_val = False
@@ -960,10 +961,12 @@ def run_streamlit_app():
         st.session_state.floor_covering_val = 'Laminate Parquet' 
         st.session_state.insulation_material_type_val = 'Taş Yünü'
         
+        # Premium pakete özel ek donanım varsayılanları
         st.session_state.bedroom_set_option_val = True
         st.session_state.brushed_granite_countertops_option_val = True
         st.session_state.terrace_laminated_wood_flooring_option_val = True 
         
+        # Diğer ek donanımlar varsayılan olarak kapalı
         st.session_state.exterior_cladding_m2_option_val = False
         st.session_state.exterior_wood_cladding_m2_option_val = False
         st.session_state.porcelain_tiles_option_val = False
@@ -991,6 +994,7 @@ def run_streamlit_app():
         st.session_state.solar_val = True
         st.session_state.insulation_material_type_val = 'Cam Yünü'
 
+        # Elite pakete özel ek donanım varsayılanları
         st.session_state.exterior_cladding_m2_option_val = True # Knauf Aquapanel
         st.session_state.exterior_wood_cladding_m2_option_val = False 
         st.session_state.concrete_panel_floor_option_val = True # Beton panel zemin
@@ -999,13 +1003,15 @@ def run_streamlit_app():
         st.session_state.designer_furniture_option_val = True
         st.session_state.italian_sofa_option_val = True
         st.session_state.inclass_chairs_option_val = True
-        st.session_state.inclass_chairs_count_val = 1 
+        st.session_state.inclass_chairs_count_val = 1 # Varsayılan 1 adet sandalye
         st.session_state.smart_home_systems_option_val = True
         st.session_state.security_camera_option_val = True
         st.session_state.white_goods_fridge_tv_option_val = True
         
+        # Elite pakette Premium'daki ek donanımlar da True olur (eğer çakışmıyorsa)
         st.session_state.bedroom_set_option_val = True
         st.session_state.brushed_granite_countertops_option_val = True
+        # Teras laminat çam zemin, Elite'de beton zemin varsa default kapalı kalır
         st.session_state.terrace_laminated_wood_flooring_option_val = False 
 
 
@@ -1251,12 +1257,11 @@ def run_streamlit_app():
 
     col14, col15 = st.columns(2)
     with col14:
-        _temp_solar_capacity_val = st.session_state.solar_capacity_val # solar_capacity_val init at top
-        solar_capacity_val = st.selectbox("Güneş Enerjisi Kapasitesi (kW):", [5, 7.2, 11], disabled=not st.session_state.solar_val, key="solar_capacity_select", index=[5, 7.2, 11].index(_temp_solar_capacity_val)) # Use temp for value
+        _temp_solar_capacity_val = st.session_state.solar_capacity_val 
+        solar_capacity_val = st.selectbox("Güneş Enerjisi Kapasitesi (kW):", [5, 7.2, 11], disabled=not st.session_state.solar_val, key="solar_capacity_select", index=[5, 7.2, 11].index(_temp_solar_capacity_val)) 
     with col15:
-        # solar_price_val is derived, not directly user input
         solar_price_val = solar_capacity_val * FIYATLAR['solar_per_kw'] if st.session_state.solar_val else 0.0
-        st.session_state.solar_price_val = solar_price_val # Update session state
+        st.session_state.solar_price_val = solar_price_val 
         st.number_input("Güneş Enerjisi Fiyatı (€):", value=st.session_state.solar_price_val, disabled=True, key="solar_price_display")
 
     _temp_wheeled_trailer_val = st.session_state.wheeled_trailer_val
@@ -1267,8 +1272,8 @@ def run_streamlit_app():
     # --- Financial Settings Section ---
     st.markdown("<div class='section-title'>FİNANSAL AYARLAR</div>", unsafe_allow_html=True)
     profit_rate_options = [(f'{i}%', i/100) for i in range(5, 45, 5)]
-    _temp_profit_rate_val_tuple = st.session_state.profit_rate_val_tuple # Default index 3 of range(5,45,5)
-    _temp_profit_rate_index = profit_rate_options.index(_temp_profit_rate_val_tuple) # Get index for current value
+    _temp_profit_rate_val_tuple = st.session_state.profit_rate_val_tuple 
+    _temp_profit_rate_index = profit_rate_options.index(_temp_profit_rate_val_tuple)
     st.session_state.profit_rate_val_tuple = st.selectbox("Kar Oranı:", options=profit_rate_options, format_func=lambda x: x[0], index=_temp_profit_rate_index, key="profit_rate_select")
     profit_rate_val = st.session_state.profit_rate_val_tuple[1]
     st.markdown(f"<div>KDV Oranı: {VAT_RATE*100:.0f}% (Sabit)</div>", unsafe_allow_html=True)
@@ -1280,7 +1285,7 @@ def run_streamlit_app():
 
     # --- PDF Language Selection ---
     _temp_pdf_language_selector_val_tuple = st.session_state.pdf_language_selector_val_tuple 
-    _temp_pdf_language_index = [('English-Greek', 'en_gr'), ('Turkish', 'tr')].index(_temp_pdf_language_selector_val_tuple) # Get index for current value
+    _temp_pdf_language_index = [('English-Greek', 'en_gr'), ('Turkish', 'tr')].index(_temp_pdf_language_selector_val_tuple)
     st.session_state.pdf_language_selector_val_tuple = st.selectbox("Teklif PDF Dili:", options=[('English-Greek', 'en_gr'), ('Turkish', 'tr')], format_func=lambda x: x[0], index=_temp_pdf_language_index, key="pdf_language_select")
     pdf_language_selector_val = st.session_state.pdf_language_selector_val_tuple[1]
 
@@ -1594,13 +1599,13 @@ def run_streamlit_app():
                 # Yeni Aether Living Opsiyonları için değerler (UI'dan kaldırılsa da mantıkta kullanılacak ve rapora eklenecek)
                 'aether_package_choice': st.session_state.aether_package_choice,
                 'exterior_cladding_m2_option': st.session_state.exterior_cladding_m2_option_val,
-                'exterior_cladding_m2_val': st.session_state.exterior_cladding_m2_val,
+                'exterior_cladding_m2_val': exterior_cladding_m2_val,
                 'exterior_wood_cladding_m2_option': st.session_state.exterior_wood_cladding_m2_option_val,
-                'exterior_wood_cladding_m2_val': st.session_state.exterior_wood_cladding_m2_val,
+                'exterior_wood_cladding_m2_val': exterior_wood_cladding_m2_val,
                 'porcelain_tiles_option': st.session_state.porcelain_tiles_option_val,
-                'porcelain_tiles_m2_val': st.session_state.porcelain_tiles_m2_val,
+                'porcelain_tiles_m2_val': porcelain_tiles_m2_val,
                 'concrete_panel_floor_option': st.session_state.concrete_panel_floor_option_val,
-                'concrete_panel_floor_m2_val': st.session_state.concrete_panel_floor_m2_val,
+                'concrete_panel_floor_m2_val': concrete_panel_floor_m2_val,
                 'bedroom_set_option': st.session_state.bedroom_set_option_val,
                 'sofa_option': st.session_state.sofa_option_val,
                 'smart_home_systems_option': st.session_state.smart_home_systems_option_val,
