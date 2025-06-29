@@ -185,7 +185,7 @@ FIYATLAR = {
     "electrical_distribution_board_info": "Sigorta Kutusu (Dağıtım Panosu)",
     "electrical_circuit_breakers_info": "Sigortalar & Kaçak Akım Rölesi",
     "electrical_sockets_switches_info": "Prizler ve Anahtarlar",
-    "electrical_lighting_fixtures_info": "İç Aydınlatma Armutürleri (LED Spots / Tavan Lambası)",
+    "electrical_lighting_fixtures_info": "İç Aydınlatma Armatürleri (LED Spots / Tavan Lambası)",
     "electrical_grounding_info": "Topraklama Sistemi Bileşenleri",
 
     "plumbing_pprc_pipes_info": "Sıcak/Soğuk Su için PPRC Borular",
@@ -388,7 +388,7 @@ Anti-rust will be applied to all profillere pas önleyici uygulanacak ve istenil
 All our profile welding works have EN3834 certificate in accordance with European standards. All construction processes of the building are subject to Avrupa standartlarına ve EN 1090-1 Çelik Yapı ruhsat denetimine tabidir.
 """
 
-# PDF özellikleri açıklamaları (İsteğe Bağlı Özellikler kaldırıldı)
+# PDF özellikleri açıklamaları (İsteğe Bağlı Özellikler kaldırıldı ve format düzeltildi)
 INTERIOR_WALLS_DESCRIPTION_EN_GR = """
 <b>1.4. INTERIOR WALLS:</b> 50mm polyurethane Sandwich Panel. Colour Option.
 """
@@ -681,7 +681,7 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     if project_details['insulation_floor']:
         floor_insulation_details_display_en_gr_text = [FLOOR_INSULATION_MATERIALS_EN_GR]
         if project_details['skirting_length_val'] > 0:
-            floor_insulation_details_display_en_gr_text.append(f"• Skirting / Σοβατεπί ({project_details['skirting_length_val']:.2f} m)")
+            floor_insulation_details_display_en_gr_text.append(f"• Süpürgelik / Σοβατεπί ({project_details['skirting_length_val']:.2f} m)")
         if project_details['laminate_flooring_m2_val'] > 0:
             floor_insulation_details_display_en_gr_text.append(f"• Laminate Flooring 12mm / Laminate Δάπεδο 12mm ({project_details['laminate_flooring_m2_val']:.2f} m²)")
         if project_details['under_parquet_mat_m2_val'] > 0:
@@ -734,7 +734,7 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     else:
         other_features_table_data.append([Paragraph('<b>Plumbing / Υδραυλικά</b>', styles['NormalBilingual']), Paragraph('', styles['NormalBilingual'])])
 
-    # Ekstra Genel İlaveler (koşulu olarak ayrı tabloya)
+    # Ekstra Genel Ιlaveler (koşulu olarak ayrı tabloya)
     extra_general_additions_list_en_gr = []
     if project_details['heating']:
         extra_general_additions_list_en_gr.append(f"Floor Heating: {get_yes_no_empty(project_details['heating'])}")
@@ -767,22 +767,25 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     if project_details['integrated_fridge_option']:
         extra_general_additions_list_en_gr.append(f"Integrated Refrigerator: {get_yes_no_en(project_details['integrated_fridge_option'])}")
     if project_details['designer_furniture_option']:
-        other_features_table_data.append([Paragraph("<b>Integrated Custom Design Furniture:</b>", contract_subheading_style), Paragraph(get_yes_no_en(project_details['designer_furniture_option']), contract_normal_style)])
+        extra_general_additions_list_en_gr.append(f"Integrated Custom Design Furniture: {get_yes_no_en(project_details['designer_furniture_option'])}")
     if project_details['italian_sofa_option']:
-        other_features_table_data.append([Paragraph("<b>Italian Sofa:</b>", contract_subheading_style), Paragraph(get_yes_no_en(project_details['italian_sofa_option']), contract_normal_style)])
+        extra_general_additions_list_en_gr.append(f"Italian Sofa: {get_yes_no_en(project_details['italian_sofa_option'])}")
     if project_details['inclass_chairs_option']:
-        other_features_table_data.append([Paragraph("<b>Inclass Chairs:</b>", contract_subheading_style), Paragraph(f"Yes ({project_details['inclass_chairs_count']} pcs)", contract_normal_style)])
+        extra_general_additions_list_en_gr.append(f"Inclass Chairs: Yes ({project_details['inclass_chairs_count']} pcs)")
     if project_details['brushed_granite_countertops_option']:
-        other_features_table_data.append([Paragraph("<b>Brushed Granite Countertops:</b>", contract_subheading_style), Paragraph(f"Yes ({project_details['brushed_granite_countertops_m2_val']:.2f} m²)", contract_normal_style)])
+        extra_general_additions_list_en_gr.append(f"Brushed Granite Countertops: Yes ({project_details['brushed_granite_countertops_m2_val']:.2f} m²)")
     if project_details['exterior_wood_cladding_m2_option']:
-        other_features_table_data.append([Paragraph("<b>Exterior Wood Cladding (Lambiri):</b>", contract_subheading_style), Paragraph(f"Yes ({project_details['exterior_wood_cladding_m2_val']:.2f} m²)", contract_normal_style)])
+        extra_general_additions_list_en_gr.append(f"Exterior Wood Cladding (Lambiri): Yes ({project_details['exterior_wood_cladding_m2_val']:.2f} m²)")
 
 
-    if other_features_table_data:
-        other_features_table = Table(other_features_table_data, colWidths=[60*mm, 110*mm])
-        other_features_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
-        elements.append(other_features_table)
-        elements.append(Spacer(1, 5*mm))
+    if extra_general_additions_list_en_gr:
+        other_features_table_data.append([Paragraph('<b>Extra General Additions / Έξτρα Γενικές Προσθήκες</b>', styles['NormalBilingual']), Paragraph("<br/>".join(extra_general_additions_list_en_gr), styles['NormalBilingual'])])
+
+
+    other_features_table = Table(other_features_table_data, colWidths=[60*mm, 110*mm])
+    other_features_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
+    elements.append(other_features_table)
+    elements.append(Spacer(1, 5*mm))
 
     # Build PDF
     doc.build(elements)
@@ -857,8 +860,12 @@ def run_streamlit_app():
     
     # === st.session_state değişkenlerinin koşulsuz başlatılması ===
     # Bu blok, uygulamanın her yeniden çalışmasında tüm anahtarların var olmasını sağlar.
-    # Bu, UnboundLocalError'ı kesin olarak çözen ana yaklaşımdır.
+    # Bu, UnboundLocalError/AttributeError'ı kesin olarak çözen ana yaklaşımdır.
+    
+    # Aether Living paket seçimi
     if 'aether_package_choice' not in st.session_state: st.session_state.aether_package_choice = 'Yok'
+    
+    # Ana donanımlar için varsayılanlar
     if 'kitchen_choice_radio' not in st.session_state: st.session_state.kitchen_choice_radio = 'Mutfak Yok'
     if 'shower_val' not in st.session_state: st.session_state.shower_val = False
     if 'wc_ceramic_val' not in st.session_state: st.session_state.wc_ceramic_val = False
@@ -873,7 +880,7 @@ def run_streamlit_app():
     if 'wheeled_trailer_val' not in st.session_state: st.session_state.wheeled_trailer_val = False
     if 'wheeled_trailer_price_input_val' not in st.session_state: st.session_state.wheeled_trailer_price_input_val = 0.0
     
-    # Aether Living'e özel UI elementleri için varsayılanlar (artık manuel olarak kontrol edilecek)
+    # Aether Living'e özel UI elementleri için varsayılanlar
     if 'exterior_cladding_m2_option_val' not in st.session_state: st.session_state.exterior_cladding_m2_option_val = False
     if 'exterior_cladding_m2_val' not in st.session_state: st.session_state.exterior_cladding_m2_val = 0.0
     if 'exterior_wood_cladding_m2_option_val' not in st.session_state: st.session_state.exterior_wood_cladding_m2_option_val = False
@@ -902,7 +909,14 @@ def run_streamlit_app():
     if 'under_parquet_mat_m2_val' not in st.session_state: st.session_state.under_parquet_mat_m2_val = 0.0
     if 'osb2_18mm_count_val' not in st.session_state: st.session_state.osb2_18mm_count_val = 0
     if 'galvanized_sheet_m2_val' not in st.session_state: st.session_state.galvanized_sheet_m2_val = 0.0
-    
+
+    # Diğer selectbox'lar ve number_input'lar için de session state başlatma
+    if 'solar_capacity_val' not in st.session_state: st.session_state.solar_capacity_val = 5
+    if 'solar_price_val' not in st.session_state: st.session_state.solar_price_val = 0.0
+    if 'customer_notes_val' not in st.session_state: st.session_state.customer_notes_val = ""
+    if 'pdf_language_selector_val_tuple' not in st.session_state: st.session_state.pdf_language_selector_val_tuple = ('Turkish', 'tr')
+    if 'profit_rate_val_tuple' not in st.session_state: st.session_state.profit_rate_val_tuple = (f'{20}%', 0.20) # Default index 3 of range(5,45,5)
+
     # --- Aether Living Paketlerine göre st.session_state değerlerini güncelle ---
     # Bu blok, st.session_state'in başlangıç değerlerini paketin özelliklerine göre override eder.
     # Sadece aether_package_choice'a göre varsayılanlar belirlenir, UI elemanları bu değerleri doğrudan kullanır.
@@ -948,7 +962,7 @@ def run_streamlit_app():
         # Premium pakete özel ek donanım varsayılanları
         st.session_state.bedroom_set_option_val = True
         st.session_state.brushed_granite_countertops_option_val = True
-        st.session_state.terrace_laminated_wood_flooring_option_val = True # Premium Pakette geliyorsa
+        st.session_state.terrace_laminated_wood_flooring_option_val = True 
         
         # Diğer ek donanımlar varsayılan olarak kapalı
         st.session_state.exterior_cladding_m2_option_val = False
@@ -1013,10 +1027,11 @@ def run_streamlit_app():
         plasterboard_all_disabled = (structure_type_val == 'Light Steel')
 
         # Değişkenler doğrudan st.session_state'ten okunup güncelleniyor
-        _temp_plasterboard_interior_option_val = st.session_state.plasterboard_interior_option_val # Geçici yerel değişken
+        # value parametresi için geçici yerel değişken kullanma (AttributeError çözümü)
+        _temp_plasterboard_interior_option_val = st.session_state.plasterboard_interior_option_val 
         st.session_state.plasterboard_interior_option_val = st.checkbox("İç Alçıpan Dahil Et", value=_temp_plasterboard_interior_option_val, disabled=plasterboard_interior_disabled, key="pb_int_checkbox")
         
-        _temp_plasterboard_all_option_val = st.session_state.plasterboard_all_option_val # Geçici yerel değişken
+        _temp_plasterboard_all_option_val = st.session_state.plasterboard_all_option_val 
         st.session_state.plasterboard_all_option_val = st.checkbox("İç ve Dış Alçıpan Dahil Et", value=_temp_plasterboard_all_option_val, disabled=plasterboard_all_disabled, key="pb_all_checkbox")
         
         # Calculation variables should directly read from session state
@@ -1030,7 +1045,7 @@ def run_streamlit_app():
             plasterboard_interior_calc = False 
 
         osb_inner_wall_disabled = not (plasterboard_interior_calc or plasterboard_all_calc)
-        _temp_osb_inner_wall_val = st.session_state.osb_inner_wall_option_val # Geçici yerel değişken
+        _temp_osb_inner_wall_val = st.session_state.osb_inner_wall_option_val 
         st.session_state.osb_inner_wall_option_val = st.checkbox("İç Duvar OSB Malzemesi Dahil Et", value=_temp_osb_inner_wall_val, disabled=osb_inner_wall_disabled, key="osb_inner_checkbox")
         
         osb_inner_wall_calc = st.session_state.osb_inner_wall_option_val
@@ -1056,7 +1071,7 @@ def run_streamlit_app():
         room_config_val = st.selectbox("Oda Konfigürasyonu:", room_config_options, key="room_config_select")
         
         facade_sandwich_panel_disabled = (structure_type_val == 'Light Steel')
-        _temp_facade_sandwich_panel_val = st.session_state.facade_sandwich_panel_option_val # Geçici yerel değişken
+        _temp_facade_sandwich_panel_val = st.session_state.facade_sandwich_panel_option_val 
         st.session_state.facade_sandwich_panel_option_val = st.checkbox("Dış Cephe Sandviç Panel Dahil Et (Ağır Çelik için)", value=_temp_facade_sandwich_panel_val, disabled=facade_sandwich_panel_disabled, key="facade_panel_checkbox")
         
         facade_sandwich_panel_calc = st.session_state.facade_sandwich_panel_option_val
@@ -1115,9 +1130,9 @@ def run_streamlit_app():
     col_wc_slid1, col_wc_slid2, col_wc_slid3 = st.columns(3)
     with col_wc_slid1:
         wc_sliding_door_input_val = st.number_input("WC Sürme Kapı Adedi:", value=0, min_value=0, key="wc_sliding_door_count_input")
-    with col_wc_win2:
+    with col_wc_slid2:
         wc_sliding_door_size_val = st.text_input("WC Sürme Kapı Boyutu:", value="140x70 cm", key="wc_sliding_door_size_input")
-    with col_wc_win3:
+    with col_wc_slid3:
         pass
     
     col_door_main1, col_door_main2, col_door_main3 = st.columns(3)
@@ -1240,7 +1255,7 @@ def run_streamlit_app():
     # --- Financial Settings Section ---
     st.markdown("<div class='section-title'>FİNANSAL AYARLAR</div>", unsafe_allow_html=True)
     profit_rate_options = [(f'{i}%', i/100) for i in range(5, 45, 5)]
-    _temp_profit_rate_val_tuple = st.session_state.profit_rate_val_tuple if 'profit_rate_val_tuple' in st.session_state else profit_rate_options[3] # Fallback if not init in session_state
+    _temp_profit_rate_val_tuple = st.session_state.profit_rate_val_tuple # Default index 3 of range(5,45,5)
     _temp_profit_rate_index = profit_rate_options.index(_temp_profit_rate_val_tuple) # Get index for current value
     st.session_state.profit_rate_val_tuple = st.selectbox("Kar Oranı:", options=profit_rate_options, format_func=lambda x: x[0], index=_temp_profit_rate_index, key="profit_rate_select")
     profit_rate_val = st.session_state.profit_rate_val_tuple[1]
@@ -1248,12 +1263,11 @@ def run_streamlit_app():
 
     # --- Customer Notes Section ---
     st.markdown("<div class='section-title'>MÜŞTERİ ÖZEL İSTEKLERİ VE NOTLAR</div>", unsafe_allow_html=True)
-    customer_notes_val = st.text_area("Müşteri Notları:", value=st.session_state.customer_notes_val, key="customer_notes_textarea") # Use session_state.customer_notes_val
-    if 'customer_notes_val' not in st.session_state:
-        st.session_state.customer_notes_val = "" # Initialize if not done already.
+    _temp_customer_notes_val = st.session_state.customer_notes_val
+    st.session_state.customer_notes_val = st.text_area("Müşteri Notları:", value=_temp_customer_notes_val, key="customer_notes_textarea")
 
     # --- PDF Language Selection ---
-    _temp_pdf_language_selector_val_tuple = st.session_state.pdf_language_selector_val_tuple if 'pdf_language_selector_val_tuple' in st.session_state else ('Turkish', 'tr') # Fallback
+    _temp_pdf_language_selector_val_tuple = st.session_state.pdf_language_selector_val_tuple 
     _temp_pdf_language_index = [('English-Greek', 'en_gr'), ('Turkish', 'tr')].index(_temp_pdf_language_selector_val_tuple) # Get index for current value
     st.session_state.pdf_language_selector_val_tuple = st.selectbox("Teklif PDF Dili:", options=[('English-Greek', 'en_gr'), ('Turkish', 'tr')], format_func=lambda x: x[0], index=_temp_pdf_language_index, key="pdf_language_select")
     pdf_language_selector_val = st.session_state.pdf_language_selector_val_tuple[1]
@@ -1328,7 +1342,7 @@ def run_streamlit_app():
                 aether_package_total_cost += calculate_rounded_up_cost(plywood_pieces_needed * FIYATLAR["plywood_piece"])
                 aether_package_total_cost += calculate_rounded_up_cost(floor_area * FIYATLAR["laminate_flooring_m2_price"])
 
-                # Mutfak/Banyo (İndüksiyonlu ocak, elektrikli batarya, mutfak evyesi, tam fonksiyonel banyo armatürleri)
+                # Mutfak/Banyo (İndüksiyonlu ocak, elektrikli batarya, mutfak evyesi, tam fonksiyonel banyo armutürleri)
                 costs.append({'Item': FIYATLAR['induction_hob_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
                 costs.append({'Item': FIYATLAR['electric_faucet_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
                 costs.append({'Item': FIYATLAR['kitchen_sink_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
@@ -1436,221 +1450,222 @@ def run_streamlit_app():
                     costs.append({'Item': FIYATLAR['oc100_material_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['oc100_material_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['oc100_material_price'] * (total_alcipan_labor_area / 25))}) # Örnek miktar
                     costs.append({'Item': FIYATLAR['ch100_material_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['ch100_material_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['ch100_material_price'] * (total_alcipan_labor_area / 25))}) # Örnek miktar
 
-                # Zemin: Beton panel zemin (isteğe bağlı yerden ısıtma)
-                if st.session_state.concrete_panel_floor_option_val:
-                    concrete_panel_cost = calculate_rounded_up_cost(floor_area * FIYATLAR['concrete_panel_floor_price_per_m2'])
-                    costs.append({'Item': FIYATLAR['concrete_panel_floor_info'], 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': FIYATLAR['concrete_panel_floor_price_per_m2'], 'Total (€)': concrete_panel_cost})
-                    aether_package_total_cost += concrete_panel_cost
-                if st.session_state.heating_val:
-                    total_heating_cost = calculate_rounded_up_cost(floor_area * FIYATLAR["floor_heating_m2"])
-                    costs.append({'Item': 'Yerden Isıtma Sistemi', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["floor_heating_m2"], 'Total (€)': total_heating_cost})
-                    aether_package_total_cost += total_heating_cost
-                
-                # Armatürler: Premium bataryalar
-                if st.session_state.premium_faucets_option_val:
-                    costs.append({'Item': FIYATLAR['premium_faucets_info'], 'Quantity': 1, 'Unit Price (€)': FIYATLAR['premium_faucets_total_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['premium_faucets_total_price'])})
-                    aether_package_total_cost += calculate_rounded_up_cost(FIYATLAR['premium_faucets_total_price'])
+                # Zemin: Beton panel zemin (isteğe bağlı yerden ısıtma)
+                if st.session_state.concrete_panel_floor_option_val:
+                    concrete_panel_cost = calculate_rounded_up_cost(floor_area * FIYATLAR['concrete_panel_floor_price_per_m2'])
+                    costs.append({'Item': FIYATLAR['concrete_panel_floor_info'], 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': FIYATLAR['concrete_panel_floor_price_per_m2'], 'Total (€)': concrete_panel_cost})
+                    aether_package_total_cost += concrete_panel_cost
+                if st.session_state.heating_val:
+                    total_heating_cost = calculate_rounded_up_cost(floor_area * FIYATLAR["floor_heating_m2"])
+                    costs.append({'Item': 'Yerden Isıtma Sistemi', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["floor_heating_m2"], 'Total (€)': total_heating_cost})
+                    aether_package_total_cost += total_heating_cost
+                
+                # Armatürler: Premium bataryalar
+                if st.session_state.premium_faucets_option_val:
+                    costs.append({'Item': FIYATLAR['premium_faucets_info'], 'Quantity': 1, 'Unit Price (€)': FIYATLAR['premium_faucets_total_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['premium_faucets_total_price'])})
+                    aether_package_total_cost += calculate_rounded_up_cost(FIYATLAR['premium_faucets_total_price'])
 
-                # Yükseltilmiş mutfak cihazları (örn. entegre buzdolabı) - Zaten beyaz eşya içinde değerlendiriliyor, ayrıca eklenmeyecek.
-                if st.session_state.integrated_fridge_option_val:
-                    costs.append({'Item': FIYATLAR['integrated_refrigerator_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
+                # Yükseltilmiş mutfak cihazları (örn. entegre buzdolabı) - Zaten beyaz eşya içinde değerlendiriliyor, ayrıca eklenmeyecek.
+                if st.session_state.integrated_fridge_option_val:
+                    costs.append({'Item': FIYATLAR['integrated_refrigerator_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
 
-                # Mobilyalar: Entegre özel tasarım mobilyalar, seçkin oturma grupları
-                if st.session_state.designer_furniture_option_val:
-                    costs.append({'Item': FIYATLAR['integrated_custom_furniture_info'], 'Quantity': 1, 'Unit Price (€)': FIYATLAR['designer_furniture_total_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['designer_furniture_total_price'])})
-                    aether_package_total_cost += calculate_rounded_up_cost(FIYATLAR['designer_furniture_total_price'])
-                if st.session_state.italian_sofa_option_val:
-                    costs.append({'Item': FIYATLAR['italian_sofa_info'], 'Quantity': 1, 'Unit Price (€)': FIYATLAR['italian_sofa_total_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['italian_sofa_total_price'])})
-                    aether_package_total_cost += calculate_rounded_up_cost(FIYATLAR['italian_sofa_total_price'])
-                if st.session_state.inclass_chairs_option_val and st.session_state.inclass_chairs_count_val > 0:
-                    inclass_chairs_cost = calculate_rounded_up_cost(st.session_state.inclass_chairs_count_val * FIYATLAR['inclass_chairs_unit_price'])
-                    costs.append({'Item': FIYATLAR['inclass_chairs_info'], 'Quantity': f"{st.session_state.inclass_chairs_count_val} adet", 'Unit Price (€)': FIYATLAR['inclass_chairs_unit_price'], 'Total (€)': inclass_chairs_cost})
-                    aether_package_total_cost += inclass_chairs_cost
-                
-                # Teknoloji: Akıllı ev sistemleri, gelişmiş güvenlik kamerası ön kurulumu
-                if st.session_state.smart_home_systems_option_val:
-                    costs.append({'Item': FIYATLAR['smart_home_systems_info'], 'Quantity': 1, 'Unit Price (€)': FIYATLAR['smart_home_systems_total_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['smart_home_systems_total_price'])})
-                    aether_package_total_cost += calculate_rounded_up_cost(FIYATLAR['smart_home_systems_total_price'])
-                if st.session_state.security_camera_option_val:
-                    costs.append({'Item': FIYATLAR['security_camera_info'], 'Quantity': 1, 'Unit Price (€)': FIYATLAR['security_camera_total_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['security_camera_total_price'])})
-                    aether_package_total_cost += calculate_rounded_up_cost(FIYATLAR['security_camera_total_price'])
-            
-            # Ana Maliyet Hesaplamaları
-            # Paket seçiliyse house_subtotal, paketin otomatik toplanan maliyeti olur.
-            # Aksi takdirde, diğer manuel seçilenlerin toplamı olur.
-            if st.session_state.aether_package_choice != 'Yok':
-                house_subtotal = aether_package_total_cost
-            else: # Eğer Aether Living paketi seçili değilse, mevcut manuel seçimlere göre topla
-                house_subtotal = sum([item['Total (€)'] for item in costs if 'Solar' not in item['Item']])
+                # Mobilyalar: Entegre özel tasarım mobilyalar, seçkin oturma grupları
+                if st.session_state.designer_furniture_option_val:
+                    costs.append({'Item': FIYATLAR['integrated_custom_furniture_info'], 'Quantity': 1, 'Unit Price (€)': FIYATLAR['designer_furniture_total_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['designer_furniture_total_price'])})
+                    aether_package_total_cost += calculate_rounded_up_cost(FIYATLAR['designer_furniture_total_price'])
+                if st.session_state.italian_sofa_option_val:
+                    costs.append({'Item': FIYATLAR['italian_sofa_info'], 'Quantity': 1, 'Unit Price (€)': FIYATLAR['italian_sofa_total_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['italian_sofa_total_price'])})
+                    aether_package_total_cost += calculate_rounded_up_cost(FIYATLAR['italian_sofa_total_price'])
+                if st.session_state.inclass_chairs_option_val and st.session_state.inclass_chairs_count_val > 0:
+                    inclass_chairs_cost = calculate_rounded_up_cost(st.session_state.inclass_chairs_count_val * FIYATLAR['inclass_chairs_unit_price'])
+                    costs.append({'Item': FIYATLAR['inclass_chairs_info'], 'Quantity': f"{st.session_state.inclass_chairs_count_val} adet", 'Unit Price (€)': FIYATLAR['inclass_chairs_unit_price'], 'Total (€)': inclass_chairs_cost})
+                    aether_package_total_cost += inclass_chairs_cost
+                
+                # Teknoloji: Akıllı ev sistemleri, gelişmiş güvenlik kamerası ön kurulumu
+                if st.session_state.smart_home_systems_option_val:
+                    costs.append({'Item': FIYATLAR['smart_home_systems_info'], 'Quantity': 1, 'Unit Price (€)': FIYATLAR['smart_home_systems_total_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['smart_home_systems_total_price'])})
+                    aether_package_total_cost += calculate_rounded_up_cost(FIYATLAR['smart_home_systems_total_price'])
+                if st.session_state.security_camera_option_val:
+                    costs.append({'Item': FIYATLAR['security_camera_info'], 'Quantity': 1, 'Unit Price (€)': FIYATLAR['security_camera_total_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['security_camera_total_price'])})
+                    aether_package_total_cost += calculate_rounded_up_cost(FIYATLAR['security_camera_total_price'])
+            
+            # Ana Maliyet Hesaplamaları
+            # Paket seçiliyse house_subtotal, paketin otomatik toplanan maliyeti olur.
+            # Aksi takdirde, diğer manuel seçilenlerin toplamı olur.
+            if st.session_state.aether_package_choice != 'Yok':
+                house_subtotal = aether_package_total_cost
+            else: # Eğer Aether Living paketi seçili değilse, mevcut manuel seçimlere göre topla
+                house_subtotal = sum([item['Total (€)'] for item in costs if 'Solar' not in item['Item']])
 
-            waste_cost = calculate_rounded_up_cost(house_subtotal * FIRE_RATE)
-            total_house_cost = calculate_rounded_up_cost(house_subtotal + waste_cost)
-            profit = calculate_rounded_up_cost(total_house_cost * profit_rate_val)
-            house_vat_base = calculate_rounded_up_cost(total_house_cost + profit)
-            house_vat = calculate_rounded_up_cost(house_vat_base * VAT_RATE)
-            house_sales_price = calculate_rounded_up_cost(house_vat_base + house_vat)
-            
-            solar_cost = 0 # solar_cost'u her zaman tanımlı hale getir (NameError düzeltmesi)
-            if st.session_state.solar_val:
-                solar_cost = calculate_rounded_up_cost(solar_capacity_val * FIYATLAR['solar_per_kw'])
-                costs.append({'Item': f'Güneş Enerjisi Sistemi ({solar_capacity_val} kW)', 'Quantity': 1, 'Unit Price (€)': solar_cost, 'Total (€)': solar_cost})
+            waste_cost = calculate_rounded_up_cost(house_subtotal * FIRE_RATE)
+            total_house_cost = calculate_rounded_up_cost(house_subtotal + waste_cost)
+            profit = calculate_rounded_up_cost(total_house_cost * profit_rate_val)
+            house_vat_base = calculate_rounded_up_cost(total_house_cost + profit)
+            house_vat = calculate_rounded_up_cost(house_vat_base * VAT_RATE)
+            house_sales_price = calculate_rounded_up_cost(house_vat_base + house_vat)
+            
+            solar_cost = 0 # solar_cost'u her zaman tanımlı hale getir (NameError düzeltmesi)
+            if st.session_state.solar_val:
+                solar_cost = calculate_rounded_up_cost(solar_capacity_val * FIYATLAR['solar_per_kw'])
+                costs.append({'Item': f'Güneş Enerjisi Sistemi ({solar_capacity_val} kW)', 'Quantity': 1, 'Unit Price (€)': solar_cost, 'Total (€)': solar_cost})
 
-            total_sales_price = calculate_rounded_up_cost(house_sales_price + solar_cost)
+            total_sales_price = calculate_rounded_up_cost(house_sales_price + solar_cost)
 
-            delivery_duration_business_days = math.ceil((floor_area / 27.0) * 35)
-            if delivery_duration_business_days < 10: delivery_duration_business_days = 10
-            
-            annual_income_tax_calc = calculate_rounded_up_cost((profit + waste_cost) * ANNUAL_INCOME_TAX_RATE)
+            delivery_duration_business_days = math.ceil((floor_area / 27.0) * 35)
+            if delivery_duration_business_days < 10: delivery_duration_business_days = 10
+            
+            annual_income_tax_calc = calculate_rounded_up_cost((profit + waste_cost) * ANNUAL_INCOME_TAX_RATE)
 
-            financial_summary_data = [
-                ["Ara Toplam (Tüm Kalemler, Güneş Dahil)", sum([item['Total (€)'] for item in costs])],
-                [f"Atık Maliyeti ({FIRE_RATE*100:.0f}%) (Sadece Ev için)", waste_cost],
-                ["Toplam Maliyet (Ev + Atık + + Güneş)", total_house_cost + solar_cost],
-                [f"Kar ({profit_rate_val*100:.0f}%) (Sadece Ev için)", profit],
-                ["", ""],
-                ["Ev Satış Fiyatı (KDV Dahil)", house_sales_price],
-                ["Güneş Enerjisi Sistemi Fiyatı (KDV Dahil)", solar_cost],
-                ["TOPLAM SATIŞ FİYATI", total_sales_price],
-                ["", ""],
-                [f"KDV ({VAT_RATE*100:.0f}%)", house_vat],
-                ["Yıllık Kurumlar Vergisi (%23.5)", annual_income_tax_calc],
-                ["Aylık Muhasebe Giderleri", calculate_rounded_up_cost(MONTHLY_ACCOUNTING_EXPENSES)],
-                ["Aylık Ofis Kirası", calculate_rounded_up_cost(MONTHLY_OFFICE_RENT)]
-            ]
+            financial_summary_data = [
+                ["Ara Toplam (Tüm Kalemler, Güneş Dahil)", sum([item['Total (€)'] for item in costs])],
+                [f"Atık Maliyeti ({FIRE_RATE*100:.0f}%) (Sadece Ev için)", waste_cost],
+                ["Toplam Maliyet (Ev + Atık + + Güneş)", total_house_cost + solar_cost],
+                [f"Kar ({profit_rate_val*100:.0f}%) (Sadece Ev için)", profit],
+                ["", ""],
+                ["Ev Satış Fiyatı (KDV Dahil)", house_sales_price],
+                ["Güneş Enerjisi Sistemi Fiyatı (KDV Dahil)", solar_cost],
+                ["TOPLAM SATIŞ FİYATI", total_sales_price],
+                ["", ""],
+                [f"KDV ({VAT_RATE*100:.0f}%)", house_vat],
+                ["Yıllık Kurumlar Vergisi (%23.5)", annual_income_tax_calc],
+                ["Aylık Muhasebe Giderleri", calculate_rounded_up_cost(MONTHLY_ACCOUNTING_EXPENSES)],
+                ["Aylık Ofis Kirası", calculate_rounded_up_cost(MONTHLY_OFFICE_RENT)]
+            ]
 
-            formatted_financial_summary = []
-            for item, amount in financial_summary_data:
-                if isinstance(amount, (int, float)): formatted_amount = format_currency(amount)
-                else: formatted_amount = amount
-                formatted_financial_summary.append({'Item': item, 'Amount (€)': formatted_amount})
+            formatted_financial_summary = []
+            for item, amount in financial_summary_data:
+                if isinstance(amount, (int, float)): formatted_amount = format_currency(amount)
+                else: formatted_amount = amount
+                formatted_financial_summary.append({'Item': item, 'Amount (€)': formatted_amount})
 
-            # Prepare results dictionaries
-            customer_info_result = {
-                'name': customer_name.strip() or "GENEL", 'company': customer_company.strip() or "",
-                'address': customer_address.strip() or "", 'city': customer_city.strip() or "",
-                'phone': customer_phone.strip() or "", 'email': customer_email.strip() or "",
-                'id_no': customer_id_no.strip() or ""
-            }
+            # Prepare results dictionaries
+            customer_info_result = {
+                'name': customer_name.strip() or "GENEL", 'company': customer_company.strip() or "",
+                'address': customer_address.strip() or "", 'city': customer_city.strip() or "",
+                'phone': customer_phone.strip() or "", 'email': customer_email.strip() or "",
+                'id_no': customer_id_no.strip() or ""
+            }
 
-            project_details_result = {
-                'width': width_val, 'length': length_val, 'height': height_val, 'area': floor_area,
-                'structure_type': structure_type_val,
-                'plasterboard_interior': plasterboard_interior_calc,
-                'plasterboard_all': plasterboard_all_calc,
-                'osb_inner_wall': osb_inner_wall_calc,
-                'insulation_floor': st.session_state.insulation_floor_val,
-                'insulation_wall': st.session_state.insulation_wall_val,
-                'window_count': window_input_val, 'window_size': window_size_val,
-                'window_door_color': window_door_color_val,
-                'sliding_door_count': sliding_door_input_val, 'sliding_door_size': sliding_door_size_val,
-                'wc_window_count': wc_window_input_val, 'wc_window_size': wc_window_size_val,
-                'wc_sliding_door_count': wc_sliding_door_input_val, 'wc_sliding_door_size': wc_sliding_door_size_val,
-                'door_count': door_input_val, 'door_size': door_size_val,
-                'kitchen_type_display_en_gr': kitchen_type_display_en_gr,
-                'kitchen_type_display_tr': kitchen_type_display_tr,
-                'kitchen': kitchen_input_val,
-                'shower': shower_input_val,
-                'wc_ceramic': wc_ceramic_input_val, 'wc_ceramic_area': wc_ceramic_area_val,
-                'electrical': electrical_installation_input_val, 'plumbing': plumbing_installation_input_val,
-                'transportation': st.session_state.transportation_input_val, 'heating': st.session_state.heating_val,
-                'solar': st.session_state.solar_val, 'solar_kw': solar_capacity_val, 'solar_price': solar_cost,
-                'vat_rate': VAT_RATE, 'profit_rate': profit_rate_val,
-                'room_configuration': room_config_val,
-                'wheeled_trailer_included': st.session_state.wheeled_trailer_val,
-                'wheeled_trailer_price': st.session_state.wheeled_trailer_price_input_val,
-                'sales_price': total_sales_price,
-                'delivery_duration_business_days': delivery_duration_business_days,
-                'welding_labor_type': welding_labor_option_val,
-                'facade_sandwich_panel_included': facade_sandwich_panel_calc,
-                'floor_covering_type': st.session_state.floor_covering_val,
-                'skirting_length_val': st.session_state.skirting_count_val,
-                'laminate_flooring_m2_val': st.session_state.laminate_flooring_m2_val,
-                'under_parquet_mat_m2_val': st.session_state.under_parquet_mat_m2_val,
-                'osb2_18mm_count_val': st.session_state.osb2_18mm_count_val,
-                'galvanized_sheet_m2_val': st.session_state.galvanized_sheet_m2_val,
-                
-                # Yeni Aether Living Opsiyonları için değerler (UI'dan kaldırılsa da mantıkta kullanılacak ve rapora eklenecek)
-                'aether_package_choice': st.session_state.aether_package_choice,
-                'exterior_cladding_m2_option': exterior_cladding_m2_option_val,
-                'exterior_cladding_m2_val': exterior_cladding_m2_val,
-                'exterior_wood_cladding_m2_option': exterior_wood_cladding_m2_option_val,
-                'exterior_wood_cladding_m2_val': exterior_wood_cladding_m2_val,
-                'porcelain_tiles_option': porcelain_tiles_option_val,
-                'porcelain_tiles_m2_val': porcelain_tiles_m2_val,
-                'concrete_panel_floor_option': concrete_panel_floor_option_val,
-                'concrete_panel_floor_m2_val': concrete_panel_floor_m2_val,
-                'bedroom_set_option': st.session_state.bedroom_set_option_val,
-                'sofa_option': st.session_state.sofa_option_val,
-                'smart_home_systems_option': st.session_state.smart_home_systems_option_val,
-                'security_camera_option': st.session_state.security_camera_option_val,
-                'white_goods_fridge_tv_option': st.session_state.white_goods_fridge_tv_option_val,
-                'premium_faucets_option': st.session_state.premium_faucets_option_val,
-                'integrated_fridge_option': st.session_state.integrated_fridge_option_val,
-                'designer_furniture_option': st.session_state.designer_furniture_option_val,
-                'italian_sofa_option': st.session_state.italian_sofa_option_val,
-                'inclass_chairs_option': st.session_state.inclass_chairs_option_val,
-                'inclass_chairs_count': st.session_state.inclass_chairs_count_val,
-                'brushed_granite_countertops_option': st.session_state.brushed_granite_countertops_option_val,
-                'brushed_granite_countertops_m2_val': st.session_state.brushed_granite_countertops_m2_val,
-                'terrace_laminated_wood_flooring_option': terrace_laminated_wood_flooring_option_val,
-                'terrace_laminated_wood_flooring_m2_val': terrace_laminated_wood_flooring_m2_val,
-                'insulation_material_type': insulation_material_type_val,
-            }
+            project_details_result = {
+                'width': width_val, 'length': length_val, 'height': height_val, 'area': floor_area,
+                'structure_type': structure_type_val,
+                'plasterboard_interior': plasterboard_interior_calc,
+                'plasterboard_all': plasterboard_all_calc,
+                'osb_inner_wall': osb_inner_wall_calc,
+                'insulation_floor': st.session_state.insulation_floor_val,
+                'insulation_wall': st.session_state.insulation_wall_val,
+                'window_count': window_input_val, 'window_size': window_size_val,
+                'window_door_color': window_door_color_val,
+                'sliding_door_count': sliding_door_input_val, 'sliding_door_size': sliding_door_size_val,
+                'wc_window_count': wc_window_input_val, 'wc_window_size': wc_window_size_val,
+                'wc_sliding_door_count': wc_sliding_door_input_val, 'wc_sliding_door_size': wc_sliding_door_size_val,
+                'door_count': door_input_val, 'door_size': door_size_val,
+                'kitchen_type_display_en_gr': kitchen_type_display_en_gr,
+                'kitchen_type_display_tr': kitchen_type_display_tr,
+                'kitchen': kitchen_input_val,
+                'shower': shower_input_val,
+                'wc_ceramic': wc_ceramic_input_val, 'wc_ceramic_area': wc_ceramic_area_val,
+                'electrical': electrical_installation_input_val, 'plumbing': plumbing_installation_input_val,
+                'transportation': st.session_state.transportation_input_val, 'heating': st.session_state.heating_val,
+                'solar': st.session_state.solar_val, 'solar_kw': solar_capacity_val, 'solar_price': solar_cost,
+                'vat_rate': VAT_RATE, 'profit_rate': profit_rate_val,
+                'room_configuration': room_config_val,
+                'wheeled_trailer_included': st.session_state.wheeled_trailer_val,
+                'wheeled_trailer_price': st.session_state.wheeled_trailer_price_input_val,
+                'sales_price': total_sales_price,
+                'delivery_duration_business_days': delivery_duration_business_days,
+                'welding_labor_type': welding_labor_option_val,
+                'facade_sandwich_panel_included': facade_sandwich_panel_calc,
+                'floor_covering_type': st.session_state.floor_covering_val,
+                'skirting_length_val': st.session_state.skirting_count_val,
+                'laminate_flooring_m2_val': st.session_state.laminate_flooring_m2_val,
+                'under_parquet_mat_m2_val': st.session_state.under_parquet_mat_m2_val,
+                'osb2_18mm_count_val': st.session_state.osb2_18mm_count_val,
+                'galvanized_sheet_m2_val': st.session_state.galvanized_sheet_m2_val,
+                
+                # Yeni Aether Living Opsiyonları için değerler (UI'dan kaldırılsa da mantıkta kullanılacak ve rapora eklenecek)
+                'aether_package_choice': st.session_state.aether_package_choice,
+                'exterior_cladding_m2_option': st.session_state.exterior_cladding_m2_option_val,
+                'exterior_cladding_m2_val': st.session_state.exterior_cladding_m2_val,
+                'exterior_wood_cladding_m2_option': st.session_state.exterior_wood_cladding_m2_option_val,
+                'exterior_wood_cladding_m2_val': st.session_state.exterior_wood_cladding_m2_val,
+                'porcelain_tiles_option': st.session_state.porcelain_tiles_option_val,
+                'porcelain_tiles_m2_val': st.session_state.porcelain_tiles_m2_val,
+                'concrete_panel_floor_option': st.session_state.concrete_panel_floor_option_val,
+                'concrete_panel_floor_m2_val': st.session_state.concrete_panel_floor_m2_val,
+                'bedroom_set_option': st.session_state.bedroom_set_option_val,
+                'sofa_option': st.session_state.sofa_option_val,
+                'smart_home_systems_option': st.session_state.smart_home_systems_option_val,
+                'security_camera_option': st.session_state.security_camera_option_val,
+                'white_goods_fridge_tv_option': st.session_state.white_goods_fridge_tv_option_val,
+                'premium_faucets_option': st.session_state.premium_faucets_option_val,
+                'integrated_fridge_option': st.session_state.integrated_fridge_option_val,
+                'designer_furniture_option': st.session_state.designer_furniture_option_val,
+                'italian_sofa_option': st.session_state.italian_sofa_option_val,
+                'inclass_chairs_option': st.session_state.inclass_chairs_option_val,
+                'inclass_chairs_count': st.session_state.inclass_chairs_count_val,
+                'brushed_granite_countertops_option': st.session_state.brushed_granite_countertops_option_val,
+                'brushed_granite_countertops_m2_val': st.session_state.brushed_granite_countertops_m2_val,
+                'terrace_laminated_wood_flooring_option': terrace_laminated_wood_flooring_option_val,
+                'terrace_laminated_wood_flooring_m2_val': terrace_laminated_wood_flooring_m2_val,
+                'insulation_material_type': insulation_material_type_val,
+            }
 
-            # --- Display Results in Streamlit ---
-            st.subheader("Maliyet Detayları (Dahili Rapor)")
-            st.dataframe(pd.DataFrame(costs).style.format({'Unit Price (€)': "€{:,.2f}", 'Total (€)': "€{:,.2f}"}), use_container_width=True)
+            # --- Display Results in Streamlit ---
+            st.subheader("Maliyet Detayları (Dahili Rapor)")
+            st.dataframe(pd.DataFrame(costs).style.format({'Unit Price (€)': "€{:,.2f}", 'Total (€)': "€{:,.2f}"}), use_container_width=True)
 
-            if not pd.DataFrame(profile_analysis_details).empty and project_details_result['structure_type'] == 'Light Steel':
-                st.subheader("Çelik Profil Detaylı Analizi (Dahili Rapor)")
-                st.dataframe(pd.DataFrame(profile_analysis_details).style.format({'Unit Price (€)': "€{:,.2f}", 'Total (€)': "€{:,.2f}"}), use_container_width=True)
+            if not pd.DataFrame(profile_analysis_details).empty and project_details_result['structure_type'] == 'Light Steel':
+                st.subheader("Çelik Profil Detaylı Analizi (Dahili Rapor)")
+                st.dataframe(pd.DataFrame(profile_analysis_details).style.format({'Unit Price (€)': "€{:,.2f}", 'Total (€)': "€{:,.2f}"}), use_container_width=True)
 
-            st.subheader("Finansal Özet (Dahili Rapor)")
-            st.dataframe(pd.DataFrame(formatted_financial_summary).set_index('Item'), use_container_width=True)
-            
-            # --- PDF Generation and Download Links ---
-            st.markdown("---")
-            st.subheader("PDF Çıktıları")
-            col_pdf1, col_pdf2, col_pdf3 = st.columns(3)
+            st.subheader("Finansal Özet (Dahili Rapor)")
+            st.dataframe(pd.DataFrame(formatted_financial_summary).set_index('Item'), use_container_width=True)
+            
+            # --- PDF Generation and Download Links ---
+            st.markdown("---")
+            st.subheader("PDF Çıktıları")
+            col_pdf1, col_pdf2, col_pdf3 = st.columns(3)
 
-            with col_pdf1:
-                internal_pdf_bytes = create_internal_cost_report_pdf(pd.DataFrame(costs), pd.DataFrame(formatted_financial_summary), pd.DataFrame(profile_analysis_details), project_details_result, customer_info_result)
-                st.download_button(
-                    label="Dahili Maliyet Raporu İndir (Türkçe)",
-                    data=internal_pdf_bytes,
-                    file_name=f"Internal_Cost_Report_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
-                    mime="application/pdf"
-                )
+            with col_pdf1:
+                internal_pdf_bytes = create_internal_cost_report_pdf(pd.DataFrame(costs), pd.DataFrame(formatted_financial_summary), pd.DataFrame(profile_analysis_details), project_details_result, customer_info_result)
+                st.download_button(
+                    label="Dahili Maliyet Raporu İndir (Türkçe)",
+                    data=internal_pdf_bytes,
+                    file_name=f"Internal_Cost_Report_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+                    mime="application/pdf"
+                )
 
-            with col_pdf2:
-                if pdf_language_selector_val == 'en_gr':
-                    customer_pdf_bytes = create_customer_proposal_pdf(house_sales_price, solar_price_val, total_sales_price, project_details_result, customer_notes_val, customer_info_result)
-                    st.download_button(
-                        label="Müşteri Teklifi İndir (İngilizce-Yunanca)",
-                        data=customer_pdf_bytes,
-                        file_name=f"Customer_Proposal_EN_GR_{customer_info_result['name'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
-                        mime="application/pdf"
-                    )
-                else: # Turkish version
-                    customer_pdf_bytes = create_customer_proposal_pdf_tr(house_sales_price, solar_price_val, total_sales_price, project_details_result, customer_notes_val, customer_info_result)
-                    st.download_button(
-                        label="Müşteri Teklifi İndir (Türkçe)",
-                        data=customer_pdf_bytes,
-                        file_name=f"Customer_Proposal_TR_{customer_info_result['name'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
-                    )
-            with col_pdf3:
-                sales_contract_pdf_bytes = create_sales_contract_pdf(customer_info_result, house_sales_price, solar_price_val, project_details_result, COMPANY_INFO)
-                st.download_button(
-                    label="Satış Sözleşmesi İndir",
-                    data=sales_contract_pdf_bytes,
-                    file_name=f"Sales_Contract_{customer_info_result['name'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
-                    mime="application/pdf"
-                )
+            with col_pdf2:
+                if pdf_language_selector_val == 'en_gr':
+                    customer_pdf_bytes = create_customer_proposal_pdf(house_sales_price, solar_price_val, total_sales_price, project_details_result, customer_notes_val, customer_info_result)
+                    st.download_button(
+                        label="Müşteri Teklifi İndir (İngilizce-Yunanca)",
+                        data=customer_pdf_bytes,
+                        file_name=f"Customer_Proposal_EN_GR_{customer_info_result['name'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+                        mime="application/pdf"
+                    )
+                else: # Turkish version
+                    customer_pdf_bytes = create_customer_proposal_pdf_tr(house_sales_price, solar_price_val, total_sales_price, project_details_result, customer_notes_val, customer_info_result)
+                    st.download_button(
+                        label="Müşteri Teklifi İndir (Türkçe)",
+                        data=customer_pdf_bytes,
+                        file_name=f"Customer_Proposal_TR_{customer_info_result['name'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+                        mime="application/pdf"
+                    )
+            with col_pdf3:
+                sales_contract_pdf_bytes = create_sales_contract_pdf(customer_info_result, house_sales_price, solar_price_val, project_details_result, COMPANY_INFO)
+                st.download_button(
+                    label="Satış Sözleşmesi İndir",
+                    data=sales_contract_pdf_bytes,
+                    file_name=f"Sales_Contract_{customer_info_result['name'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+                    mime="application/pdf"
+                )
 
-        except Exception as e:
-            st.error(f"Bir hata oluştu: {e}")
-            st.exception(e)
+        except Exception as e:
+            st.error(f"Bir hata oluştu: {e}")
+            st.exception(e)
 
 # --- Start the Streamlit app ---
 if __name__ == "__main__":
-    run_streamlit_app()
+    run_streamlit_app()
