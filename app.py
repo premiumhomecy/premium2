@@ -106,7 +106,7 @@ FIYATLAR = {
     "white_goods_total_price": 800.00, # Buzdolabı ve TV dahil
     "sofa_total_price": 400.00,
     "security_camera_total_price": 650.00,
-    "exterior_cladding_price_per_m2": 150.00, # Knauf Aquapanel, vb. için m2 fiyatı
+    "exterior_cladding_labor_price_per_m2": 150.00, # Knauf Aquapanel, vb. için M2 bazlı İŞÇİLİK fiyatı
     "bedroom_set_total_price": 800.00,
     "terrace_laminated_wood_flooring_price_per_m2": 40.00, # İşlenmiş çam zemin kaplama (teras) m2 fiyatı
     "concrete_panel_floor_price_per_m2": 50.00,
@@ -118,11 +118,11 @@ FIYATLAR = {
     "brushed_grey_granite_countertops_price_m2_avg": 425.00, # Ortalama m2 fiyatı
     "100mm_eps_isothermal_panel_unit_price": 27.00, # 100mm Yüksek Performanslı Panellerin m2 fiyatı (tahmini)
 
-    # Alçıpan modellerinin birim fiyatları (Ivan'dan gelen)
+    # Alçıpan modellerinin birim fiyatları (Ivan'dan gelen ve güncellenen)
     "gypsum_board_white_per_unit_price": 8.65, # adet. İç cephe için kullanılacak
     "gypsum_board_green_per_unit_price": 11.95, # adet. Banyo/WC için kullanılacak
-    "gypsum_board_blue_per_unit_price": 18.98, # adet. Dış cephe için kullanılacak
-
+    "gypsum_board_blue_per_unit_price": 22.00, # Knauf Aquapanel Mavi Alçıpan adet fiyatı (Ivan/Güncel)
+    
     # Diğer malzeme birim fiyatları (ön ek kaldırıldı)
     "otb_stone_wool_price": 19.80, # Taşyünü fiyatı (birim/adet), OTB
     "glass_wool_5cm_packet_price": 19.68, # Cam yünü 5cm paket fiyatı (10m2 için)
@@ -162,8 +162,10 @@ FIYATLAR = {
     
     "gypsum_board_white_info": "İç Alçıpan (Beyaz)",
     "gypsum_board_green_info": "Yeşil Alçıpan (Banyo/WC)",
-    "gypsum_board_blue_info": "Mavi Alçıpan (Dış Cephe)",
-    "knauf_aquapanel_gypsum_board_info": "Knauf Aquapanel Alçıpan",
+    "gypsum_board_blue_info": "Mavi Alçıpan (Dış Cephe / Knauf Aquapanel)", # Bilgi güncellendi
+    "knauf_aquapanel_gypsum_board_info": "Knauf Aquapanel Alçıpan", # Ayrı bir bilgi kalemi olarak kalabilir
+    "exterior_cladding_labor_info": "Dış Cephe Kaplama İşçiliği", # Yeni bilgi kalemi
+    "exterior_cladding_material_info": "Dış Cephe Kaplama Malzemesi (Knauf Aquapanel / Mavi Alçıpan)", # Yeni bilgi kalemi
     "eps_styrofoam_info": "EPS STYROFOAM",
     "knauf_mineralplus_insulation_info": "Knauf MineralPlus İzolasyon (Taşyünü)",
     "knauf_guardex_gypsum_board_info": "Knauf Guardex Alçıpan",
@@ -473,25 +475,27 @@ def _contract_header_footer_for_contract(canvas, doc):
     canvas.setFont(MAIN_FONT, 8)
     canvas.drawRightString(doc.width + doc.leftMargin, 10*mm, f"Page {page_num}")
 
-def _create_solar_appendix_elements_en_gr(solar_kw, solar_price, heading_style, normal_bilingual_style, price_total_style):
-    """Generates elements for Solar Energy System appendix (English-Greek)."""
+def _create_solar_appendix_elements_tr(styles):
+    """Generates elements for Solar Energy System appendix (Turkish)."""
+    heading_style = styles['Heading']
+    normal_tr_style = styles['NormalTR']
     elements = [
         PageBreak(),
-        Paragraph("APPENDIX B: SOLAR ENERGY SYSTEM / ΠΑΡΑΡΤΗΜΑ Β: ΣΥΣΤΗΜΑ ΗΛΙΑΚΗΣ ΕΝΕΡΓΕΙΑΣ", heading_style),
+        Paragraph("EK B: GÜNEŞ ENERJİ SİSTEMİ", heading_style),
         Spacer(1, 8*mm),
-        Paragraph(f"Below are the details for the included <b>{solar_kw} kW</b> Solar Energy System. The price for this system is handled separately from the main house payment plan.<br/><br/>Ακολουθούν οι λεπτομέρειες για το συμπεριλαμβανόμενο Σύστημα Ηλιακής Ενέργειας <b>{solar_kw} kW</b>. Η τιμή για αυτό το σύστημα διαχειρίζεται ξεχωριστά από το πρόγραμμα πληρωμών του κυρίως σπιτιού.", normal_bilingual_style),
+        Paragraph(f"Projeye dahil edilen <b>{st.session_state.solar_capacity_val} kW</b> Güneş Enerji Sistemi'nin detayları aşağıdadır. Bu sistemin bedeli, ana ev ödeme planından ayrı olarak faturalandırılacaktır.", normal_tr_style), # Use session_state
         Spacer(1, 8*mm),
     ]
     solar_materials = [
-        ["<b>Component / Εξάρτημα</b>", "<b>Description / Περιγραφή</b>"],
-        ["Solar Panels / Ηλιακοί Συλλέκτες", f"{solar_kw} kW High-Efficiency Monocrystalline Panels"],
-        ["Inverter / Μετατροπέας", "Hybrid Inverter with Grid-Tie Capability"],
-        ["Batteries / Μπαταρίες", "Lithium-Ion Battery Storage System (optional, priced separately)"],
-        ["Mounting System / Σύστημα Στήριξης", "Certified mounting structure for roof installation"],
-        ["Cabling & Connectors / Καλωδίωση & Συνδέσεις", "All necessary DC/AC cables, MC4 connectors, and safety switches"],
-        ["Installation & Commissioning / Εγκατάσταση & Θέση σε Λειτουργία", "Full professional installation and system commissioning"],
+        ["<b>Bileşen</b>", "<b>Açıklama</b>"],
+        ["Güneş Panelleri", f"{st.session_state.solar_capacity_val} kW Yüksek Verimli Monokristal Panel"], # Use session_state
+        ["Inverter (Çevirici)", "Hibrit Inverter (Şebeke Bağlantı Özellikli)"],
+        ["Bataryalar", "Lityum-İyon Batarya Depolama Sistemi (opsiyonel, ayrı fiyatlandırılır)"],
+        ["Mounting System", "Çatı kurulumu için sertifikalı montaj yapısı"],
+        ["Cabling & Connectors", "Tüm gerekli DC/AC kablolar, MC4 konnektörler ve güvenlik şalterleri"],
+        ["Installation & Commissioning", "Tam profesyonel kurulum ve sistemin devreye alınması"],
     ]
-    solar_materials_p = [[Paragraph(cell, normal_bilingual_style) for cell in row] for row in solar_materials]
+    solar_materials_p = [[Paragraph(cell, normal_tr_style) for cell in row] for row in solar_materials]
     solar_table = Table(solar_materials_p, colWidths=[60*mm, 110*mm])
     solar_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#4a5568")),
@@ -503,33 +507,35 @@ def _create_solar_appendix_elements_en_gr(solar_kw, solar_price, heading_style, 
     ]))
     elements.append(solar_table)
     elements.append(Spacer(1, 12*mm))
-    elements.append(Paragraph("Total Price (Solar System) / Συνολική Τιμή (Ηλιακό Σύστημα)", heading_style))
-    elements.append(Paragraph(format_currency(solar_price), price_total_style))
+    elements.append(Paragraph("Toplam Fiyat (Güneş Enerji Sistemi)", heading_style))
+    elements.append(Paragraph(format_currency(st.session_state.solar_price_val), price_total_style)) # Use session_state
     return elements
 
-def _create_heating_appendix_elements_tr(styles):
-    """Generates elements for Floor Heating System appendix (Turkish)."""
+
+def _create_heating_appendix_elements_en_gr(styles):
+    """Generates elements for Floor Heating System appendix (English-Greek)."""
     heading_style = styles['Heading']
-    normal_tr_style = styles['NormalTR']
+    normal_bilingual_style = styles['NormalBilingual']
     elements = [
         PageBreak(),
-        Paragraph("EK C: YERDEN ISITMA SİSTEMİ", heading_style),
+        Paragraph("APPENDIX C: FLOOR HEATING SYSTEM / ΠΑΡΑΡΤΗΜΑ Γ: ΣΥΣΤΗΜΑ ΕΝΔΟΔΑΠΕΔΙΑΣ ΘΕΡΜΑΝΣΗΣ", heading_style),
         Spacer(1, 8*mm),
-        Paragraph("Yerden Isıtma Sistemi'ne dahil olan standart malzemeler aşağıdadır:", normal_tr_style),
+        Paragraph("Below are the standard materials included in the Floor Heating System:<br/><br/>Ακολουθούν τα στάνταρ υλικά που περιλαμβάνονται στο Σύστημα Ενδοδαπέδιας Θέρμανσης:", normal_bilingual_style),
         Spacer(1, 4*mm),
     ]
-    heating_materials_tr_lines = FLOOR_HEATING_MATERIALS_TR.strip().split('\n')
-
+    heating_materials_en_lines = FLOOR_HEATING_MATERIALS_EN.strip().split('\n')
+    heating_materials_gr_lines = FLOOR_HEATING_MATERIALS_GR.strip().split('\n')
+    
     heating_materials = [
-        ["<b>Bileşen</b>", "<b>Açıklama</b>"],
-        ["Isıtma Elemanları", heating_materials_tr_lines[0].strip()],
-        ["Trafo", heating_materials_tr_lines[1].strip()],
-        ["Termostat", heating_materials_tr_lines[2].strip()],
-        ["Kablolama", heating_materials_tr_lines[3].strip()],
-        ["Yalıtım Katmanları", heating_materials_tr_lines[4].strip()],
-        ["Zemin Hazırlık Malzemeleri", heating_materials_tr_lines[5].strip()],
+        ["<b>Component / Εξάρτημα</b>", "<b>Description / Περιγραφή</b>"],
+        ["Heating Elements / Στοιχεία Θέρμανσης", heating_materials_en_lines[0].strip() + " / " + heating_materials_gr_lines[0].strip()],
+        ["Transformer / Μετατροπέας", heating_materials_en_lines[1].strip() + " / " + heating_materials_gr_lines[1].strip()],
+        ["Thermostat / Θερμοστάτης", heating_materials_en_lines[2].strip() + " / " + heating_materials_gr_lines[2].strip()],
+        ["Wiring / Καλωδίωση", heating_materials_en_lines[3].strip() + " / " + heating_materials_gr_lines[3].strip()],
+        ["Insulation / Μόνωση", heating_materials_en_lines[4].strip() + " / " + heating_materials_gr_lines[4].strip()],
+        ["Subfloor Materials / Υλικά Υποδαπέδου", heating_materials_en_lines[5].strip() + " / " + heating_materials_gr_lines[5].strip()],
     ]
-    heating_table_p = [[Paragraph(cell, normal_tr_style) for cell in row] for row in heating_materials]
+    heating_table_p = [[Paragraph(cell, normal_bilingual_style) for cell in row] for row in heating_materials]
     heating_table = Table(heating_table_p, colWidths=[70*mm, 100*mm])
     heating_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#4a5568")),
@@ -541,7 +547,7 @@ def _create_heating_appendix_elements_tr(styles):
     ]))
     elements.append(heating_table)
     elements.append(Spacer(1, 8*mm))
-    elements.append(Paragraph("Not: Malzeme seçimi sonrası nihai ve detaylı spesifikasyonlar, proje gereksinimlerine göre tasarım aşamasında teyit edilecektir.", normal_tr_style))
+    elements.append(Paragraph("Note: Final material selection and detailed specifications will be confirmed during the design phase based on specific project requirements.<br/><br/>Σημείωση: Η τελική επιλογή υλικών και οι λεπτομερείς προδιαγραφές θα επιβεβαιωθούν κατά τη φάση του σχεδιασμού με βάση τις συγκεκριμένες απαιτήσεις του έργου.", normal_bilingual_style))
     return elements
 
 
@@ -657,7 +663,7 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
         building_structure_table_data.append([Paragraph('<b>Roof:</b>', styles['NormalBilingual']), Paragraph(ROOF_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
         building_structure_table_data.append([Paragraph('<b>Exterior Walls:</b>', styles['NormalBilingual']), Paragraph(EXTERIOR_WALLS_DESCRIPTION_EN_GR, styles['NormalBilingual'])]) # Changed from normal style to bilingual
     else: # Heavy Steel
-        building_structure_table_data.append([Paragraph('<b>Construction Type:</b>', styles['NormalBilingual']), Paragraph('Heavy Steel', styles['NormalBilingual'])])
+        building_structure_table_data.append([Paragraph('<b>Construction Type / Τύπος Κατασκευής</b>', styles['NormalBilingual']), Paragraph('Heavy Steel', styles['NormalBilingual'])])
         building_structure_table_data.append([Paragraph('<b>Steel Structure Details:</b>', styles['NormalBilingual']), Paragraph(HEAVY_STEEL_BUILDING_STRUCTURE_EN_GR, styles['NormalBilingual'])]) # Changed to normal style to bilingual
         building_structure_table_data.append([Paragraph('<b>Roof:</b>', styles['NormalBilingual']), Paragraph(ROOF_DESCRIPTION_EN_GR, styles['NormalBilingual'])]) # Changed to normal style to bilingual
     
@@ -675,7 +681,7 @@ def create_customer_proposal_pdf(house_price, solar_price, total_price, project_
     if project_details['insulation_floor']:
         floor_insulation_details_display_en_gr_text = [FLOOR_INSULATION_MATERIALS_EN_GR]
         if project_details['skirting_length_val'] > 0:
-            floor_insulation_details_display_en_gr_text.append(f"• Skirting / Σοβατεπί ({project_details['skirting_length_val']:.2f} m)")
+            floor_insulation_details_display_en_gr_text.append(f"• Süpürgelik / Σοβατεπί ({project_details['skirting_length_val']:.2f} m)")
         if project_details['laminate_flooring_m2_val'] > 0:
             floor_insulation_details_display_en_gr_text.append(f"• Laminate Flooring 12mm / Laminate Δάπεδο 12mm ({project_details['laminate_flooring_m2_val']:.2f} m²)")
         if project_details['under_parquet_mat_m2_val'] > 0:
@@ -1007,11 +1013,11 @@ def run_streamlit_app():
         plasterboard_all_disabled = (structure_type_val == 'Light Steel')
 
         # Değişkenler doğrudan st.session_state'ten okunup güncelleniyor
-        _temp_plasterboard_interior_val = st.session_state.plasterboard_interior_option_val
-        st.session_state.plasterboard_interior_option_val = st.checkbox("İç Alçıpan Dahil Et", value=_temp_plasterboard_interior_val, disabled=plasterboard_interior_disabled, key="pb_int_checkbox")
+        _temp_plasterboard_interior_option_val = st.session_state.plasterboard_interior_option_val # Geçici yerel değişken
+        st.session_state.plasterboard_interior_option_val = st.checkbox("İç Alçıpan Dahil Et", value=_temp_plasterboard_interior_option_val, disabled=plasterboard_interior_disabled, key="pb_int_checkbox")
         
-        _temp_plasterboard_all_val = st.session_state.plasterboard_all_option_val
-        st.session_state.plasterboard_all_option_val = st.checkbox("İç ve Dış Alçıpan Dahil Et", value=_temp_plasterboard_all_val, disabled=plasterboard_all_disabled, key="pb_all_checkbox")
+        _temp_plasterboard_all_option_val = st.session_state.plasterboard_all_option_val # Geçici yerel değişken
+        st.session_state.plasterboard_all_option_val = st.checkbox("İç ve Dış Alçıpan Dahil Et", value=_temp_plasterboard_all_option_val, disabled=plasterboard_all_disabled, key="pb_all_checkbox")
         
         # Calculation variables should directly read from session state
         plasterboard_interior_calc = st.session_state.plasterboard_interior_option_val
@@ -1024,7 +1030,7 @@ def run_streamlit_app():
             plasterboard_interior_calc = False 
 
         osb_inner_wall_disabled = not (plasterboard_interior_calc or plasterboard_all_calc)
-        _temp_osb_inner_wall_val = st.session_state.osb_inner_wall_option_val
+        _temp_osb_inner_wall_val = st.session_state.osb_inner_wall_option_val # Geçici yerel değişken
         st.session_state.osb_inner_wall_option_val = st.checkbox("İç Duvar OSB Malzemesi Dahil Et", value=_temp_osb_inner_wall_val, disabled=osb_inner_wall_disabled, key="osb_inner_checkbox")
         
         osb_inner_wall_calc = st.session_state.osb_inner_wall_option_val
@@ -1050,7 +1056,7 @@ def run_streamlit_app():
         room_config_val = st.selectbox("Oda Konfigürasyonu:", room_config_options, key="room_config_select")
         
         facade_sandwich_panel_disabled = (structure_type_val == 'Light Steel')
-        _temp_facade_sandwich_panel_val = st.session_state.facade_sandwich_panel_option_val
+        _temp_facade_sandwich_panel_val = st.session_state.facade_sandwich_panel_option_val # Geçici yerel değişken
         st.session_state.facade_sandwich_panel_option_val = st.checkbox("Dış Cephe Sandviç Panel Dahil Et (Ağır Çelik için)", value=_temp_facade_sandwich_panel_val, disabled=facade_sandwich_panel_disabled, key="facade_panel_checkbox")
         
         facade_sandwich_panel_calc = st.session_state.facade_sandwich_panel_option_val
@@ -1298,6 +1304,7 @@ def run_streamlit_app():
                 costs.append({'Item': FIYATLAR['plywood_osb_floor_panel_info'], 'Quantity': f"{plywood_pieces_needed} adet", 'Unit Price (€)': FIYATLAR["plywood_piece"], 'Total (€)': calculate_rounded_up_cost(plywood_pieces_needed * FIYATLAR["plywood_piece"])})
                 costs.append({'Item': FIYATLAR['12mm_laminate_parquet_info'], 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': FIYATLAR["laminate_flooring_m2_price"], 'Total (€)': calculate_rounded_up_cost(floor_area * FIYATLAR["laminate_flooring_m2_price"])})
                 
+                aether_package_total_cost += calculate_rounded_up_cost(floor_area * FIYATLAR["insulation_per_m2"])
                 aether_package_total_cost += calculate_rounded_up_cost(floor_area * FIYATLAR["galvanized_sheet_m2_price"])
                 aether_package_total_cost += calculate_rounded_up_cost(plywood_pieces_needed * FIYATLAR["plywood_piece"])
                 aether_package_total_cost += calculate_rounded_up_cost(floor_area * FIYATLAR["laminate_flooring_m2_price"])
@@ -1346,13 +1353,21 @@ def run_streamlit_app():
 
             elif st.session_state.aether_package_choice == 'Aether Living | Loft Elite (LUXURY)':
                 # Elite pakete özel eklemeler (Premium özellikleri de içerir)
-                # Dış Cephe (Knauf Aquapanel)
+                # Dış Cephe (Knauf Aquapanel / Mavi Alçıpan + İşçilik)
                 if st.session_state.exterior_cladding_m2_option_val:
-                    exterior_cladding_cost_elite = calculate_rounded_up_cost(wall_area * FIYATLAR['exterior_cladding_price_per_m2'])
-                    costs.append({'Item': FIYATLAR['knauf_aquapanel_gypsum_board_info'], 'Quantity': f"{wall_area:.2f} m²", 'Unit Price (€)': FIYATLAR['exterior_cladding_price_per_m2'], 'Total (€)': exterior_cladding_cost_elite})
-                    costs.append({'Item': FIYATLAR['eps_styrofoam_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                    costs.append({'Item': FIYATLAR['knauf_mineralplus_insulation_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                    aether_package_total_cost += exterior_cladding_cost_elite
+                    # Mavi Alçıpan (Malzeme) maliyeti
+                    mavi_alcipan_adet = math.ceil(wall_area / GYPSUM_BOARD_UNIT_AREA_M2)
+                    mavi_alcipan_malzeme_cost = calculate_rounded_up_cost(mavi_alcipan_adet * FIYATLAR['gypsum_board_blue_per_unit_price'])
+                    costs.append({'Item': FIYATLAR['exterior_cladding_material_info'], 'Quantity': f"{mavi_alcipan_adet} adet ({wall_area:.2f} m²)", 'Unit Price (€)': FIYATLAR['gypsum_board_blue_per_unit_price'], 'Total (€)': mavi_alcipan_malzeme_cost})
+                    aether_package_total_cost += mavi_alcipan_malzeme_cost
+
+                    # Dış Cephe Kaplama İşçiliği maliyeti
+                    exterior_cladding_labor_cost = calculate_rounded_up_cost(wall_area * FIYATLAR['exterior_cladding_labor_price_per_m2'])
+                    costs.append({'Item': FIYATLAR['exterior_cladding_labor_info'], 'Quantity': f"{wall_area:.2f} m²", 'Unit Price (€)': FIYATLAR['exterior_cladding_labor_price_per_m2'], 'Total (€)': exterior_cladding_labor_cost})
+                    aether_package_total_cost += exterior_cladding_labor_cost
+
+                    costs.append({'Item': FIYATLAR['eps_styrofoam_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0}) # Bilgi kalemi
+                    costs.append({'Item': FIYATLAR['knauf_mineralplus_insulation_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0}) # Bilgi kalemi
                 
                 # Dış cephe ahşap kaplama (Lambiri)
                 if st.session_state.exterior_wood_cladding_m2_option_val and st.session_state.exterior_wood_cladding_m2_val > 0:
@@ -1362,9 +1377,18 @@ def run_streamlit_app():
 
                 # İç Duvarlar (Knauf Guardex Alçıpan, saten sıva ve boya)
                 if plasterboard_interior_calc or plasterboard_all_calc:
-                    costs.append({'Item': FIYATLAR['knauf_guardex_gypsum_board_info'], 'Quantity': f"{plasterboard_total_area:.2f} m²", 'Unit Price (€)': FIYATLAR["plasterboard_material_m2"], 'Total (€)': calculate_rounded_up_cost(plasterboard_total_area * FIYATLAR["plasterboard_material_m2"])})
+                    # Hesaplanan alçıpan alanı
+                    interior_alcipan_area = 0
+                    if plasterboard_interior_calc:
+                        interior_alcipan_area += (wall_area / 2) + roof_area # Duvarların yarısı + tavan
+                    if plasterboard_all_calc:
+                        interior_alcipan_area += wall_area + roof_area # Duvarların tamamı + tavan
+
+                    guardex_adet = math.ceil(interior_alcipan_area / GYPSUM_BOARD_UNIT_AREA_M2)
+                    guardex_material_cost = calculate_rounded_up_cost(guardex_adet * FIYATLAR["plasterboard_material_m2"]) # plasterboard_material_m2 kullanıldı
+                    costs.append({'Item': FIYATLAR['knauf_guardex_gypsum_board_info'], 'Quantity': f"{guardex_adet} adet ({interior_alcipan_area:.2f} m²)", 'Unit Price (€)': FIYATLAR["plasterboard_material_m2"], 'Total (€)': guardex_material_cost})
                     costs.append({'Item': FIYATLAR['satin_plaster_paint_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-                    aether_package_total_cost += calculate_rounded_up_cost(plasterboard_total_area * FIYATLAR["plasterboard_material_m2"])
+                    aether_package_total_cost += guardex_material_cost
 
                 # Zemin: Beton panel zemin (isteğe bağlı yerden ısıtma)
                 if st.session_state.concrete_panel_floor_option_val:
