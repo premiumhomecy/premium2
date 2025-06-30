@@ -28,13 +28,9 @@ def clean_invisible_chars(text):
 try:
     if not os.path.exists("fonts"):
         os.makedirs("fonts")
-    # Kontrol ve indirme: FreeSans.ttf
-    if not os.path.exists("fonts/FreeSans.ttf"):
-        # Genellikle google fonts'tan indirilebilir bir URL kullanılır
-        # Bu URL'ler geçici olabilir, gerçek bir font CDN'i veya github linki kullanılmalı
-        # Test için Google Fonts üzerinden doğrudan bir ttf dosyası bulmak zor olabilir.
-        # Bu yüzden, kullanıcıdan fonts klasörünü manuel olarak eklemesini isteyeceğiz.
-        st.warning("fonts/FreeSans.ttf bulunamadı. Lütfen gerekli font dosyalarını 'fonts/' klasörüne ekleyin.")
+    # FreeSans fontlarının varlığını kontrol et
+    if not (os.path.exists("fonts/FreeSans.ttf") and os.path.exists("fonts/FreeSansBold.ttf")):
+        st.warning("Gerekli 'FreeSans.ttf' veya 'FreeSansBold.ttf' font dosyaları 'fonts/' klasöründe bulunamadı. Lütfen bu dosyaları manuel olarak ekleyin. Aksi takdirde PDF'lerde Türkçe karakterler düzgün görünmeyebilir ve Helvetica kullanılacaktır.")
         raise FileNotFoundError # Hata fırlatarak try bloğundan çık
     
     pdfmetrics.registerFont(TTFont("FreeSans", "fonts/FreeSans.ttf"))
@@ -42,10 +38,11 @@ try:
     pdfmetrics.registerFontFamily('FreeSans', normal='FreeSans', bold='FreeSans-Bold')
     MAIN_FONT = "FreeSans"
 except Exception as e:
-    st.warning(f"Font yükleme hatası: {e}. Helvetica kullanılacak. Lütfen 'fonts' klasöründe 'FreeSans.ttf' ve 'FreeSansBold.ttf' dosyalarının olduğundan emin olun.")
+    # Fontlar bulunamazsa veya kaydedilemezse Helvetica'ya geri dön
+    st.warning(f"Font yükleme hatası: {e}. Helvetica kullanılacak.")
     MAIN_FONT = "Helvetica"
 
-# === COMPANY INFORMATION ===
+# --- Şirket Bilgileri ---
 LOGO_URL = "https://drive.google.com/uc?export=download&id=1RD27Gas035iUqe4Ucl3phFwxZPWZPWzn" # Google Drive'dan genel erişimli bir logo URL'si
 COMPANY_INFO = {
     "name": "PREMIUM HOME LTD",
@@ -59,16 +56,19 @@ COMPANY_INFO = {
     "bank_address": "12 Esperidon Street 1087 Nicosia",
     "account_name": "SOYKOK PREMIUM HOME LTD",
     "iban": "CY27 0020 0195 0000 3570 4239 2044",
+    "account_number": "357042392044", # Banka hesap numarası eklendi
+    "currency_type": "EURO", # Para birimi eklendi
     "swift_bic": "BCYPCY2N"
 }
 
-# === PRICE DEFINITIONS ===
+# --- Güncel Fiyat Tanımları ---
+# Fiyatlar KDV hariç maliyet fiyatlarıdır.
 FIYATLAR = {
     # Çelik Profil Fiyatları (6m parça başı)
     "steel_profile_100x100x3": 45.00,
     "steel_profile_100x50x3": 33.00,
     "steel_profile_40x60x2": 14.00,
-    "steel_profile_120x60x5mm": 60.00, # YENİ ÇELİK PROFİL EKLENDİ
+    "steel_profile_120x60x5mm": 60.00,
     "steel_profile_50x50x2": 11.00,
     "steel_profile_HEA160": 155.00,
     
@@ -489,7 +489,6 @@ def draw_pdf_footer(canvas_obj, doc, company_info):
     canvas_obj.setFont(MAIN_FONT, 8)
     canvas_obj.drawString(A4[0] - doc.rightMargin, 10*mm, f"Page {page_num}")
 
-
 def create_internal_cost_report_pdf(cost_breakdown_df, financial_summary_df, project_details, customer_info, logo_data_b64):
     """Dahili maliyet raporu PDF'i oluşturur"""
     buffer = io.BytesIO()
@@ -901,7 +900,7 @@ def create_sales_contract_pdf(customer_info, house_sales_price, solar_sales_pric
         [Paragraph("Banka Adresi:", contract_normal_style), Paragraph(company_info['bank_address'], contract_normal_style)],
         [Paragraph("Hesap Adı:", contract_normal_style), Paragraph(company_info['account_name'], contract_normal_style)],
         [Paragraph("IBAN:", contract_normal_style), Paragraph(company_info['iban'], contract_normal_style)],
-        [Paragraph("Hesap Numarası:", contract_normal_style), Paragraph(company_info['account_number'], contract_normal_style) if 'account_number' in company_info else Paragraph("N/A", contract_normal_style)], # Added check for account_number
+        [Paragraph("Hesap Numarası:", contract_normal_style), Paragraph(company_info['account_number'], contract_normal_style)],
         [Paragraph("Para Birimi:", contract_normal_style), Paragraph(company_info['currency_type'], contract_normal_style)],
         [Paragraph("SWIFT/BIC:", contract_normal_style), Paragraph(company_info['swift_bic'], contract_normal_style)],
     ]
@@ -1026,6 +1025,7 @@ def run_streamlit_app():
     
     * {
         font-family: 'Inter', sans-serif !important;
+        color: #000000; /* Yazı rengi siyah olarak ayarlandı */
     }
     
     .stApp {
@@ -1141,13 +1141,15 @@ def run_streamlit_app():
         'skirting_count_val': 0.0,
         'laminate_flooring_m2_val': 0.0,
         'under_parquet_mat_m2_val': 0.0,
-        'osb2_count_val': 0,
+        'osb2_18mm_count_val': 0, # Bu isim doğru olmalıydı, osb2_count_val yerine
         'galvanized_sheet_m2_val': 0.0,
         'solar_capacity_val': 5, # Default first option
         'solar_price_val': 0.0, # Derived, but good to have default
         'customer_notes_val': "",
         'pdf_language_selector_val_tuple': ('Turkish', 'tr'),
-        'profit_rate_val_tuple': (f'{20}%', 0.20) # Default index 3 of range(5,45,5)
+        'profit_rate_val_tuple': (f'{20}%', 0.20), # Default index 3 of range(5,45,5)
+        # customer_city de buraya eklendi, eksikti
+        'customer_city': "", 
     }
 
     # Session state'i başlat veya mevcut değerini kullan
@@ -1262,8 +1264,8 @@ def run_streamlit_app():
         plasterboard_interior_disabled = (structure_type_val == 'Heavy Steel')
         plasterboard_all_disabled = (structure_type_val == 'Light Steel')
 
-        # Değişkenler doğrudan st.session_state'ten okunup güncelleniyor
-        # value parametresi için sabit varsayılanlar ve Session State'e yazma (AttributeError çözümü)
+        # === Value parametresi için sabit varsayılanlar ve Session State'e yazma ===
+        # AttributeError'ı çözmek için bu yaklaşım kullanılır.
         st.session_state.plasterboard_interior_option_val = st.checkbox(
             "İç Alçıpan Dahil Et", 
             value=False, # Sabit varsayılan
@@ -1455,8 +1457,8 @@ def run_streamlit_app():
     
     col_floor_mats2 = st.columns(3)
     with col_floor_mats2[0]:
-        _temp_osb2_count_val = st.session_state.osb2_count_val
-        st.session_state.osb2_count_val = st.number_input(f"OSB2 18mm/Beton Panel ({FIYATLAR['osb2_18mm_piece_price']}€/adet) Adet:", value=_temp_osb2_count_val, min_value=0, disabled=floor_insulation_material_disabled, key="osb2_input")
+        _temp_osb2_18mm_count_val = st.session_state.osb2_18mm_count_val # osb2_count_val yerine doğru isim
+        st.session_state.osb2_18mm_count_val = st.number_input(f"OSB2 18mm/Beton Panel ({FIYATLAR['osb2_18mm_piece_price']}€/adet) Adet:", value=_temp_osb2_18mm_count_val, min_value=0, disabled=floor_insulation_material_disabled, key="osb2_input")
     with col_floor_mats2[1]:
         _temp_galvanized_sheet_m2_val = st.session_state.galvanized_sheet_m2_val
         st.session_state.galvanized_sheet_m2_val = st.number_input(f"5mm Galvanizli Sac ({FIYATLAR['galvanized_sheet_m2_price']}€/m²) Alanı (m²):", value=_temp_galvanized_sheet_m2_val, step=0.1, min_value=0.0, disabled=floor_insulation_material_disabled, key="galvanized_sheet_input")
@@ -1479,7 +1481,7 @@ def run_streamlit_app():
 
     st.markdown("---")
 
-    _temp_transportation_input_val = st.session_state.transportation_input_val
+    _temp_transportation_input_val = st.session_state.transportation_input_val # Bu satırda hata alınıyordu
     st.session_state.transportation_input_val = st.checkbox("Nakliye Dahil Et (350€)", value=_temp_transportation_input_val, key="transportation_checkbox")
     _temp_heating_val = st.session_state.heating_val
     st.session_state.heating_val = st.checkbox("Yerden Isıtma Dahil Et (50€/m²)", value=_temp_heating_val, key="heating_checkbox")
@@ -1536,9 +1538,7 @@ def run_streamlit_app():
             areas = calculate_area(width, length, height)
             floor_area = areas["floor"]
             wall_area = areas["wall"]
-            roof_area = areas["reason"] # Düzeltme: 'reason' yerine 'roof' olmalı
-            # Olası bir hata: Eğer yukarıdaki areas dict'inde 'roof' yoksa KeyError olabilir.
-            # calculate_area fonksiyonuna göre 'roof' olmalı.
+            roof_area = areas["roof"]
 
             costs = []
             profile_analysis_details = []
@@ -1613,7 +1613,7 @@ def run_streamlit_app():
                     aether_package_total_cost += terrace_laminated_cost
                 elif st.session_state.porcelain_tiles_option_val:
                     porcelain_tiles_cost = calculate_rounded_up_cost(floor_area * (FIYATLAR['wc_ceramic_m2_material'] + FIYATLAR['wc_ceramic_m2_labor']))
-                    costs.append({'Item': FIyATLAR['porcelain_tiles_info'], 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': (FIYATLAR['wc_ceramic_m2_material'] + FIYATLAR['wc_ceramic_m2_labor']), 'Total (€)': porcelain_tiles_cost})
+                    costs.append({'Item': FIYATLAR['porcelain_tiles_info'], 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': (FIYATLAR['wc_ceramic_m2_material'] + FIYATLAR['wc_ceramic_m2_labor']), 'Total (€)': porcelain_tiles_cost})
                     aether_package_total_cost += porcelain_tiles_cost
                 else: # Varsayılan laminat parke
                     laminate_cost = calculate_rounded_up_cost(floor_area * FIYATLAR["laminate_flooring_m2_price"])
@@ -1767,7 +1767,7 @@ def run_streamlit_app():
 
             financial_summary_data = [
                 ["Ara Toplam (Tüm Kalemler, Güneş Dahil)", sum([item['Total (€)'] for item in costs])],
-                [f"Atık Maliyeti ({FIRE_RATE*100:.0f}%) (Sadece Ev için)", waste_cost],
+                [f"Atık Maliyeti (%{FIRE_RATE*100:.0f}) (Sadece Ev için)", waste_cost],
                 ["Toplam Maliyet (Ev + Atık + + Güneş)", total_house_cost + solar_cost],
                 [f"Kar ({st.session_state.profit_rate_val_tuple[0]}) (Sadece Ev için)", profit], # Use st.session_state for profit rate display
                 ["", ""],
@@ -1790,7 +1790,7 @@ def run_streamlit_app():
             # Prepare results dictionaries
             customer_info_result = {
                 'name': customer_name.strip() or "GENEL", 'company': customer_company.strip() or "",
-                'address': customer_address.strip() or "", 'city': customer_city.strip() or "", # customer_city eklendi
+                'address': customer_address.strip() or "", 'city': st.session_state.customer_city, # customer_city buradan çekildi
                 'phone': customer_phone.strip() or "", 'email': customer_email.strip() or "",
                 'id_no': customer_id_no.strip() or ""
             }
@@ -1829,7 +1829,7 @@ def run_streamlit_app():
                 'skirting_length_val': st.session_state.skirting_count_val,
                 'laminate_flooring_m2_val': st.session_state.laminate_flooring_m2_val,
                 'under_parquet_mat_m2_val': st.session_state.under_parquet_mat_m2_val,
-                'osb2_count_val': st.session_state.osb2_count_val, # Düzeltme: osb2_count_val
+                'osb2_count_val': st.session_state.osb2_18mm_count_val, # Düzeltme: osb2_18mm_count_val
                 'galvanized_sheet_m2_val': st.session_state.galvanized_sheet_m2_val,
                 
                 # Yeni Aether Living Opsiyonları için değerler (UI'dan kaldırılsa da mantıkta kullanılacak ve rapora eklenecek)
@@ -1869,13 +1869,13 @@ def run_streamlit_app():
                 st.dataframe(pd.DataFrame(profile_analysis_details).style.format({'Unit Price (€)': "€{:,.2f}", 'Total (€)': "€{:,.2f}"}), use_container_width=True)
 
             st.subheader("Finansal Özet (Dahili Rapor)")
-            st.dataframe(pd.DataFrame(formatted_financial_summary).set_index('Item'), use_container_width=True) # financial_summary_data is already formatted
+            st.dataframe(pd.DataFrame(financial_summary_data).set_index('Item'), use_container_width=True) # financial_summary_data is already formatted
 
             # --- PDF Generation and Download Links ---
             st.markdown("---")
             st.subheader("PDF Çıktıları")
             
-            logo_data_b64 = get_company_logo_base64(LOGO_URL) # COMPANY_INFO["logo_url"] yerine LOGO_URL kullanıldı
+            logo_data_b64 = get_company_logo_base64(COMPANY_INFO["logo_url"]) # Assuming logo_url is in COMPANY_INFO
 
             col_pdf1, col_pdf2, col_pdf3 = st.columns(3)
 
