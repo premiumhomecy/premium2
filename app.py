@@ -629,6 +629,7 @@ def create_customer_proposal_pdf_tr(house_price, solar_price, total_price, proje
         [Paragraph("<b>Adı Soyadı:</b>", styles['NormalTR']), Paragraph(f"{customer_info['name']}", styles['NormalTR'])],
         [Paragraph("<b>Firma:</b>", styles['NormalTR']), Paragraph(f"{customer_info['company'] or ''}", styles['NormalTR'])],
         [Paragraph("<b>Adres:</b>", styles['NormalTR']), Paragraph(f"{customer_info['address'] or ''}", styles['NormalTR'])],
+        [Paragraph("<b>Şehir:</b>", styles['NormalTR']), Paragraph(f"{customer_info['city'] or ''}", styles['NormalTR'])], # Şehir eklendi
         [Paragraph("<b>Telefon:</b>", styles['NormalTR']), Paragraph(f"{customer_info['phone'] or ''}", styles['NormalTR'])],
         [Paragraph("<b>Kimlik/Pasaport No:</b>", styles['NormalTR']), Paragraph(f"{customer_info['id_no'] or ''}", styles['NormalTR'])],
     ]
@@ -688,122 +689,7 @@ def create_customer_proposal_pdf_tr(house_price, solar_price, total_price, proje
               onFirstPage=lambda canvas_obj, doc: draw_pdf_footer(canvas_obj, doc, COMPANY_INFO))
     return buffer
 
-def create_customer_proposal_pdf_en_gr(house_price, solar_price, total_price, project_details, notes, customer_info, logo_data_b64):
-    """Creates a professional proposal PDF for the customer (English and Greek)."""
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=A4,
-        rightMargin=15*mm,
-        leftMargin=15*mm,
-        topMargin=40*mm, 
-        bottomMargin=25*mm
-    )
-
-    styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(
-        name='NormalBilingual', parent=styles['Normal'], fontSize=9, leading=12, fontName=MAIN_FONT
-    ))
-    styles.add(ParagraphStyle(
-        name='HeadingBilingual', parent=styles['Heading2'], fontSize=12, spaceAfter=6, fontName=f"{MAIN_FONT}-Bold", textColor=colors.HexColor("#3182ce"), alignment=TA_LEFT
-    ))
-    styles.add(ParagraphStyle(
-        name='PriceTotalBilingual', parent=styles['Heading1'], fontSize=21, alignment=TA_CENTER,
-        spaceAfter=10, fontName=f"{MAIN_FONT}-Bold", textColor=colors.HexColor("#c53030")
-    ))
-    styles.add(ParagraphStyle(
-        name='SectionSubheadingBilingual', parent=styles['Heading3'], fontSize=10, spaceAfter=4, spaceBefore=8,
-        fontName=f"{MAIN_FONT}-Bold", textColor=colors.HexColor("#4a5568")
-    ))
-    title_style_bilingual = ParagraphStyle(
-        name='TitleBilingual', parent=styles['Heading1'], fontSize=18, alignment=TA_CENTER,
-        spaceAfter=12, fontName=f"{MAIN_FONT}-Bold", textColor=colors.HexColor("#3182ce")
-    )
-
-    elements = []
-
-    # Cover Page
-    elements.append(Spacer(1, 40*mm))
-    elements.append(Paragraph("PREFABRICATED HOUSE PROPOSAL", title_style_bilingual))
-    elements.append(Paragraph("ΠΡΟΤΑΣΗ ΠΡΟΚΑΤΑΣΚΕΥΑΣΜΕΝΟΥ ΣΠΙΤΙΟΥ", title_style_bilingual))
-    elements.append(Spacer(1, 20*mm))
-    elements.append(Paragraph(f"For / Για: {customer_info['name']}", styles['NormalBilingual']))
-    if customer_info['company']:
-        elements.append(Paragraph(f"Company / Εταιρεία: {customer_info['company']}", styles['NormalBilingual']))
-    elements.append(Spacer(1, 8*mm))
-    elements.append(Paragraph(f"Date / Ημερομηνία: {datetime.now().strftime('%d/%m/%Y')}", styles['NormalBilingual']))
-    elements.append(PageBreak())
-
-    # Customer & Project Information
-    elements.append(Paragraph("CUSTOMER & PROJECT INFORMATION / ΠΛΗΡΟΦΟΡΙΕΣ ΠΕΛΑΤΗ & ΕΡΓΟΥ", styles['HeadingBilingual']))
-    elements.append(Paragraph(f"<b>Room Configuration / Διαμόρφωση Δωματίου:</b> {project_details['room_configuration']}", styles['NormalBilingual']))
-    elements.append(Paragraph(f"<b>Dimensions / Διαστάσεις:</b> {project_details['width']}m x {project_details['length']}m x {project_details['height']}m | <b>Total Area / Συνολική Επιφάνεια:</b> {project_details['area']:.2f} m² | <b>Structure Type / Τύπος Κατασκευής:</b> {project_details['structure_type']}", styles['NormalBilingual']))
-    elements.append(Spacer(1, 8*mm))
-
-    customer_info_table_data_bilingual = [
-        [Paragraph("<b>Name / Όνομα:</b>", styles['NormalBilingual']), Paragraph(f"{customer_info['name']}", styles['NormalBilingual'])],
-        [Paragraph("<b>Company / Εταιρεία:</b>", styles['NormalBilingual']), Paragraph(f"{customer_info['company'] or ''}", styles['NormalBilingual'])],
-        [Paragraph("<b>Address / Διεύθυνση:</b>", styles['NormalBilingual']), Paragraph(f"{customer_info['address'] or ''}", styles['NormalBilingual'])],
-        [Paragraph("<b>Phone / Τηλέφωνο:</b>", styles['NormalBilingual']), Paragraph(f"{customer_info['phone'] or ''}", styles['NormalBilingual'])],
-        [Paragraph("<b>ID/Passport No / Αρ. Ταυτότητας/Διαβατηρίου:</b>", styles['NormalBilingual']), Paragraph(f"{customer_info['id_no'] or ''}", styles['NormalBilingual'])],
-    ]
-    customer_info_table_bilingual = Table(customer_info_table_data_bilingual, colWidths=[65*mm, 105*mm])
-    customer_info_table_bilingual.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
-    elements.append(customer_info_table_bilingual)
-    elements.append(Spacer(1, 8*mm))
-
-    # Technical Specifications Section
-    elements.append(Paragraph("TECHNICAL SPECIFICATIONS / ΤΕΧΝΙΚΑ ΧΑΡΑΚΤΗΡΙΣΤΙΚΑ", styles['HeadingBilingual']))
-    
-    # Yapı ve Malzemeler
-    building_structure_table_data_bilingual = []
-    building_structure_table_data_bilingual.append([Paragraph('<b>Construction Type / Τύπος Κατασκευής</b>', styles['NormalBilingual']), Paragraph(project_details['structure_type'], styles['NormalBilingual'])])
-    if project_details['structure_type'] == 'Light Steel':
-        building_structure_table_data_bilingual.append([Paragraph('<b>Steel Structure Details / Λεπτομέρειες Χαλύβδινης Κατασκευής</b>', styles['NormalBilingual']), Paragraph(LIGHT_STEEL_BUILDING_STRUCTURE_EN_GR, styles['NormalBilingual'])])
-    else: # Heavy Steel
-        building_structure_table_data_bilingual.append([Paragraph('<b>Steel Structure Details / Λεπτομέρειες Χαλύβδινης Κατασκευής</b>', styles['NormalBilingual']), Paragraph(HEAVY_STEEL_BUILDING_STRUCTURE_EN_GR, styles['NormalBilingual'])])
-    
-    building_structure_table_data_bilingual.append([Paragraph('<b>Interior Walls / Εσωτερικοί Τοίχοι</b>', styles['NormalBilingual']), Paragraph(INTERIOR_WALLS_DESCRIPTION_EN_GR, styles['NormalBilingual']) if project_details['plasterboard_interior'] or project_details['plasterboard_all'] else Paragraph("Not Specified / Δεν καθορίζεται", styles['NormalBilingual'])])
-    building_structure_table_data_bilingual.append([Paragraph('<b>Roof / Στέγη</b>', styles['NormalBilingual']), Paragraph(ROOF_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
-    building_structure_table_data_bilingual.append([Paragraph('<b>Exterior Walls / Εξωτερικοί Τοίχοι</b>', styles['NormalBilingual']), Paragraph(EXTERIOR_WALLS_DESCRIPTION_EN_GR, styles['NormalBilingual'])])
-    
-    building_materials_table_bilingual = Table(building_structure_table_data_bilingual, colWidths=[60*mm, 110*mm])
-    building_materials_table_bilingual.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('BOTTOMPADDING', (0,0), (-1,-1), 2)]))
-    elements.append(building_materials_table_bilingual)
-    elements.append(Spacer(1, 5*mm))
-
-    # Pricing and Payment Plan
-    elements.append(Paragraph("PRICE & PAYMENT SCHEDULE / ΤΙΜΗ & ΠΡΟΓΡΑΜΜΑ ΠΛΗΡΩΜΩΝ", styles['HeadingBilingual']))
-    price_table_data_bilingual = []
-    price_table_data_bilingual.append([
-        Paragraph("Main House Price / Τιμή Κυρίως Σπιτιού", styles['NormalBilingual']),
-        Paragraph(format_currency(house_price), styles['NormalBilingual'])
-    ])
-    if solar_price > 0:
-        price_table_data_bilingual.append([
-            Paragraph("Solar System Price / Τιμή Ηλιακού Συστήματος", styles['NormalBilingual']),
-            Paragraph(format_currency(solar_price), styles['NormalBilingual'])
-        ])
-    price_table_data_bilingual.append([
-        Paragraph("<b>TOTAL PRICE / ΣΥΝΟΛΙΚΗ ΤΙΜΗ</b>", styles['NormalBilingual']),
-        Paragraph(f"<b>{format_currency(total_price)}</b>", styles['NormalBilingual'])
-    ])
-    
-    price_summary_table_bilingual = Table(price_table_data_bilingual, colWidths=[120*mm, 50*mm])
-    price_summary_table_bilingual.setStyle(TableStyle([
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#ccc")),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('LEFTPADDING', (0,0), (-1,-1), 6), ('RIGHTPADDING', (0,0), (-1,-1), 6),
-        ('TOPPADDING', (0,0), (-1,-1), 4), ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-    ]))
-    elements.append(price_summary_table_bilingual)
-    elements.append(Spacer(1, 8*mm))
-
-    doc.build(elements, onLaterPages=lambda canvas_obj, doc: draw_pdf_header(canvas_obj, doc, logo_data_b64, COMPANY_INFO),
-              onFirstPage=lambda canvas_obj, doc: draw_pdf_footer(canvas_obj, doc, COMPANY_INFO))
-    return buffer
-
-def create_sales_contract_pdf(customer_info, house_sales_price, solar_sales_price, project_details, company_info, logo_data_b64):
+def create_sales_contract_pdf(customer_info, house_sales_price, solar_sales_price, total_sales_price, project_details, company_info, logo_data_b64): # total_sales_price eklendi
     """Creates a sales contract PDF (Turkish)."""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -856,14 +742,6 @@ def create_sales_contract_pdf(customer_info, house_sales_price, solar_sales_pric
     elements.append(Paragraph("Sözleşmenin Konusu:", contract_subheading_style))
     elements.append(Paragraph(f"A. Satıcı, Alıcıya LIGHT STEEL STRUCTURE CONSTRUCTION (Tiny House) yapısını, Alıcı tarafından belirtilen adreste kendi koordinasyonu altında, Ek A'da detaylandırılan şartnamelere uygun olarak tamamlamayı ve teslim etmeyi kabul eder.", contract_normal_style))
     elements.append(Paragraph("B. Taşınabilir Ev projesi ile ilgili inşaat detayları, işbu sözleşmenin ayrılmaz bir parçası olan ekler olarak kabul edilecektir.", contract_normal_style))
-    elements.append(Spacer(1, 6*mm))
-
-    # Definitions
-    elements.append(Paragraph("1. Tanımlar:", contract_subheading_style))
-    elements.append(Paragraph("1.1. 'Tamamlanma' ibaresi, Hafif Çelik Yapı Ev'in tamamen inşa edildiği, denetlendiği ve teslimata hazır olduğu noktayı ifade eder.", contract_normal_style))
-    elements.append(Paragraph("1.2. 'Teslim Tarihi' ibaresi, mülkün Alıcıya teslim edildiği, bu noktada Alıcının tam mülkiyeti ve riskini üstlendiği tarihi ifade eder.", contract_normal_style))
-    elements.append(Paragraph("1.3. 'Mücbir Sebep Olayı' ibaresi, Satıcının makul kontrolü dışındaki, evin zamanında teslimini engelleyen, bunlarla sınırlı olmamak üzere, doğal afetler, savaş, terörizm, grevler, lokavtlar veya yasalarca tanınan diğer herhangi bir olayı ifade eder.", contract_normal_style))
-    elements.append(Paragraph("1.4. 'Ev' ibaresi, Ek A'da açıklanan yapıyı ifade eder.", contract_normal_style))
     elements.append(Spacer(1, 6*mm))
 
     # Sales Price and Payment Terms
@@ -1148,7 +1026,6 @@ def run_streamlit_app():
         'customer_notes_val': "",
         'pdf_language_selector_val_tuple': ('Turkish', 'tr'),
         'profit_rate_val_tuple': (f'{20}%', 0.20), # Default index 3 of range(5,45,5)
-        # customer_city de buraya eklendi, eksikti
         'customer_city': "", 
     }
 
@@ -1457,7 +1334,7 @@ def run_streamlit_app():
     
     col_floor_mats2 = st.columns(3)
     with col_floor_mats2[0]:
-        _temp_osb2_18mm_count_val = st.session_state.osb2_18mm_count_val # osb2_count_val yerine doğru isim
+        _temp_osb2_18mm_count_val = st.session_state.osb2_18mm_count_val
         st.session_state.osb2_18mm_count_val = st.number_input(f"OSB2 18mm/Beton Panel ({FIYATLAR['osb2_18mm_piece_price']}€/adet) Adet:", value=_temp_osb2_18mm_count_val, min_value=0, disabled=floor_insulation_material_disabled, key="osb2_input")
     with col_floor_mats2[1]:
         _temp_galvanized_sheet_m2_val = st.session_state.galvanized_sheet_m2_val
@@ -1474,14 +1351,23 @@ def run_streamlit_app():
     _temp_insulation_material_type_val = st.session_state.insulation_material_type_val
     st.session_state.insulation_material_type_val = st.radio(
         "Yalıtım Malzeme Tipi:",
-        ['Taş Yünü', 'Cam Yünü'],
-        index=['Taş Yünü', 'Cam Yünü'].index(_temp_insulation_material_type_val),
+        ['Yalıtım Yapılmayacak', 'Taş Yünü', 'Cam Yünü'], # Yeni seçenek eklendi
+        index=['Yalıtım Yapılmayacak', 'Taş Yünü', 'Cam Yünü'].index(_temp_insulation_material_type_val) if _temp_insulation_material_type_val in ['Yalıtım Yapılmayacak', 'Taş Yünü', 'Cam Yünü'] else 0,
         key="insulation_material_type_select"
     )
 
+    # Yalıtım yapılmayacak seçildiyse ilgili checkbox'ları devre dışı bırak ve sıfırla
+    if st.session_state.insulation_material_type_val == 'Yalıtım Yapılmayacak':
+        if st.session_state.insulation_floor_val: # Sadece True ise False yap
+            st.session_state.insulation_floor_val = False
+        if st.session_state.insulation_wall_val: # Sadece True ise False yap
+            st.session_state.insulation_wall_val = False
+        st.warning("Yalıtım yapılmayacak seçildiği için zemin ve duvar yalıtım seçenekleri devre dışı bırakıldı.")
+
+
     st.markdown("---")
 
-    _temp_transportation_input_val = st.session_state.transportation_input_val # Bu satırda hata alınıyordu
+    _temp_transportation_input_val = st.session_state.transportation_input_val 
     st.session_state.transportation_input_val = st.checkbox("Nakliye Dahil Et (350€)", value=_temp_transportation_input_val, key="transportation_checkbox")
     _temp_heating_val = st.session_state.heating_val
     st.session_state.heating_val = st.checkbox("Yerden Isıtma Dahil Et (50€/m²)", value=_temp_heating_val, key="heating_checkbox")
@@ -1538,7 +1424,9 @@ def run_streamlit_app():
             areas = calculate_area(width, length, height)
             floor_area = areas["floor"]
             wall_area = areas["wall"]
-            roof_area = areas["roof"]
+            roof_area = areas["roof"] # Düzeltme: 'reason' yerine 'roof' olmalı
+            # Olası bir hata: Eğer yukarıdaki areas dict'inde 'roof' yoksa KeyError olabilir.
+            # calculate_area fonksiyonuna göre 'roof' olmalı.
 
             costs = []
             profile_analysis_details = []
@@ -1582,6 +1470,9 @@ def run_streamlit_app():
                     insulation_cost_specific = calculate_rounded_up_cost(num_glass_wool_packets * FIYATLAR["glass_wool_5cm_packet_price"])
                     costs.append({'Item': FIYATLAR['glass_wool_5cm_packet_info_report'], 'Quantity': f"{num_glass_wool_packets} paket ({floor_area:.2f} m²)", 'Unit Price (€)': FIYATLAR["glass_wool_5cm_packet_price"], 'Total (€)': insulation_cost_specific})
                     aether_package_total_cost += insulation_cost_specific
+                elif st.session_state.insulation_material_type_val == 'Yalıtım Yapılmayacak':
+                    # Yalıtım yapılmayacaksa maliyet 0 olarak ele alınacak, herhangi bir şey eklenmeyecek.
+                    pass # Zaten 0 maliyet olduğu için ek kalem eklemeye gerek yok.
                 
                 costs.append({'Item': FIYATLAR['galvanized_sheet_info'], 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': FIYATLAR["galvanized_sheet_m2_price"], 'Total (€)': calculate_rounded_up_cost(floor_area * FIYATLAR["galvanized_sheet_m2_price"])})
                 costs.append({'Item': FIYATLAR['plywood_osb_floor_panel_info'], 'Quantity': f"{plywood_pieces_needed} adet", 'Unit Price (€)': FIYATLAR["plywood_piece"], 'Total (€)': calculate_rounded_up_cost(plywood_pieces_needed * FIYATLAR["plywood_piece"])})
@@ -1789,9 +1680,12 @@ def run_streamlit_app():
 
             # Prepare results dictionaries
             customer_info_result = {
-                'name': customer_name.strip() or "GENEL", 'company': customer_company.strip() or "",
-                'address': customer_address.strip() or "", 'city': st.session_state.customer_city, # customer_city buradan çekildi
-                'phone': customer_phone.strip() or "", 'email': customer_email.strip() or "",
+                'name': customer_name.strip() or "GENEL", 
+                'company': customer_company.strip() or "",
+                'address': customer_address.strip() or "", 
+                'city': st.session_state.customer_city, 
+                'phone': customer_phone.strip() or "", 
+                'email': customer_email.strip() or "",
                 'id_no': customer_id_no.strip() or ""
             }
 
