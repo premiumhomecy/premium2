@@ -737,7 +737,7 @@ def create_sales_contract_pdf(customer_info, house_sales_price, solar_sales_pric
     today_date = datetime.now().strftime('%d')
     today_month = datetime.now().strftime('%B')
     today_year = datetime.now().year
-    elements.append(Paragraph(f"Bu Sözleşme ("Sözleşme"), bu {today_date} {today_month}, {today_year} tarihinde aşağıda belirtilen taraflar arasında yapılmıştır:", contract_normal_style))
+    elements.append(Paragraph(f"Bu Sözleşme ('Sözleşme'), bu {today_date} {today_month}, {today_year} tarihinde aşağıda belirtilen taraflar arasında yapılmıştır:", contract_normal_style))
     elements.append(Paragraph(f"<b>{customer_info['name'].upper()}</b> (T.C. Kimlik No: <b>{customer_info['id_no']}</b>) bundan böyle "Alıcı" olarak anılacaktır, ve", contract_normal_style))
     elements.append(Paragraph(f"<b>{company_info['name'].upper()}</b>, Şirket No. <b>{company_info['company_no']}</b>, adresi {company_info['address']} olan, bundan böyle "Satıcı" olarak anılacaktır.", contract_normal_style))
     elements.append(Spacer(1, 6*mm))
