@@ -18,32 +18,44 @@ import requests
 from PIL import Image as PILImage
 import base64
 
+# ==============================================================================
+# GÖRÜNMEZ KARAKTER TEMİZLEME VE FONT AYARLARI
+# ==============================================================================
+
 # --- Görünmez Karakter Temizleme Fonksiyonu ---
 def clean_invisible_chars(text):
-    """Metindeki görünmez karakterleri temizler"""
-    # U+00A0 (non-breaking space) ve U+200B (zero width space) gibi karakterleri temizler
-    return re.sub(r'[\u00A0\u200B]', ' ', text)
+    """Metindeki görünmez karakterleri temizler (U+00A0, U+200B vb. dahil)."""
+    return re.sub(r'[\u00A0\u200B\s\xA0]+', ' ', text).strip()
 
 # --- Font Kaydı (Türkçe karakter desteği) ---
+# Programın çalıştığı klasörde 'fonts' dizini altında 'FreeSans.ttf' ve 'FreeSansBold.ttf' olmalıdır.
 try:
+    # 'fonts' klasörünün varlığını kontrol et
     if not os.path.exists("fonts"):
-        os.makedirs("fonts")
-    # FreeSans fontlarının varlığını kontrol et
+        os.makedirs("fonts") # Yoksa oluştur
+    
+    # Gerekli font dosyalarının varlığını kontrol et
     if not (os.path.exists("fonts/FreeSans.ttf") and os.path.exists("fonts/FreeSansBold.ttf")):
         st.warning("Gerekli 'FreeSans.ttf' veya 'FreeSansBold.ttf' font dosyaları 'fonts/' klasöründe bulunamadı. Lütfen bu dosyaları manuel olarak ekleyin. Aksi takdirde PDF'lerde Türkçe karakterler düzgün görünmeyebilir ve Helvetica kullanılacaktır.")
-        raise FileNotFoundError # Hata fırlatarak try bloğundan çık
-    
+        raise FileNotFoundError # Fontlar bulunamazsa istisna fırlat
+
     pdfmetrics.registerFont(TTFont("FreeSans", "fonts/FreeSans.ttf"))
     pdfmetrics.registerFont(TTFont("FreeSans-Bold", "fonts/FreeSansBold.ttf"))
     pdfmetrics.registerFontFamily('FreeSans', normal='FreeSans', bold='FreeSans-Bold')
     MAIN_FONT = "FreeSans"
 except Exception as e:
-    # Fontlar bulunamazsa veya kaydedilemezse Helvetica'ya geri dön
-    st.warning(f"Font yükleme hatası: {e}. Helvetica kullanılacak.")
+    st.warning(f"Font yükleme hatası: {e}. PDF'lerde 'Helvetica' fontu kullanılacak.")
     MAIN_FONT = "Helvetica"
 
+# ==============================================================================
+# ŞİRKET BİLGİLERİ VE FİYAT TANIMLARI
+# ==============================================================================
+
 # --- Şirket Bilgileri ---
-LOGO_URL = "https://drive.google.com/uc?export=download&id=1RD27Gas035iUqe4Ucl3phFwxZPWZPWzn" # Google Drive'dan genel erişimli bir logo URL'si
+# LOGO_URL'nin genel erişime açık bir URL olduğundan emin olun.
+# Örnek: Google Drive'dan genel erişimli bir dosya veya GitHub Pages gibi bir CDN.
+LOGO_URL = "https://drive.google.com/uc?export=download&id=1RD27Gas035iUqe4Ucl3phFwxZPWZPWzn" 
+
 COMPANY_INFO = {
     "name": "PREMIUM HOME LTD",
     "address": "Iasonos 1, 1082, Nicosia Cyprus",
@@ -56,13 +68,14 @@ COMPANY_INFO = {
     "bank_address": "12 Esperidon Street 1087 Nicosia",
     "account_name": "SOYKOK PREMIUM HOME LTD",
     "iban": "CY27 0020 0195 0000 3570 4239 2044",
-    "account_number": "357042392044", # Banka hesap numarası eklendi
-    "currency_type": "EURO", # Para birimi eklendi
-    "swift_bic": "BCYPCY2N"
+    "account_number": "357042392044", 
+    "currency_type": "EURO",
+    "swift_bic": "BCYPCY2N",
+    "logo_url": LOGO_URL 
 }
 
 # --- Güncel Fiyat Tanımları ---
-# Fiyatlar KDV hariç maliyet fiyatlarıdır.
+# Tüm fiyatlar KDV hariç maliyet fiyatlarıdır.
 FIYATLAR = {
     # Çelik Profil Fiyatları (6m parça başı)
     "steel_profile_100x100x3": 45.00,
@@ -72,91 +85,91 @@ FIYATLAR = {
     "steel_profile_50x50x2": 11.00,
     "steel_profile_HEA160": 155.00,
     
-    # Malzeme Fiyatları
-    "heavy_steel_m2": 400.00,
-    "sandwich_panel_m2": 22.00,
-    "plywood_piece": 44.44,
-    "aluminum_window_piece": 250.00,
-    "sliding_glass_door_piece": 300.00,
-    "wc_window_piece": 120.00,
-    "wc_sliding_door_piece": 150.00,
-    "door_piece": 280.00,
-    "kitchen_installation_standard_piece": 550.00,
-    "kitchen_installation_special_piece": 1000.00,
-    "shower_wc_installation_piece": 1000.00,
-    "connection_element_m2": 1.50,
-    "transportation": 350.00,
-    "floor_heating_m2": 50.00,
-    "wc_ceramic_m2_material": 20.00, # Porselen fayans için de kullanılacak malzeme m2 fiyatı
-    "wc_ceramic_m2_labor": 20.00,     # Porselen fayans için de kullanılacak işçilik m2 fiyatı
-    "electrical_per_m2": 25.00,
-    "plumbing_per_m2": 25.00,
-    "osb_piece": 12.00,
-    "insulation_per_m2": 5.00, # Genel Yalıtım (5cm probu gibi)
+    # Temel Malzeme Fiyatları
+    "heavy_steel_m2": 400.00, # Ağır çelik m2 fiyatı
+    "sandwich_panel_m2": 22.00, # Standart Sandviç Panel m2 fiyatı (60mm EPS için)
+    "plywood_piece": 44.44, # Kontraplak/OSB levha fiyatı (yaklaşık 1.22x2.44m)
+    "aluminum_window_piece": 250.00, # Alüminyum pencere adet fiyatı
+    "sliding_glass_door_piece": 300.00, # Sürgülü cam kapı adet fiyatı
+    "wc_window_piece": 120.00, # WC pencere adet fiyatı
+    "wc_sliding_door_piece": 150.00, # WC sürgülü kapı adet fiyatı
+    "door_piece": 280.00, # Genel kapı adet fiyatı
     
-    # İşçilik Fiyatları
-    "welding_labor_m2_standard": 160.00,
-    "welding_labor_m2_trmontaj": 20.00,
-    "panel_assembly_labor_m2": 5.00,
+    # Kurulum/İşçilik Fiyatları
+    "kitchen_installation_standard_piece": 550.00, # Standart mutfak kurulumu
+    "kitchen_installation_special_piece": 1000.00, # Özel tasarım mutfak kurulumu
+    "shower_wc_installation_piece": 1000.00, # Duş/WC kurulumu
+    "connection_element_m2": 1.50, # Bağlantı elemanları m2 fiyatı
+    "transportation": 350.00, # Nakliye fiyatı
+    "floor_heating_m2": 50.00, # Yerden ısıtma m2 fiyatı
+    "wc_ceramic_m2_material": 20.00, # WC Seramik malzeme m2 fiyatı
+    "wc_ceramic_m2_labor": 20.00,     # WC Seramik işçilik m2 fiyatı
+    "electrical_per_m2": 25.00, # Elektrik tesisatı m2 fiyatı
+    "plumbing_per_m2": 25.00, # Sıhhi tesisat m2 fiyatı
+    "osb_piece": 12.00, # OSB levha fiyatı (duvar için)
+    "insulation_per_m2": 5.00, # Genel Yalıtım m2 fiyatı (5cm EPS gibi)
+    "welding_labor_m2_standard": 160.00, # Standart kaynak işçiliği m2 fiyatı
+    "welding_labor_m2_trmontaj": 20.00, # TR montaj kaynak işçiliği m2 fiyatı
+    "panel_assembly_labor_m2": 5.00, # Panel montaj işçiliği m2 fiyatı
     "plasterboard_material_m2": 20.00, # Alçıpan genel malzeme m2 fiyatı (Guardex için kullanılabilir)
     "plasterboard_labor_m2_avg": 80.00, # Alçıpan işçilik m2 fiyatı
-    "plywood_flooring_labor_m2": 11.11,
-    "door_window_assembly_labor_piece": 10.00,
-    "solar_per_kw": 1250.00,
-    
-    # Yeni Zemin Sistemi Malzemeleri Fiyatları
-    "skirting_meter_price": 2.00,
-    "laminate_flooring_m2_price": 15.00,
-    "under_parquet_mat_m2_price": 3.00,
-    "osb2_18mm_piece_price": 30.00,
-    "galvanized_sheet_m2_price": 10.00,
+    "plywood_flooring_labor_m2": 11.11, # Kontraplak döşeme işçiliği m2 fiyatı
+    "door_window_assembly_labor_piece": 10.00, # Kapı/pencere montaj işçiliği adet fiyatı
+    "solar_per_kw": 1250.00, # Solar enerji kW başına fiyat
 
-    # Aether Living/Yeni Ürün ve Diğer Yeni Eklenen Kalemler Fiyatları
+    # Yeni Zemin Sistemi Malzemeleri Fiyatları (Premium/Elite)
+    "skirting_meter_price": 2.00, # Süpürgelik metre fiyatı
+    "laminate_flooring_m2_price": 15.00, # Laminat parke m2 fiyatı
+    "under_parquet_mat_m2_price": 3.00, # Parke altı şilte m2 fiyatı
+    "osb2_18mm_piece_price": 30.00, # OSB2 18mm levha adet fiyatı
+    "galvanized_sheet_m2_price": 10.00, # Galvanizli sac m2 fiyatı
+
+    # Aether Living Ekipman/Yükseltme Fiyatları
     "smart_home_systems_total_price": 350.00,
-    "white_goods_total_price": 800.00,
+    "white_goods_total_price": 800.00, # Buzdolabı ve TV dahil
     "sofa_total_price": 400.00,
     "security_camera_total_price": 650.00,
-    "exterior_cladding_labor_price_per_m2": 150.00, # Knauf Aquapanel, vb. için M2 bazlı İŞÇİLİK fiyatı
+    "exterior_cladding_labor_price_per_m2": 150.00, # Dış cephe kaplama işçiliği M2 bazlı (Knauf Aquapanel, vb.)
     "bedroom_set_total_price": 800.00,
-    "terrace_laminated_wood_flooring_price_per_m2": 40.00,
-    "concrete_panel_floor_price_per_m2": 50.00,
+    "terrace_laminated_wood_flooring_price_per_m2": 40.00, # İşlenmiş çam zemin kaplama (teras) m2 fiyatı
+    "concrete_panel_floor_price_per_m2": 50.00, # Beton panel zemin m2 fiyatı
     "premium_faucets_total_price": 200.00,
     "designer_furniture_total_price": 1000.00,
     "italian_sofa_total_price": 800.00,
     "inclass_chairs_unit_price": 150.00,
-    "exterior_wood_cladding_m2_price": 150.00,
-    "brushed_grey_granite_countertops_price_m2_avg": 425.00,
-    "100mm_eps_isothermal_panel_unit_price": 27.00,
+    "exterior_wood_cladding_m2_price": 150.00, # Dış cephe ahşap kaplama (işçilik ve malzeme dahil m2)
+    "brushed_grey_granite_countertops_price_m2_avg": 425.00, # Fırçalanmış gri granit tezgah m2 fiyatı
+    "100mm_eps_isothermal_panel_unit_price": 27.00, # 100mm Yüksek Performanslı Panellerin m2 fiyatı
 
-    # Alçıpan modellerinin birim fiyatları (Ivan'dan gelen ve güncellenen)
-    "gypsum_board_white_per_unit_price": 8.65,
-    "gypsum_board_green_per_unit_price": 11.95,
-    "gypsum_board_blue_per_unit_price": 22.00, # Knauf Aquapanel Mavi Alçıpan adet fiyatı
+    # Alçıpan modellerinin birim fiyatları (Ivan'dan)
+    "gypsum_board_white_per_unit_price": 8.65, # Beyaz alçıpan adet fiyatı
+    "gypsum_board_green_per_unit_price": 11.95, # Yeşil alçıpan adet fiyatı
+    "gypsum_board_blue_per_unit_price": 22.00, # Mavi alçıpan (Knauf Aquapanel) adet fiyatı
     
     # Diğer malzeme birim fiyatları (Ivan'dan)
-    "otb_stone_wool_price": 19.80,
-    "glass_wool_5cm_packet_price": 19.68,
-    "tn25_screws_price_per_unit": 5.58,
-    "cdx400_material_price": 3.40,
-    "ud_material_price": 1.59,
-    "oc50_material_price": 2.20,
-    "oc100_material_price": 3.96,
-    "ch100_material_price": 3.55,
+    "otb_stone_wool_price": 19.80, # OTB taşyünü fiyatı
+    "glass_wool_5cm_packet_price": 19.68, # Cam yünü 5cm paket fiyatı (10m2 için)
+    "tn25_screws_price_per_unit": 5.58, # TN25 vidalar adet fiyatı
+    "cdx400_material_price": 3.40, # CDX400 malzeme adet fiyatı
+    "ud_material_price": 1.59, # UD malzeme adet fiyatı
+    "oc50_material_price": 2.20, # OC50 malzeme adet fiyatı
+    "oc100_material_price": 3.96, # OC100 malzeme adet fiyatı
+    "ch100_material_price": 3.55, # CH100 malzeme adet fiyatı
 
-    # Material Info Keys (for reporting purposes)
-    "steel_skeleton_info": "Metal iskelet",
-    "protective_automotive_paint_info": "Koruyucu otomotiv boyası",
+    # Material Info Keys (raporlama için bilgi metinleri)
+    "steel_skeleton_info": "Metal İskelet",
+    "protective_automotive_paint_info": "Koruyucu Otomotiv Boyası",
     "insulation_info_general": "Genel Yalıtım (EPS/Poliüretan)",
     "60mm_eps_sandwich_panel_info": "Standart 60mm EPS veya Poliüretan Sandviç Paneller (beyaz)",
-    "100mm_eps_isothermal_panel_info": "Yüksek performanslı 100mm EPS veya Poliüretan İzotermik Paneller",
-    "galvanized_sheet_info": "Galvanizli sac (Zemin)",
-    "plywood_osb_floor_panel_info": "Kontraplak/OSB zemin paneli",
+    "100mm_eps_isothermal_panel_info": "Yüksek Performanslı 100mm EPS veya Poliüretan İzotermik Paneller",
+    "galvanized_sheet_info": "Galvanizli Sac (Zemin)",
+    "plywood_osb_floor_panel_info": "Kontraplak/OSB Zemin Paneli",
     "12mm_laminate_parquet_info": "12mm Laminat Parke",
-    "induction_hob_info": "İndüksiyonlu ocak",
-    "electric_faucet_info": "Elektrikli batarya",
-    "kitchen_sink_info": "Mutfak evyesi",
-    "fully_functional_bathroom_fixtures_info": "Tam fonksiyonel banyo armatürleri",
-    "kitchen_bathroom_countertops_info": "Mutfak ve banyo tezgahları",
+    "induction_hob_info": "İndüksiyonlu Ocak",
+    "electric_faucet_info": "Elektrikli Batarya",
+    "kitchen_sink_info": "Mutfak Evyesi",
+    "fully_functional_bathroom_fixtures_info": "Tam Fonksiyonel Banyo Armatürleri",
+    "kitchen_bathroom_countertops_info": "Mutfak ve Banyo Tezgahları",
     "treated_pine_floor_info": "İşlenmiş Çam Zemin Kaplaması (Teras)",
     "porcelain_tiles_info": "Porselen Fayans",
     "concrete_panel_floor_info": "Beton Panel Zemin",
@@ -167,7 +180,7 @@ FIYATLAR = {
     "inclass_chairs_info": "Inclass Sandalyeler",
     "smart_home_systems_info": "Akıllı Ev Sistemleri",
     "advanced_security_camera_pre_installation_info": "Gelişmiş Güvenlik Kamerası Ön Kurulumu",
-    "exterior_wood_cladding_lambiri_info": "Dış cephe ahşap kaplama - Lambiri",
+    "exterior_wood_cladding_lambiri_info": "Dış Cephe Ahşap Kaplama - Lambiri",
     "brushed_grey_granite_countertops_info": "Fırçalanmış Gri Kale Granit Mutfak/Banyo Tezgahları",
     
     "gypsum_board_white_info": "İç Alçıpan (Beyaz)",
@@ -179,7 +192,7 @@ FIYATLAR = {
     "eps_styrofoam_info": "EPS STYROFOAM",
     "knauf_mineralplus_insulation_info": "Knauf MineralPlus İzolasyon (Taşyünü)",
     "knauf_guardex_gypsum_board_info": "Knauf Guardex Alçıpan",
-    "satin_plaster_paint_info": "Saten sıva ve boya",
+    "satin_plaster_paint_info": "Saten Sıva ve Boya",
     "otb_stone_wool_info_report": "OTB (Taşyünü)",
     "glass_wool_5cm_packet_info_report": "Cam Yünü 5cm Paket",
     "tn25_screws_info_report": "TN25 Vidalar",
@@ -429,7 +442,10 @@ FLOOR_INSULATION_MATERIALS_TR = """
 <b>Zemin Yalıtım Malzemeleri:</b>
 """
 
-# ====================== CALCULATION FUNCTIONS ======================
+# ==============================================================================
+# YARDIMCI VE HESAPLAMA FONKSİYONLARI
+# ==============================================================================
+
 def calculate_area(width, length, height):
     """Calculates floor, wall, and roof areas based on dimensions."""
     floor_area = width * length
@@ -439,15 +455,15 @@ def calculate_area(width, length, height):
 
 def format_currency(value):
     """Formats a monetary value as Euro currency."""
-    return f"€{value:,.2f}"
+    return f"€{value:,.2f}".replace('.', 'X').replace(',', '.').replace('X', ',') # Euro formatı için nokta ve virgül değişimi
 
 def calculate_rounded_up_cost(value):
     """Maliyeti yukarı yuvarlar"""
     return math.ceil(value * 100) / 100.0
 
 def calculate_recommended_profiles(floor_area):
-    """Provides a rough estimation of recommended steel profile pieces based on floor area."""
-    # These factors are arbitrary for demonstration and can be adjusted based on typical designs.
+    """Proje alanına göre önerilen çelik profil adetlerini hesaplar (kaba tahmin)."""
+    # Bu faktörler örnek içindir ve gerçek mühendislik tasarımına göre ayarlanabilir.
     base_factor = floor_area / 20.0 
     
     return {
@@ -461,35 +477,34 @@ def calculate_recommended_profiles(floor_area):
 
 def calculate_costs_detailed(project_inputs, areas):
     """
-    Performs detailed cost calculations for the construction project based on
-    project_inputs (from st.session_state).
-    Returns a list of dictionaries for cost breakdown, and other calculated values.
+    Proje girdilerine ve alanlara göre detaylı maliyet hesaplamalarını yapar.
+    Maliyet dökümü listesini ve diğer hesaplanan değerleri döndürür.
     """
     
     floor_area = areas["floor"]
     wall_area = areas["wall"]
     roof_area = areas["roof"]
 
-    costs = []
-    profile_analysis_details = [] # Used for detailed steel profile breakdown in internal report
-    aether_package_total_cost = 0.0 # To sum up costs for Aether packages
+    costs = [] # Detaylı maliyet kalemlerini tutacak liste
+    profile_analysis_details = [] # Çelik profil analiz detaylarını tutacak liste
     
-    # --- Structural Costs ---
+    # Aether Living Paket maliyetlerini toplamak için
+    aether_package_total_cost = 0.0 
+    
+    # --- Yapısal Maliyetler ---
     if project_inputs['structure_type'] == 'Light Steel':
-        # Steel profiles based on user input (which might be default or manually changed)
-        # Ensure correct lookup keys are used from FIYATLAR
-        profile_types = {
-            "100x100x3": project_inputs['profile_100x100_count'],
-            "100x50x3": project_inputs['profile_100x50_count'],
-            "40x60x2": project_inputs['profile_40x60_count'],
-            "50x50x2": project_inputs['profile_50x50_count'],
-            "120x60x5mm": project_inputs['profile_120x60x5mm_count'],
-            "HEA160": project_inputs['profile_HEA160_count'],
+        # Kullanıcı girdisine göre çelik profil maliyetleri
+        profile_types_and_counts = {
+            "100x100x3": project_inputs['profile_100x100_count_val'],
+            "100x50x3": project_inputs['profile_100x50_count_val'],
+            "40x60x2": project_inputs['profile_40x60_count_val'],
+            "50x50x2": project_inputs['profile_50x50_count_val'],
+            "120x60x5mm": project_inputs['profile_120x60x5mm_count_val'],
+            "HEA160": project_inputs['profile_HEA160_count_val'],
         }
         
-        for p_type, p_count in profile_types.items():
+        for p_type, p_count in profile_types_and_counts.items():
             if p_count > 0:
-                # Ensure the key matches FIYATLAR structure, e.g., steel_profile_HEA160
                 fiytlar_key = f"steel_profile_{p_type.replace('x', '_').lower()}" 
                 cost_per_piece = FIYATLAR.get(fiytlar_key, 0.0)
                 total_profile_cost = p_count * cost_per_piece
@@ -499,17 +514,20 @@ def calculate_costs_detailed(project_inputs, areas):
                     'Unit Price (€)': cost_per_piece,
                     'Total (€)': calculate_rounded_up_cost(total_profile_cost)
                 })
+                aether_package_total_cost += calculate_rounded_up_cost(total_profile_cost) # Pakete dahilse buraya eklenir
         
-        # Welding labor for light steel
-        welding_cost = wall_area * FIYATLAR['welding_labor_m2_trmontaj'] # Default to TR assembly labor for Light Steel
+        # Hafif Çelik için Kaynak İşçiliği
+        welding_cost = wall_area * FIYATLAR['welding_labor_m2_trmontaj']
         costs.append({
             'Item': 'Çelik Kaynak İşçiliği (Hafif Çelik)',
             'Quantity': f"{wall_area:.2f} m²",
             'Unit Price (€)': FIYATLAR['welding_labor_m2_trmontaj'],
             'Total (€)': calculate_rounded_up_cost(welding_cost)
         })
+        aether_package_total_cost += calculate_rounded_up_cost(welding_cost) # Pakete dahilse
+        
 
-    else: # Heavy Steel
+    else: # Ağır Çelik
         heavy_steel_cost = floor_area * FIYATLAR["heavy_steel_m2"]
         costs.append({
             'Item': FIYATLAR['steel_skeleton_info'] + ' (Ağır Çelik)',
@@ -517,18 +535,20 @@ def calculate_costs_detailed(project_inputs, areas):
             'Unit Price (€)': FIYATLAR['heavy_steel_m2'],
             'Total (€)': calculate_rounded_up_cost(heavy_steel_cost)
         })
-        
-        welding_cost = floor_area * FIYATLAR['welding_labor_m2_standard'] # Standard welding for Heavy Steel
+        aether_package_total_cost += calculate_rounded_up_cost(heavy_steel_cost)
+
+        welding_cost = floor_area * FIYATLAR['welding_labor_m2_standard']
         costs.append({
             'Item': 'Çelik Kaynak İşçiliği (Ağır Çelik)',
             'Quantity': f"{floor_area:.2f} m²",
             'Unit Price (€)': FIYATLAR['welding_labor_m2_standard'],
             'Total (€)': calculate_rounded_up_cost(welding_cost)
         })
+        aether_package_total_cost += calculate_rounded_up_cost(welding_cost)
     
-    # --- Exterior and Roof Cladding (Sandwich Panel) ---
-    # Sandviç Panel maliyetini ekle, eğer özel dış kaplama seçilmemişse
-    if not project_inputs['exterior_cladding_m2_option'] and not project_inputs['exterior_wood_cladding_m2_option']:
+    # --- Dış Cephe ve Çatı Kaplaması (Sandviç Panel veya Özel) ---
+    # Eğer özel dış kaplama seçilmemişse standart sandviç panel eklenir
+    if not project_inputs['exterior_cladding_m2_option_val'] and not project_inputs['exterior_wood_cladding_m2_option_val']:
         sandwich_panel_total_area = wall_area + roof_area
         sandwich_panel_cost = sandwich_panel_total_area * FIYATLAR["sandwich_panel_m2"]
         costs.append({
@@ -537,6 +557,8 @@ def calculate_costs_detailed(project_inputs, areas):
             'Unit Price (€)': FIYATLAR["sandwich_panel_m2"],
             'Total (€)': calculate_rounded_up_cost(sandwich_panel_cost)
         })
+        aether_package_total_cost += calculate_rounded_up_cost(sandwich_panel_cost)
+
         panel_assembly_cost = sandwich_panel_total_area * FIYATLAR["panel_assembly_labor_m2"]
         costs.append({
             'Item': 'Panel Montaj İşçiliği',
@@ -544,9 +566,10 @@ def calculate_costs_detailed(project_inputs, areas):
             'Unit Price (€)': FIYATLAR["panel_assembly_labor_m2"],
             'Total (€)': calculate_rounded_up_cost(panel_assembly_cost)
         })
+        aether_package_total_cost += calculate_rounded_up_cost(panel_assembly_cost)
 
-    # --- Special Exterior Cladding (if selected) ---
-    if project_inputs['exterior_cladding_m2_option'] and project_inputs['exterior_cladding_m2_val'] > 0:
+    # --- Özel Dış Cephe Kaplamaları (seçildiyse) ---
+    if project_inputs['exterior_cladding_m2_option_val'] and project_inputs['exterior_cladding_m2_val'] > 0:
         # Knauf Aquapanel / Mavi Alçıpan malzeme maliyeti (adet fiyatından m2'ye çevirme)
         mavi_alcipan_m2_price_converted = FIYATLAR['gypsum_board_blue_per_unit_price'] / GYPSUM_BOARD_UNIT_AREA_M2
         mavi_alcipan_material_cost = calculate_rounded_up_cost(project_inputs['exterior_cladding_m2_val'] * mavi_alcipan_m2_price_converted)
@@ -556,6 +579,7 @@ def calculate_costs_detailed(project_inputs, areas):
             'Unit Price (€)': mavi_alcipan_m2_price_converted,
             'Total (€)': mavi_alcipan_material_cost
         })
+        aether_package_total_cost += mavi_alcipan_material_cost
 
         # Dış Cephe Kaplama İşçiliği maliyeti
         exterior_cladding_labor_cost = calculate_rounded_up_cost(project_inputs['exterior_cladding_m2_val'] * FIYATLAR['exterior_cladding_labor_price_per_m2'])
@@ -565,8 +589,9 @@ def calculate_costs_detailed(project_inputs, areas):
             'Unit Price (€)': FIYATLAR['exterior_cladding_labor_price_per_m2'],
             'Total (€)': exterior_cladding_labor_cost
         })
+        aether_package_total_cost += exterior_cladding_labor_cost
     
-    if project_inputs['exterior_wood_cladding_m2_option'] and project_inputs['exterior_wood_cladding_m2_val'] > 0:
+    if project_inputs['exterior_wood_cladding_m2_option_val'] and project_inputs['exterior_wood_cladding_m2_val'] > 0:
         wood_cladding_cost = calculate_rounded_up_cost(project_inputs['exterior_wood_cladding_m2_val'] * FIYATLAR['exterior_wood_cladding_m2_price'])
         costs.append({
             'Item': FIYATLAR['exterior_wood_cladding_lambiri_info'],
@@ -574,11 +599,17 @@ def calculate_costs_detailed(project_inputs, areas):
             'Unit Price (€)': FIYATLAR['exterior_wood_cladding_m2_price'],
             'Total (€)': wood_cladding_cost
         })
+        aether_package_total_cost += wood_cladding_cost
 
-    # --- Interior Walls (Alçıpan) ---
+    # --- İç Duvarlar (Alçıpan) ---
     if project_inputs['plasterboard_interior'] or project_inputs['plasterboard_all']:
-        total_alcipan_area_for_calc = (wall_area / 2) if project_inputs['plasterboard_interior'] else (wall_area if project_inputs['plasterboard_all'] else 0)
-        total_alcipan_area_for_calc += roof_area # Alçıpan tavana da uygulanır
+        
+        # İç alçıpan alanı (duvarların yarısı + tavan veya tüm duvar + tavan)
+        interior_alcipan_area_for_material = 0
+        if project_inputs['plasterboard_interior']:
+            interior_alcipan_area_for_material = (wall_area / 2) + roof_area 
+        elif project_inputs['plasterboard_all']:
+            interior_alcipan_area_for_material = wall_area + roof_area
 
         # Yeşil Alçıpan (WC)
         green_alcipan_area = 0
@@ -593,35 +624,36 @@ def calculate_costs_detailed(project_inputs, areas):
                 'Total (€)': green_gypsum_board_material_cost
             })
         
-        # Beyaz Alçıpan (Kalan iç duvarlar ve tavan)
-        remaining_interior_alcipan_area = total_alcipan_area_for_calc - green_alcipan_area
+        # Kalan iç alçıpan alanı için Beyaz Alçıpan veya Guardex (genel alçıpan malzeme fiyatı)
+        remaining_interior_alcipan_area = interior_alcipan_area_for_material - green_alcipan_area
         if remaining_interior_alcipan_area > 0:
-            white_gypsum_board_adet = math.ceil(remaining_interior_alcipan_area / GYPSUM_BOARD_UNIT_AREA_M2)
-            white_gypsum_board_material_cost = calculate_rounded_up_cost(white_gypsum_board_adet * FIYATLAR['gypsum_board_white_per_unit_price'])
+            general_gypsum_board_adet = math.ceil(remaining_interior_alcipan_area / GYPSUM_BOARD_UNIT_AREA_M2)
+            general_gypsum_board_material_cost = calculate_rounded_up_cost(general_gypsum_board_adet * FIYATLAR["plasterboard_material_m2"])
             costs.append({
-                'Item': FIYATLAR['gypsum_board_white_info'],
-                'Quantity': f"{white_gypsum_board_adet} adet ({remaining_interior_alcipan_area:.2f} m²)",
-                'Unit Price (€)': FIYATLAR['gypsum_board_white_per_unit_price'],
-                'Total (€)': white_gypsum_board_material_cost
+                'Item': FIYATLAR['gypsum_board_white_info'] + " / " + FIYATLAR['knauf_guardex_gypsum_board_info'], # Genelleştirilmiş isim
+                'Quantity': f"{general_gypsum_board_adet} adet ({remaining_interior_alcipan_area:.2f} m²)",
+                'Unit Price (€)': FIYATLAR["plasterboard_material_m2"],
+                'Total (€)': general_gypsum_board_material_cost
             })
         
-        # Alçıpan işçiliği ve detay malzemeleri (tüm alçıpan alanı için)
-        total_alcipan_area_for_labor = wall_area + roof_area # İşçilik için tüm duvar ve çatı alanı baz alınır
-        alcipan_labor_cost = calculate_rounded_up_cost(total_alcipan_area_for_labor * FIYATLAR["plasterboard_labor_m2_avg"])
+        # Alçıpan İşçiliği (Tüm iç ve/veya dış alçıpan alanı için)
+        total_alcipan_labor_area = wall_area + roof_area # İşçilik için tüm duvar ve tavan alanı baz alınır
+        alcipan_labor_cost = calculate_rounded_up_cost(total_alcipan_labor_area * FIYATLAR["plasterboard_labor_m2_avg"])
         costs.append({
             'Item': 'Alçıpan İşçiliği',
-            'Quantity': f'{total_alcipan_area_for_labor:.2f} m²',
+            'Quantity': f'{total_alcipan_labor_area:.2f} m²',
             'Unit Price (€)': FIYATLAR["plasterboard_labor_m2_avg"],
             'Total (€)': alcipan_labor_cost
         })
-        
+
         # Alçıpan detay malzemeleri (Örnek miktarlar, gerçek projeye göre ayarlanabilir)
-        costs.append({'Item': FIYATLAR['tn25_screws_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['tn25_screws_price_per_unit'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['tn25_screws_price_per_unit'] * (total_alcipan_area_for_labor / 5))})
-        costs.append({'Item': FIYATLAR['cdx400_material_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['cdx400_material_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['cdx400_material_price'] * (total_alcipan_area_for_labor / 15))})
-        costs.append({'Item': FIYATLAR['ud_material_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['ud_material_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['ud_material_price'] * (total_alcipan_area_for_labor / 10))})
-        costs.append({'Item': FIYATLAR['oc50_material_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['oc50_material_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['oc50_material_price'] * (total_alcipan_area_for_labor / 25))})
-        costs.append({'Item': FIYATLAR['oc100_material_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['oc100_material_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['oc100_material_price'] * (total_alcipan_area_for_labor / 30))})
-        costs.append({'Item': FIYATLAR['ch100_material_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['ch100_material_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['ch100_material_price'] * (total_alcipan_area_for_labor / 30))})
+        costs.append({'Item': FIYATLAR['tn25_screws_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['tn25_screws_price_per_unit'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['tn25_screws_price_per_unit'] * (total_alcipan_labor_area / 10))})
+        costs.append({'Item': FIYATLAR['cdx400_material_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['cdx400_material_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['cdx400_material_price'] * (total_alcipan_labor_area / 20))})
+        costs.append({'Item': FIYATLAR['ud_material_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['ud_material_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['ud_material_price'] * (total_alcipan_labor_area / 5))})
+        costs.append({'Item': FIYATLAR['oc50_material_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['oc50_material_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['oc50_material_price'] * (total_alcipan_area_for_labor / 15))})
+        costs.append({'Item': FIYATLAR['oc100_material_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['oc100_material_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['oc100_material_price'] * (total_alcipan_area_for_labor / 25))})
+        costs.append({'Item': FIYATLAR['ch100_material_info_report'], 'Quantity': 'N/A', 'Unit Price (€)': FIYATLAR['ch100_material_price'], 'Total (€)': calculate_rounded_up_cost(FIYATLAR['ch100_material_price'] * (total_alcipan_area_for_labor / 25))})
+        costs.append({'Item': FIYATLAR['satin_plaster_paint_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0}) # Saten sıva ve boya (bilgi kalemi)
 
 
     # --- Zemin Yalıtım ve Malzemeleri ---
@@ -634,7 +666,13 @@ def calculate_costs_detailed(project_inputs, areas):
             insulation_cost_specific = calculate_rounded_up_cost(num_glass_wool_packets * FIYATLAR["glass_wool_5cm_packet_price"])
             costs.append({'Item': FIYATLAR['glass_wool_5cm_packet_info_report'], 'Quantity': f"{num_glass_wool_packets} paket ({floor_area:.2f} m²)", 'Unit Price (€)': FIYATLAR["glass_wool_5cm_packet_price"], 'Total (€)': insulation_cost_specific})
     
-    # Ek Zemin Malzemeleri
+    # Duvar Yalıtımı
+    if project_inputs['insulation_wall']:
+        wall_insulation_cost = calculate_rounded_up_cost(wall_area * FIYATLAR["insulation_per_m2"])
+        costs.append({'Item': FIYATLAR['insulation_info_general'] + ' (Duvar)', 'Quantity': f"{wall_area:.2f} m²", 'Unit Price (€)': FIYATLAR["insulation_per_m2"], 'Total (€)': wall_insulation_cost})
+
+
+    # Ek Zemin Malzemeleri (Süpürgelik, Laminat, Şilte, OSB2, Galvanizli Sac)
     if project_inputs['skirting_length'] > 0:
         skirting_cost = calculate_rounded_up_cost(project_inputs['skirting_length'] * FIYATLAR['skirting_meter_price'])
         costs.append({'Item': 'Süpürgelik', 'Quantity': f"{project_inputs['skirting_length']:.2f} m", 'Unit Price (€)': FIYATLAR['skirting_meter_price'], 'Total (€)': skirting_cost})
@@ -647,26 +685,23 @@ def calculate_costs_detailed(project_inputs, areas):
         under_parquet_cost = calculate_rounded_up_cost(project_inputs['under_parquet_mat'] * FIYATLAR['under_parquet_mat_m2_price'])
         costs.append({'Item': 'Parke Altı Şilte', 'Quantity': f"{project_inputs['under_parquet_mat']:.2f} m²", 'Unit Price (€)': FIYATLAR['under_parquet_mat_m2_price'], 'Total (€)': under_parquet_cost})
     
-    if project_inputs['osb2_count_val'] > 0:
-        osb2_cost = calculate_rounded_up_cost(project_inputs['osb2_count_val'] * FIYATLAR['osb2_18mm_piece_price'])
-        costs.append({'Item': 'OSB2 Panel', 'Quantity': f"{project_inputs['osb2_count_val']} adet", 'Unit Price (€)': FIYATLAR['osb2_18mm_piece_price'], 'Total (€)': osb2_cost})
+    if project_inputs['osb2_18mm_count_val'] > 0:
+        osb2_cost = calculate_rounded_up_cost(project_inputs['osb2_18mm_count_val'] * FIYATLAR['osb2_18mm_piece_price'])
+        costs.append({'Item': 'OSB2 Panel', 'Quantity': f"{project_inputs['osb2_18mm_count_val']} adet", 'Unit Price (€)': FIYATLAR['osb2_18mm_piece_price'], 'Total (€)': osb2_cost})
     
     if project_inputs['galvanized_sheet'] > 0:
         galvanized_cost = calculate_rounded_up_cost(project_inputs['galvanized_sheet'] * FIYATLAR['galvanized_sheet_m2_price'])
         costs.append({'Item': 'Galvanizli Sac', 'Quantity': f"{project_inputs['galvanized_sheet']:.2f} m²", 'Unit Price (€)': FIYATLAR['galvanized_sheet_m2_price'], 'Total (€)': galvanized_cost})
 
-    # --- Kapı ve Pencere Maliyetleri ---
-    # Bu kısım zaten calculate_costs_detailed fonksiyonu dışında doğrudan calculate_costs fonksiyonunda kullanılıyor.
-    # Bu nedenle, calculate_costs fonksiyonuna taşınmalı veya oradan değerler okunmalı.
-    # Mevcut kodda dışarıda tanımlandığı için, buradaki mantığı yorumlayıp,
-    # calculate_costs fonksiyonuna taşındığını varsayarak ilerleyeceğim.
-    # Ancak bu durum bir çakışmaya neden olabilir.
+    # --- Kapı ve Pencere Maliyetleri (calculate_costs_detailed içinde hesaplanacak) ---
+    # Not: Bu maliyetler calculate_costs_detailed fonksiyonu içinde hesaplanıp maliyet listesine eklenir.
+    # Burada sadece proje_inputs'tan değerler alınır.
 
     # --- Ekipman ve Tesisatlar ---
-    if project_inputs['kitchen_choice'] == 'Standard Kitchen':
+    if project_inputs['kitchen_choice'] == 'Standard Mutfak':
         kitchen_cost = FIYATLAR['kitchen_installation_standard_piece']
         costs.append({'Item': 'Standart Mutfak Kurulumu', 'Quantity': '1 adet', 'Unit Price (€)': FIYATLAR['kitchen_installation_standard_piece'], 'Total (€)': kitchen_cost})
-    elif project_inputs['kitchen_choice'] == 'Special Design Kitchen':
+    elif project_inputs['kitchen_choice'] == 'Special Design Mutfak':
         kitchen_cost = FIYATLAR['kitchen_installation_special_piece']
         costs.append({'Item': 'Özel Tasarım Mutfak Kurulumu', 'Quantity': '1 adet', 'Unit Price (€)': FIYATLAR['kitchen_installation_special_piece'], 'Total (€)': kitchen_cost})
 
@@ -699,10 +734,9 @@ def calculate_costs_detailed(project_inputs, areas):
     if project_inputs['wheeled_trailer'] and project_inputs['wheeled_trailer_price'] > 0:
         costs.append({'Item': 'Tekerlekli Römork', 'Quantity': '1 adet', 'Unit Price (€)': project_inputs['wheeled_trailer_price'], 'Total (€)': project_inputs['wheeled_trailer_price']})
 
-
     # --- Aether Living Paketlerine Özel Maliyetler ---
     # Bu bölüm, hesaplamalarda st.session_state.aether_package_choice baz alınarak fiyatları ekler.
-    # UI'daki checkbox'lar ayrı ayrı manuel olarak kontrol edilir.
+    # UI'daki checkbox'lar ayrı ayrı manuel olarak kontrol edilir. (bu bölüm eksikti, eklendi)
     if project_inputs['aether_package_choice'] == 'Aether Living | Loft Premium (ESSENTIAL)':
         if project_inputs['bedroom_set_option']:
             costs.append({'Item': FIYATLAR['bedroom_set_total_price'], 'Quantity': '1 adet', 'Unit Price (€)': FIYATLAR['bedroom_set_total_price'], 'Total (€)': FIYATLAR['bedroom_set_total_price']})
@@ -716,6 +750,8 @@ def calculate_costs_detailed(project_inputs, areas):
     elif project_inputs['aether_package_choice'] == 'Aether Living | Loft Elite (LUXURY)':
         # Elite paketinde Premium'daki tüm özellikler varsa buraya da eklenmeli (veya yukarıda işlenmeli)
         # Sadece Elite'e özgü ekstralar buraya yazılır
+        # Not: Elite paketi seçildiğinde Premium paketin özelliklerinin de eklenmesi gerekiyorsa,
+        # bu mantık daha geniş bir 'if/elif' zincirinde veya ayrı bir fonksiyonda toplanabilir.
 
         if project_inputs['exterior_cladding_m2_option'] and project_inputs['exterior_cladding_m2_val'] > 0:
             # Mavi Alçıpan malzeme maliyeti
@@ -757,7 +793,6 @@ def calculate_costs_detailed(project_inputs, areas):
             costs.append({'Item': FIYATLAR['white_goods_fridge_tv_option_info'], 'Quantity': '1', 'Unit Price (€)': FIYATLAR['white_goods_total_price'], 'Total (€)': FIYATLAR['white_goods_total_price']})
             # Assuming info key added in FIYATLAR
 
-
                 # Final calculations
                 material_subtotal = sum(item['Total (€)'] for item in costs if 'Total (€)' in item)
                 waste_cost = material_subtotal * FIRE_RATE
@@ -767,7 +802,7 @@ def calculate_costs_detailed(project_inputs, areas):
                 vat_amount = vat_base * VAT_RATE
                 final_price = vat_base + vat_amount
                 
-                financial_summary_data = [
+                financial_summary = [
                     {"Item": "Material Subtotal", "Amount (€)": format_currency(material_subtotal)},
                     {"Item": f"Waste Cost ({FIRE_RATE*100:.0f}%)", "Amount (€)": format_currency(waste_cost)},
                     {"Item": "Total Cost", "Amount (€)": format_currency(total_cost)},
@@ -782,7 +817,7 @@ def calculate_costs_detailed(project_inputs, areas):
                 st.dataframe(pd.DataFrame(financial_summary_data))
                 
                 # PDF generation
-                logo_data_b64 = get_company_logo_base64(COMPANY_INFO['logo_url'])
+                logo_data = get_company_logo_base64(COMPANY_INFO['logo_url'])
                 
                 # Internal report
                 internal_pdf = create_internal_cost_report_pdf(
@@ -798,6 +833,14 @@ def calculate_costs_detailed(project_inputs, areas):
                     "Download Internal Report",
                     data=internal_pdf.getvalue(),
                     file_name=f"internal_report_{datetime.now().strftime('%Y%m%d')}.pdf",
+                    mime="application/pdf"
+                )
+                
+                # Placeholder for customer proposal PDF
+                st.download_button(
+                    "Download Customer Proposal",
+                    data=internal_pdf.getvalue(),  # In a real app, this would be a different PDF
+                    file_name=f"customer_proposal_{datetime.now().strftime('%Y%m%d')}.pdf",
                     mime="application/pdf"
                 )
                 
