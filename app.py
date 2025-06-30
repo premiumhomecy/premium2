@@ -757,7 +757,7 @@ def create_sales_contract_pdf(customer_info, house_sales_price, solar_sales_pric
     installment_amount = remaining_balance / 3
 
     elements.append(Paragraph("2. Satış Fiyatı ve Ödeme Koşulları:", contract_subheading_style))
-    elements.append(Paragraph(f"2.1. Taşınabilir Konteyner Ev'in (bundan böyle "ev" olarak anılacaktır) satış fiyatı, işbu sözleşmenin ayrılmaz bir parçası olan EK "A"da açıklanan şartnamelere göre KDV dahil <b>{format_currency(house_sales_price)}</b>'dır.", contract_list_style))
+    elements.append(Paragraph(f"2.1. Taşınabilir Konteyner Ev'in (bundan böyle 'ev' olarak anılacaktır) satış fiyatı, işbu sözleşmenin ayrılmaz bir parçası olan EK 'A'da açıklanan şartnamelere göre KDV dahil <b>{format_currency(house_sales_price)}</b>'dır.", contract_list_style))
     elements.append(Paragraph(f"2.2. Toplam satış fiyatı (varsa güneş enerjisi dahil) <b>{total_sales_price_formatted}</b> (KDV Dahil)'dir.", contract_list_style))
     elements.append(Paragraph("2.3. Alıcı, aşağıdaki tutarları programa göre ödeyecektir:", contract_list_style))
 
