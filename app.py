@@ -2412,13 +2412,13 @@ if submit_button:
                     costs.append({'Item': MATERIAL_INFO_ITEMS['protective_automotive_paint_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
 
                 # Kaynak işçiliği
-                if st.session_state.welding_type == 'Standard Welding (160€/m²)':
-                    welding_labor_cost = floor_area * FIYATLAR['welding_labor_m2_standard']
-        costs.append({'Item': 'Steel Welding Labor', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["welding_labor_m2"], 'Total (€)': total_price})
-                else: # TR Assembly Welding
-                    welding_labor_cost = floor_area * FIYATLAR['welding_labor_m2_trmontaj']
-        costs.append({'Item': 'Steel Welding Labor', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["welding_labor_m2"], 'Total (€)': total_price})
-# ==============================================================================
+            if st.session_state.welding_type == 'Standard Welding (160€/m²)':
+                welding_labor_price = FIYATLAR['welding_labor_m2_standard']
+            else: # TR Assembly Welding
+                welding_labor_price = FIYATLAR['welding_labor_m2_trmontaj']
+            
+            welding_cost = floor_area * welding_labor_price
+            costs.append({'Item': f"Steel Welding Labor ({st.session_state.welding_type.split(' ')[0]})", 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': welding_labor_price, 'Total (€)': calculate_rounded_up_cost(welding_cost)})=============================================================
 # BÖLÜM 7: run_streamlit_app() - Kullanıcı Arayüzü Girişleri (Müşteri, Boyutlar, Yapı, Çelik Profiller, Kapılar/Pencereler)
 # ==============================================================================
 
