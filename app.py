@@ -2343,11 +2343,20 @@ def run_streamlit_app():
 
         submit_button = st.form_submit_button("Hesapla ve Teklifleri Oluştur")
 
-    if submit_button:
+if submit_button:
         try:
             # --- Hesaplama Mantığı ---
+            # All your calculation code (width, length, areas, costs, etc.)
+            # should be indented here.
+            # Example:
+            width, length, height = st.session_state.width_val, st.session_state.length_val, st.session_state.height_val
+            areas = calculate_area(width, length, height)
+            floor_area = areas["floor"]
+            # ... and so on for all your calculation logic
         except Exception as e:
             print(f"Hata oluştu: {e}")
+            st.error(f"Bir hata oluştu: {e}") # Streamlit'te hata göstermek için
+            st.exception(e) # Detaylı traceback göstermek için
             width, length, height = st.session_state.width_val, st.session_state.length_val, st.session_state.height_val
             areas = calculate_area(width, length, height)
             floor_area = areas["floor"]
