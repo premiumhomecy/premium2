@@ -32,6 +32,8 @@ def clean_invisible_chars(text):
 # Programın çalıştığı klasörde 'fonts' dizini altında 'FreeSans.ttf' ve 'FreeSansBold.ttf' olmalıdır.
 try:
     # 'fonts' klasörünün varlığını kontrol et
+except Exception as e:
+    print(f"Hata oluştu: {e}")
     if not os.path.exists("fonts"):
         os.makedirs("fonts") # Yoksa oluştur
     
@@ -2346,6 +2348,8 @@ def run_streamlit_app():
     if submit_button:
         try:
             # --- Hesaplama Mantığı ---
+        except Exception as e:
+            print(f"Hata oluştu: {e}")
             width, length, height = st.session_state.width_val, st.session_state.length_val, st.session_state.height_val
             areas = calculate_area(width, length, height)
             floor_area = areas["floor"]
@@ -2406,7 +2410,7 @@ def run_streamlit_app():
                     costs.append({'Item': 'Steel Welding Labor (Standard)', 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': FIYATLAR['welding_labor_m2_standard'], 'Total (€)': calculate_rounded_up_cost(welding_labor_cost)})
                 else: # TR Assembly Welding
                     welding_labor_cost = floor_area * FIYATLAR['welding_labor_m2_trmontaj']
-                    costs.append({'Item': 'Steel Welding Labor', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["welding_labor_m2"], 'Total (€)': total_price})
+                    costs.append({'Item': 'Steel Welding Labor 
 # ==============================================================================
 # BÖLÜM 7: run_streamlit_app() - Kullanıcı Arayüzü Girişleri (Müşteri, Boyutlar, Yapı, Çelik Profiller, Kapılar/Pencereler)
 # ==============================================================================
@@ -2882,6 +2886,8 @@ def run_streamlit_app():
     if submit_button:
         try:
             # --- Hesaplama Mantığı ---
+        except Exception as e:
+            print(f"Hata oluştu: {e}")
             width, length, height = st.session_state.width_val, st.session_state.length_val, st.session_state.height_val
             areas = calculate_area(width, length, height)
             floor_area = areas["floor"]
@@ -3236,6 +3242,8 @@ def run_streamlit_app():
     if submitted:
         try:
             # --- Hesaplama Mantığı ---
+        except Exception as e:
+            print(f"Hata oluştu: {e}")
             width, length, height = st.session_state.width_val, st.session_state.length_val, st.session_state.height_val
             areas = calculate_area(width, length, height)
             floor_area = areas["floor"]
