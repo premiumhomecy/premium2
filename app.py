@@ -2913,7 +2913,7 @@ if submit_button:
                 costs.append({'Item': MATERIAL_INFO_ITEMS['protective_automotive_paint_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
 
             # Hafif/Ağır Çelik Yapısal Maliyetler
-            if st.session_state.structure_type == 'Light Steel':
+        if st.session_state.structure_type == 'Light Steel':
                 # Hafif çelik profillerin manuel veya otomatik adetleri
                 # Bu bölüm sadece Light Steel ise çalışır
                 profile_types_and_counts = {
@@ -2928,9 +2928,9 @@ if submit_button:
                 # Manuel adetler sıfırdan büyükse onları kullan, aksi takdirde otomatik hesapla
                 has_manual_steel_profiles = sum(profile_types_and_counts.values()) > 0
                 
-            if has_manual_steel_profiles:
-                for p_type, p_count in profile_types_and_counts.items():
-                        if p_count > 0:
+        if has_manual_steel_profiles:
+            for p_type, p_count in profile_types_and_counts.items():
+                if p_count > 0:
                             fiytlar_key = f"steel_profile_{p_type.replace('x', '_').lower()}" 
                             cost_per_piece = FIYATLAR.get(fiytlar_key, 0.0)
                             total_profile_cost = p_count * cost_per_piece
