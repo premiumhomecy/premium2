@@ -229,9 +229,6 @@ GYPSUM_BOARD_UNIT_AREA_M2 = 1.2 * 2.4 # Bir alçıpan panelinin alanı
 GLASS_WOOL_M2_PER_PACKET = 10.0 # Bir paket cam yününün kapsadığı alan
 
 # ====================== YARDIMCI FONKSİYONLAR ======================
-def clean_invisible_chars(text):
-    """Metinden görünmez karakterleri kaldırır."""
-    return re.sub(r'[\u00A0\u200B]', ' ', text)
 
 def calculate_area(width, length, height):
     """Boyutlara göre zemin, duvar ve çatı alanlarını hesaplar."""
