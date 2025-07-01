@@ -2897,20 +2897,20 @@ if submit_button:
         submit_button = st.form_submit_button("Hesapla ve Teklifleri Oluştur")
 
     # submit_button'a basıldığında tetiklenecek ana hesaplama ve PDF oluşturma bloğu
-    if submit_button: # Bu satırın girintisi with st.form ile aynı olmalı
-        try:
-            # --- Hesaplama Mantığı ---
-            width, length, height = st.session_state.width_val, st.session_state.length_val, st.session_state.height_val
-            areas = calculate_area(width, length, height)
-            floor_area = areas["floor"]
-            wall_area = areas["wall"]
-            roof_area = areas["roof"]
+        if submit_button:
+            try:
+                # --- Hesaplama Mantığı ---
+                width, length, height = st.session_state.width_val, st.session_state.length_val, st.session_state.height_val
+                areas = calculate_area(width, length, height)
+                floor_area = areas["floor"]
+                wall_area = areas["wall"]
+                roof_area = areas["roof"]
 
-            costs = [] # Tüm maliyet kalemleri buraya eklenecek
-            profile_analysis_details = [] # Çelik profil analiz detaylarını tutacak
+                costs = [] # Tüm maliyet kalemleri buraya eklenecek
+                profile_analysis_details = [] # Çelik profil analiz detaylarını tutacak
 
             # Yapı (metal iskelet ve boya her zaman eklenir, maliyeti 0 olsa bile bilgi için)
-            costs.append({'Item': MATERIAL_INFO_ITEMS['protective_automotive_paint_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
+                costs.append({'Item': MATERIAL_INFO_ITEMS['protective_automotive_paint_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
 
             # Hafif/Ağır Çelik Yapısal Maliyetler
             if st.session_state.structure_type == 'Light Steel':
