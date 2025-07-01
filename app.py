@@ -2913,7 +2913,7 @@ if submit_button:
                 costs.append({'Item': MATERIAL_INFO_ITEMS['protective_automotive_paint_info'], 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
 
             # Hafif/Ağır Çelik Yapısal Maliyetler
-        if st.session_state.structure_type == 'Light Steel':
+            if st.session_state.structure_type == 'Light Steel':
                 # Hafif çelik profillerin manuel veya otomatik adetleri
                 # Bu bölüm sadece Light Steel ise çalışır
                 profile_types_and_counts = {
