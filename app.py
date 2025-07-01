@@ -233,6 +233,9 @@ GLASS_WOOL_M2_PER_PACKET = 10.0 # Bir paket cam yününün kapsadığı alan
 
 # ====================== YARDIMCI FONKSİYONLAR ======================
 
+
+
+# ====================== YARDIMCI FONKSİYONLAR ======================
 def calculate_area(width, length, height):
     """Boyutlara göre zemin, duvar ve çatı alanlarını hesaplar."""
     floor_area = width * length
@@ -249,7 +252,7 @@ def calculate_rounded_up_cost(value):
     return math.ceil(value * 100) / 100.0
 
 def calculate_recommended_profiles(floor_area):
-    """Proje alanına göre önerilen çelik profil adetlerini hesaplar."""
+    """Proje alanına göre önerilen çelik profil adetlerini hesaplar (kaba tahmin)."""
     base_factor = floor_area / 20.0
     return {
         "100x100x3": int(base_factor * 2),
@@ -258,20 +261,20 @@ def calculate_recommended_profiles(floor_area):
         "50x50x2": int(base_factor * 5),
         "120x60x5mm": int(base_factor * 1.5),
         "HEA160": int(base_factor * 0.5)
-            }
+    }
 
 def calculate_costs_detailed(project_inputs, areas):
-    """
-    Proje girdilerine ve alanlara göre detaylı maliyet hesaplamalarını yapar.
-    Maliyet dökümü listesini ve diğer hesaplanan değerleri döndürür.
-    """
-    
-    floor_area = areas["floor"]
-    wall_area = areas["wall"]
-    roof_area = areas["roof"]
+    """
+    Proje girdilerine ve alanlara göre detaylı maliyet hesaplamalarını yapar.
+    Maliyet dökümü listesini ve diğer hesaplanan değerleri döndürür.
+    """
+    
+    floor_area = areas["floor"]
+    wall_area = areas["wall"]
+    roof_area = areas["roof"]
 
-    costs = [] # Tüm maliyet kalemleri buraya eklenecek
-    profile_analysis_details = [] # Çelik profil analiz detaylarını tutacak
+    costs = [] # Tüm maliyet kalemleri buraya eklenecek
+    profile_analysis_details = [] # Çelik profil analiz detaylarını tutacak
     
     # --- Yapısal Maliyetler ---
     if project_inputs['structure_type'] == 'Light Steel':
