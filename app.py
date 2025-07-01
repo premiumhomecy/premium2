@@ -2561,7 +2561,7 @@ if submit_button:
             st.rerun() # Paket seçimi sonrası UI'ı yeniden çizmek için
     
     # --- Ana Form ---
-    with st.form("main_form"):
+        with st.form("main_form"):
         col1, col2 = st.columns(2)
         
         with col1:
