@@ -258,7 +258,7 @@ def calculate_recommended_profiles(floor_area):
         "50x50x2": int(base_factor * 5),
         "120x60x5mm": int(base_factor * 1.5),
         "HEA160": int(base_factor * 0.5)
-    }
+    }
 
 def calculate_costs_detailed(project_inputs, areas):
     """
