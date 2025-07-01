@@ -2407,10 +2407,10 @@ def run_streamlit_app():
                 # Kaynak işçiliği
                 if st.session_state.welding_type == 'Standard Welding (160€/m²)':
                     welding_labor_cost = floor_area * FIYATLAR['welding_labor_m2_standard']
-                    costs.append({'Item': 'Steel Welding Labor (Standard)', 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': FIYATLAR['welding_labor_m2_standard'], 'Total (€)': calculate_rounded_up_cost(welding_labor_cost)})
+        costs.append({'Item': 'Steel Welding Labor', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["welding_labor_m2"], 'Total (€)': total_price})
                 else: # TR Assembly Welding
                     welding_labor_cost = floor_area * FIYATLAR['welding_labor_m2_trmontaj']
-                    costs.append({'Item': 'Steel Welding Labor 
+        costs.append({'Item': 'Steel Welding Labor', 'Quantity': f'{floor_area:.2f} m²', 'Unit Price (€)': FIYATLAR["welding_labor_m2"], 'Total (€)': total_price})
 # ==============================================================================
 # BÖLÜM 7: run_streamlit_app() - Kullanıcı Arayüzü Girişleri (Müşteri, Boyutlar, Yapı, Çelik Profiller, Kapılar/Pencereler)
 # ==============================================================================
