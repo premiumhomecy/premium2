@@ -32,8 +32,6 @@ def clean_invisible_chars(text):
 # Programın çalıştığı klasörde 'fonts' dizini altında 'FreeSans.ttf' ve 'FreeSansBold.ttf' olmalıdır.
 try:
     # 'fonts' klasörünün varlığını kontrol et
-except Exception as e:
-    print(f"Hata oluştu: {e}")
     if not os.path.exists("fonts"):
         os.makedirs("fonts") # Yoksa oluştur
     
