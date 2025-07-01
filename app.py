@@ -2914,8 +2914,6 @@ if submit_button:
 
             # Hafif/Ağır Çelik Yapısal Maliyetler
             if st.session_state.structure_type == 'Light Steel':
-                # Hafif çelik profillerin manuel veya otomatik adetleri
-                # Bu bölüm sadece Light Steel ise çalışır
                 profile_types_and_counts = {
                     "100x100x3": st.session_state.profile_100x100_count,
                     "100x50x3": st.session_state.profile_100x50_count,
