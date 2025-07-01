@@ -2928,8 +2928,8 @@ if submit_button:
                 # Manuel adetler sıfırdan büyükse onları kullan, aksi takdirde otomatik hesapla
                 has_manual_steel_profiles = sum(profile_types_and_counts.values()) > 0
                 
-                if has_manual_steel_profiles:
-                    for p_type, p_count in profile_types_and_counts.items():
+            if has_manual_steel_profiles:
+                for p_type, p_count in profile_types_and_counts.items():
                         if p_count > 0:
                             fiytlar_key = f"steel_profile_{p_type.replace('x', '_').lower()}" 
                             cost_per_piece = FIYATLAR.get(fiytlar_key, 0.0)
