@@ -231,8 +231,7 @@ GLASS_WOOL_M2_PER_PACKET = 10.0 # Bir paket cam yününün kapsadığı alan
 # ====================== YARDIMCI FONKSİYONLAR ======================
 
 def calculate_area(width, length, height):
-   
-    floor_area = width * length
+    floor_area = width * length
     wall_area = math.ceil(2 * (width + length) * height)
     roof_area = floor_area
     return {"floor": floor_area, "wall": wall_area, "roof": roof_area}
