@@ -275,8 +275,8 @@ def calculate_costs_detailed(project_inputs, areas):
 
     costs = [] # Tüm maliyet kalemleri buraya eklenecek
     profile_analysis_details = [] # Çelik profil analiz detaylarını tutacak
-    # --- Yapısal Maliyetler ---
-    if project_inputs['structure_type'] == 'Light Steel':
+# --- Yapısal Maliyetler ---
+if project_inputs['structure_type'] == 'Light Steel':
         # Eğer manuel olarak adet girildiyse onları kullan
         if sum([project_inputs['profile_100x100_count'], project_inputs['profile_100x50_count'],
                 project_inputs['profile_40x60_count'], project_inputs['profile_50x50_count'],
