@@ -29,29 +29,23 @@ def clean_invisible_chars(text):
     return re.sub(r'[\u00A0\u200B\s\xA0]+', ' ', text).strip()
 
 # --- Font Kaydı (Türkçe karakter desteği) ---
-# Programın çalıştığı klasörde 'fonts' dizini altında 'FreeSans.ttf' ve 'FreeSansBold.ttf' olmalıdır.
 try:
-    # 'fonts' klasörünün varlığını kontrol et
     if not os.path.exists("fonts"):
-        os.makedirs("fonts") # Yoksa oluştur
+        os.makedirs("fonts")
     
-    # Gerekli font dosyalarının varlığını kontrol et
     if not (os.path.exists("fonts/FreeSans.ttf") and os.path.exists("fonts/FreeSansBold.ttf")):
-        st.warning("Gerekli 'FreeSans.ttf' veya 'FreeSansBold.ttf' font dosyaları 'fonts/' klasöründe bulunamadı. Lütfen bu dosyaları manuel olarak ekleyin. Aksi takdirde PDF'lerde Türkçe karakterler düzgün görünmeyebilir ve Helvetica kullanılacaktır.")
-        raise FileNotFoundError # Fontlar bulunamazsa istisna fırlat
+        st.warning("Gerekli 'FreeSans.ttf' veya 'FreeSansBold.ttf' font dosyaları 'fonts/' klasöründe bulunamadı.")
+        raise FileNotFoundError
     
     pdfmetrics.registerFont(TTFont("FreeSans", "fonts/FreeSans.ttf"))
     pdfmetrics.registerFont(TTFont("FreeSans-Bold", "fonts/FreeSansBold.ttf"))
     pdfmetrics.registerFontFamily('FreeSans', normal='FreeSans', bold='FreeSans-Bold')
     MAIN_FONT = "FreeSans"
 except Exception as e:
-    # Fontlar bulunamazsa veya kaydedilemezse Helvetica'ya geri dön
     st.warning(f"Font yükleme hatası: {e}. PDF'lerde 'Helvetica' fontu kullanılacak.")
     MAIN_FONT = "Helvetica"
 
 # --- Şirket Bilgileri ---
-# LOGO_URL'nin genel erişime açık bir URL olduğundan emin olun.
-# Örnek: Google Drive'dan genel erişimli bir dosya veya GitHub Pages gibi bir CDN.
 LOGO_URL = "https://drive.google.com/uc?export=download&id=1RD27Gas035iUqe4Ucl3phFwxZPWZPWzn" 
 
 COMPANY_INFO = {
@@ -66,156 +60,79 @@ COMPANY_INFO = {
     "bank_address": "12 Esperidon Street 1087 Nicosia",
     "account_name": "SOYKOK PREMIUM HOME LTD",
     "iban": "CY27 0020 0195 0000 3570 4239 2044",
-    "account_number": "357042392044", # Banka hesap numarası eklendi
-    "currency_type": "EURO", # Para birimi eklendi
+    "account_number": "357042392044",
+    "currency_type": "EURO",
     "swift_bic": "BCYPCY2N"
 }
 
 # --- Güncel Fiyat Tanımları ---
-# Tüm fiyatlar KDV hariç maliyet fiyatlarıdır.
 FIYATLAR = {
-    # Çelik Profil Fiyatları (6m parça başı)
     "steel_profile_100x100x3": 45.00,
     "steel_profile_100x50x3": 33.00,
     "steel_profile_40x60x2": 14.00,
     "steel_profile_120x60x5mm": 60.00,
     "steel_profile_50x50x2": 11.00,
     "steel_profile_HEA160": 155.00,
-    
-    # Temel Malzeme Fiyatları
-    "heavy_steel_m2": 400.00, # Ağır çelik m2 fiyatı
-    "sandwich_panel_m2": 22.00, # Standart 60mm EPS paneli için
-    "plywood_piece": 44.44, # Kontraplak/OSB levha fiyatı (yaklaşık 1.22x2.44m)
-    "aluminum_window_piece": 250.00, # Alüminyum pencere adet fiyatı
-    "sliding_glass_door_piece": 300.00, # Sürgülü cam kapı adet fiyatı
-    "wc_window_piece": 120.00, # WC pencere adet fiyatı
-    "wc_sliding_door_piece": 150.00, # WC sürgülü kapı adet fiyatı
-    "door_piece": 280.00, # Genel kapı adet fiyatı
-    
-    # Kurulum/İşçilik Fiyatları
-    "kitchen_installation_standard_piece": 550.00, # Standart mutfak kurulumu
-    "kitchen_installation_special_piece": 1000.00, # Özel tasarım mutfak kurulumu
-    "shower_wc_installation_piece": 1000.00, # Duş/WC kurulumu
-    "connection_element_m2": 1.50, # Bağlantı elemanları için m2 fiyatı
-    "transportation": 350.00, # Nakliye fiyatı
-    "floor_heating_m2": 50.00, # Yerden ısıtma m2 fiyatı
-    "wc_ceramic_m2_material": 20.00, # WC Seramik malzeme m2 fiyatı
-    "wc_ceramic_m2_labor": 20.00,     # WC Seramik işçilik m2 fiyatı
-    "electrical_per_m2": 25.00, # Elektrik tesisatı m2 fiyatı
-    "plumbing_per_m2": 25.00, # Sıhhi tesisat m2 fiyatı
-    "osb_piece": 12.00, # OSB levha fiyatı
-    "insulation_per_m2": 5.00, # Genel yalıtım m2 fiyatı (5cm EPS gibi)
-    
-    # İşçilik Fiyatları
-    "welding_labor_m2_standard": 160.00, # Standart kaynak işçiliği m2 fiyatı
-    "welding_labor_m2_trmontaj": 20.00, # TR montaj kaynak işçiliği m2 fiyatı
-    "panel_assembly_labor_m2": 5.00, # Panel montaj işçiliği m2 fiyatı
-    "plasterboard_material_m2": 20.00, # Alçıpan malzeme m2
-    "plasterboard_labor_m2_avg": 80.00, # Alçıpan işçilik m2
-    "plywood_flooring_labor_m2": 11.11, # Kontraplak döşeme işçiliği m2 fiyatı
-    "door_window_assembly_labor_piece": 10.00, # Kapı/pencere montaj işçiliği adet fiyatı
-    "solar_per_kw": 1250.00, # Solar enerji kW başına fiyat
-
-    # Yeni Zemin Sistemi Malzemeleri Fiyatları
-    "skirting_meter_price": 2.00, # Süpürgelik metre fiyatı
-    "laminate_flooring_m2_price": 15.00, # Laminat parke m2 fiyatı
-    "under_parquet_mat_m2_price": 3.00, # Parke altı şilte m2 fiyatı
-    "osb2_18mm_piece_price": 30.00, # OSB2 18mm veya Beton Panel için parça fiyatı
-    "galvanized_sheet_m2_price": 10.00, # Galvanizli sac m2 fiyatı
-
-    # Yeni Ürün Malzeme Fiyatları ve Bilgi Kalemleri (Aether Living Paketleri için)
+    "heavy_steel_m2": 400.00,
+    "sandwich_panel_m2": 22.00,
+    "plywood_piece": 44.44,
+    "aluminum_window_piece": 250.00,
+    "sliding_glass_door_piece": 300.00,
+    "wc_window_piece": 120.00,
+    "wc_sliding_door_piece": 150.00,
+    "door_piece": 280.00,
+    "kitchen_installation_standard_piece": 550.00,
+    "kitchen_installation_special_piece": 1000.00,
+    "shower_wc_installation_piece": 1000.00,
+    "connection_element_m2": 1.50,
+    "transportation": 350.00,
+    "floor_heating_m2": 50.00,
+    "wc_ceramic_m2_material": 20.00,
+    "wc_ceramic_m2_labor": 20.00,
+    "electrical_per_m2": 25.00,
+    "plumbing_per_m2": 25.00,
+    "osb_piece": 12.00,
+    "insulation_per_m2": 5.00,
+    "welding_labor_m2_standard": 160.00,
+    "welding_labor_m2_trmontaj": 20.00,
+    "panel_assembly_labor_m2": 5.00,
+    "plasterboard_material_m2": 20.00,
+    "plasterboard_labor_m2_avg": 80.00,
+    "plywood_flooring_labor_m2": 11.11,
+    "door_window_assembly_labor_piece": 10.00,
+    "solar_per_kw": 1250.00,
+    "skirting_meter_price": 2.00,
+    "laminate_flooring_m2_price": 15.00,
+    "under_parquet_mat_m2_price": 3.00,
+    "osb2_18mm_piece_price": 30.00,
+    "galvanized_sheet_m2_price": 10.00,
     "smart_home_systems_total_price": 350.00,
     "white_goods_total_price": 800.00,
     "sofa_total_price": 400.00,
     "security_camera_total_price": 650.00,
-    "exterior_cladding_labor_price_per_m2": 150.00, # Knauf Aquapanel gibi dış cephe işçiliği M2 bazlı
+    "exterior_cladding_labor_price_per_m2": 150.00,
     "bedroom_set_total_price": 800.00,
     "terrace_laminated_wood_flooring_price_per_m2": 40.00,
-    "porcelain_tile_m2_price": 25.00, # Porselen fayans (zemin için, wc_ceramic fiyatı kullanılacak ama burada da bilgi olarak tutuldu)
+    "porcelain_tile_m2_price": 25.00,
     "concrete_panel_floor_price_per_m2": 50.00,
     "premium_faucets_total_price": 200.00,
     "designer_furniture_total_price": 1000.00,
     "italian_sofa_total_price": 800.00,
     "inclass_chairs_unit_price": 150.00,
-    "exterior_wood_cladding_m2_price": 150.00, # Lambiri
+    "exterior_wood_cladding_m2_price": 150.00,
     "brushed_grey_granite_countertops_price_m2_avg": 425.00,
-
-    # Detaylı Malzeme Fiyatları (Yeni eklenenler)
-    "100mm_eps_isothermal_panel_unit_price": 27.00, # Poliüretan İzotermik Panel m2
-    "gypsum_board_white_per_unit_price": 8.65, # Beyaz alçıpan (birim başına fiyat)
-    "gypsum_board_green_per_unit_price": 11.95, # Yeşil (suya dayanıklı) alçıpan (birim başına fiyat)
-    "gypsum_board_blue_per_unit_price": 22.00, # Mavi (yangına dayanıklı) alçıpan (birim başına fiyat)
-    "otb_stone_wool_price": 19.80, # Taş yünü yalıtım m2 fiyatı
-    "glass_wool_5cm_packet_price": 19.68, # Cam yünü 5cm (paket fiyatı)
-    "tn25_screws_price_per_unit": 5.58, # Vida birim fiyatı
-    "cdx400_material_price": 3.40, # Profil
-    "ud_material_price": 1.59, # Profil
-    "oc50_material_price": 2.20, # Profil
-    "oc100_material_price": 3.96, # Profil
-    "ch100_material_price": 3.55 # Profil
-}
-
-# Malzeme Bilgi Kalemleri (Fiyatı olmayanlar veya başka bir yerde fiyatı olanlar - Sadece listeleme ve PDF'e detay ekleme için)
-MATERIAL_INFO_ITEMS = {
-    "steel_skeleton_info": "Metal iskelet",
-    "protective_automotive_paint_info": "Koruyucu otomotiv boyası",
-    "insulation_info": "Yalıtım",
-    "60mm_eps_sandwich_panel_info": "Standart 60mm EPS veya Poliüretan Sandviç Paneller (beyaz)",
-    "100mm_eps_isothermal_panel_info": "Yüksek performanslı 100mm EPS veya Poliüretan İzotermik Paneller",
-    "galvanized_sheet_info": "Galvanizli sac",
-    "plywood_osb_floor_panel_info": "Kontraplak/OSB zemin paneli",
-    "12mm_laminate_parquet_info": "12mm Laminat Parke",
-    "induction_hob_info": "İndüksiyonlu ocak",
-    "electric_faucet_info": "Elektrikli batarya",
-    "kitchen_sink_info": "Mutfak evyesi",
-    "fully_functional_bathroom_fixtures_info": "Tam fonksiyonel banyo armatürleri (klozet, lavabo, elektrikli duş)",
-    "kitchen_bathroom_countertops_info": "Mutfak ve banyo tezgahları",
-    "treated_pine_floor_info": "İşlenmiş Çam Zemin Kaplaması (Teras Seçeneği ile)",
-    "porcelain_tiles_info": "Porselen Fayans",
-    "concrete_panel_floor_info": "Beton Panel Zemin",
-    "premium_faucets_info": "Premium Bataryalar (örn. Hansgrohe)",
-    "integrated_refrigerator_info": "Entegre Buzdolabı",
-    "integrated_custom_furniture_info": "Entegre Özel Tasarım Mobilyalar (yüksek kaliteli MDF/lake)",
-    "italian_sofa_info": "İtalyan Kanepe",
-    "inclass_chairs_info": "Inclass Sandalyeler",
-    "smart_home_systems_info": "Akıllı Ev Sistemleri",
-    "advanced_security_camera_pre_installation_info": "Gelişmiş güvenlik kamerası ön kurulumu",
-    "exterior_wood_cladding_lambiri_info": "Dış cephe ahşap kaplama - Lambiri",
-    "brushed_grey_granite_countertops_info": "Fırçalanmış Gri Kale Granit Mutfak/Banyo Tezgahları",
-    "knauf_aquapanel_gypsum_board_info": "Knauf Aquapanel Alçıpan",
-    "eps_styrofoam_info": "EPS STYROFOAM",
-    "knauf_mineralplus_insulation_info": "Knauf MineralPlus İzolasyon",
-    "knauf_guardex_gypsum_board_info": "Knauf Guardex Alçıpan",
-    "satin_plaster_paint_info": "Saten sıva ve boya",
-    "supportive_headboard_furniture_info": "Destekleyici Mobilyalı Yatak Başlığı",
-
-    "electrical_cable_info": "Elektrik Kabloları (3x2.5 mm², 3x1.5 mm²)",
-    "electrical_conduits_info": "Kablolama için Spiral Borular ve Kanallar",
-    "electrical_junction_boxes_info": "Buatlar",
-    "electrical_distribution_board_info": "Sigorta Kutusu (Dağıtım Panosu)",
-    "electrical_circuit_breakers_info": "Sigortalar & Kaçak Akım Rölesi",
-    "electrical_sockets_switches_info": "Prizler ve Anahtarlar",
-    "electrical_lighting_fixtures_info": "İç Aydınlatma Armatürleri (LED Spot / Tavan Lambası)",
-    "electrical_grounding_info": "Topraklama Sistemi Bileşenleri",
-
-    "plumbing_pprc_pipes_info": "Sıcak/Soğuk Su için PPRC Borular",
-    "plumbing_faucets_info": "Mutfak ve Banyo Bataryaları",
-    "plumbing_shower_mixer_info": "Duş Başlığı ve Bataryası",
-    "plumbing_valves_info": "Ana ve ara kesme vanaları",
-    "plumbing_pvc_pipes_info": "PVC Gider Boruları (50mm / 100mm)",
-    "plumbing_siphons_info": "Sifonlar ve yer süzgeçleri",
-
-    "wc_toilet_bowl_info": "Klozet & Rezervuar",
-    "wc_washbasin_info": "El Yıkama Lavabosu & Batarya",
-    "wc_towel_rail_info": "Havluluk",
-    "wc_mirror_info": "Ayna",
-    "wc_accessories_info": "Banyo Aksesuarları",
-    "wc_shower_unit_info": "Duş Ünitesi (Duş Başlığı ve Batarya)",
-
-    "kitchen_mdf_info": "Parlak Beyaz Renk MDF Malzeme",
-    "kitchen_cabinets_info": "Özel Üretim Mutfak Dolapları (özel ölçülerde)",
-    "kitchen_countertop_info": "Tezgah (Laminat veya belirtilen eşdeğeri)",
-    "kitchen_sink_faucet_info": "Evye ve Batarya",
+    "100mm_eps_isothermal_panel_unit_price": 27.00,
+    "gypsum_board_white_per_unit_price": 8.65,
+    "gypsum_board_green_per_unit_price": 11.95,
+    "gypsum_board_blue_per_unit_price": 22.00,
+    "otb_stone_wool_price": 19.80,
+    "glass_wool_5cm_packet_price": 19.68,
+    "tn25_screws_price_per_unit": 5.58,
+    "cdx400_material_price": 3.40,
+    "ud_material_price": 1.59,
+    "oc50_material_price": 2.20,
+    "oc100_material_price": 3.96,
+    "ch100_material_price": 3.55
 }
 
 # Sabit oranlar ve alanlar
@@ -224,26 +141,41 @@ VAT_RATE = 0.19
 MONTHLY_ACCOUNTING_EXPENSES = 180.00
 MONTHLY_OFFICE_RENT = 280.00
 ANNUAL_INCOME_TAX_RATE = 0.235
-OSB_PANEL_AREA_M2 = 1.22 * 2.44 # Bir OSB panelinin alanı
-GYPSUM_BOARD_UNIT_AREA_M2 = 1.2 * 2.4 # Bir alçıpan panelinin alanı
-GLASS_WOOL_M2_PER_PACKET = 10.0 # Bir paket cam yününün kapsadığı alan
+OSB_PANEL_AREA_M2 = 1.22 * 2.44
+GYPSUM_BOARD_UNIT_AREA_M2 = 1.2 * 2.4
+GLASS_WOOL_M2_PER_PACKET = 10.0
 
 # ====================== YARDIMCI FONKSİYONLAR ======================
-
 def calculate_area(width, length, height):
+    """Boyutlara göre zemin, duvar ve çatı alanlarını hesaplar."""
     floor_area = width * length
-    wall_area = math.ceil (2 * (width + length) * height)
+    wall_area = math.ceil(2 * (width + length) * height)
     roof_area = floor_area
-    return {"floor": floor_area, "wall": wall_area, "roof": roof_area}
+    return {"floor": floor_area, "wall": wall_area, "roof": roof_area}
 
 def format_currency(value):
-    """Parasal değeri Euro para birimi olarak biçimlendirir."""
-    return f"€{value:,.2f}"
+    """Parasal değeri Euro para birimi olarak biçimlendirir."""
+    return f"€{value:,.2f}"
 
 def calculate_rounded_up_cost(value):
-    """Parasal değeri iki ondalık basamağa yuvarlar."""
-    return math.ceil(value * 100) / 100.0
+    """Parasal değeri iki ondalık basamağa yuvarlar."""
+    return math.ceil(value * 100) / 100.0
 
+def calculate_recommended_profiles(floor_area):
+    """Proje alanına göre önerilen çelik profil adetlerini hesaplar."""
+    base_factor = floor_area / 20.0
+    return {
+        "100x100x3": int(base_factor * 2),
+        "100x50x3": int(base_factor * 3),
+        "40x60x2": int(base_factor * 4),
+        "50x50x2": int(base_factor * 5),
+        "120x60x5mm": int(base_factor * 1.5),
+        "HEA160": int(base_factor * 0.5)
+    }
+
+# [Rest of the code remains the same with proper spacing...]
+# Continue with the rest of your functions and code
+# Make sure to replace all invisible characters with regular spaces
 # ====================== PDF OLUŞTURMA YARDIMCI FONKSİYONLARI ======================
 
 # PDF için yeni metinler
