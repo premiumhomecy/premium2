@@ -2875,7 +2875,7 @@ def run_streamlit_app():
                         mime="application/pdf"
                     )
 
-            except Exception as e: # Bu 'except' bloğu, yukarıdaki 'try' bloğuyla aynı girinti seviyesinde olmalı
+                except Exception as e: # Bu 'except' bloğu, yukarıdaki 'try' bloğuyla aynı girinti seviyesinde olmalı
                 st.error(f"Bir hata oluştu: {e}")
                 st.exception(e) # Detaylı traceback göster
 
