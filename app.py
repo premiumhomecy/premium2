@@ -394,17 +394,6 @@ def calculate_costs_detailed(project_inputs, areas):
 
 
 # 5. Tesisatlar ve Diğer Manuel Kalemler
-# Elektrik ve Su Tesisatı: "olmayacak" denildi, bu yüzden eklenmiyor.
-# Mutfak ve Duş/WC: "içi boş model" varsayıldığı için eklenmiyor.
-
-# Manuel Eklemeler (Görsellerden ve son notlardan)
-costs.append({'Item': clean_invisible_chars('Falcan Gorex Beyaz Alçıpan (Manual)'), 'Quantity': '0 adet', 'Unit Price (€)': 0, 'Total (€)': 0})
-costs.append({'Item': clean_invisible_chars('Falcan Gorex Yeşil Alçıpan (Manual)'), 'Quantity': '0 adet', 'Unit Price (€)': 0, 'Total (€)': 0})
-costs.append({'Item': clean_invisible_chars('Knauf Taşyünü (Manual)'), 'Quantity': '129.60 m²', 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(129.60 * 0)})
-costs.append({'Item': clean_invisible_chars('P15T Lambiri (Manual)'), 'Quantity': '0 adet', 'Unit Price (€)': 260.00, 'Total (€)': calculate_rounded_up_cost(15 * 260.00)}) # Lambiri ara kat için
-costs.append({'Item': clean_invisible_chars('Köşeler (Manual)'), 'Quantity': '0 adet', 'Unit Price (€)': 400.00, 'Total (€)': calculate_rounded_up_cost(400.00)})
-costs.append({'Item': clean_invisible_chars('Merdiven + İşçilik (Manual)'), 'Quantity': '0 adet', 'Unit Price (€)': 2000.00, 'Total (€)': calculate_rounded_up_cost(2000.00)})
-
 
 # --- Finansal Hesaplamalar ---
 total_material_cost = sum(item['Total (€)'] for item in costs if 'Total (€)' in item)
