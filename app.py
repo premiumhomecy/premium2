@@ -8,7 +8,7 @@ except ImportError:
     import subprocess
     subprocess.check_call([sys.executable, "-m", "pip", "install", "reportlab"])
     print("Installation complete. Please re-run the cell.")
-    print("Installation complete. Please re-run the cell.")
+    
 # Mount Google Drive
 try:
     import google.colab.drive
