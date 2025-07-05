@@ -263,7 +263,7 @@ def calculate_costs_detailed(project_inputs, areas):
     """
     Proje girdilerine ve alanlara göre detaylı maliyet hesaplamalarını yapar.
     Maliyet dökümü listesini ve diğer hesaplanan değerleri döndürür.
-    BU FONKSİYON ST.SESSION_STATE KULLANMAMALI, SADECE PROJECT_INPUTS KULLANMALIDIR.
+    BU FONKSİYON SADECE PROJECT_INPUTS PARAMETRESİNİ KULLANIR.
     """
     
     floor_area = areas["floor"]
@@ -298,10 +298,10 @@ def calculate_costs_detailed(project_inputs, areas):
             auto_100x100_count = math.ceil(floor_area * (12 / 27.0))
             auto_50x50_count = math.ceil(floor_area * (6 / 27.0))
             if auto_100x100_count > 0:
-                costs.append({'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['steel_skeleton_info']) + ' (100x100x3) (Auto)', 'Quantity': f"{auto_100x100_count} adet", 'Unit Price (€)': FIYATLAR['steel_profile_100x100x3'], 'Total (€)': calculate_rounded_up_cost(auto_100x100_count * FIYATLAR['steel_profile_100x100x3'])})
+                costs.append({'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['steel_skeleton_info']) + ' (100x100x3) (Auto)', 'Quantity': f"{auto_100x100_count} adet ({auto_100x100_count * 6:.1f}m)", 'Unit Price (€)': FIYATLAR['steel_profile_100x100x3'], 'Total (€)': calculate_rounded_up_cost(auto_100x100_count * FIYATLAR['steel_profile_100x100x3'])})
                 profile_analysis_details.append({'Item': '100x100x3 (Auto)', 'Quantity': auto_100x100_count, 'Unit Price (€)': FIYATLAR['steel_profile_100x100x3'], 'Total (€)': calculate_rounded_up_cost(auto_100x100_count * FIYATLAR['steel_profile_100x100x3'])})
             if auto_50x50_count > 0:
-                costs.append({'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['steel_skeleton_info']) + ' (50x50x2) (Auto)', 'Quantity': f"{auto_50x50_count} adet", 'Unit Price (€)': FIYATLAR['steel_profile_50x50x2'], 'Total (€)': calculate_rounded_up_cost(auto_50x50_count * FIYATLAR['steel_profile_50x50x2'])})
+                costs.append({'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['steel_skeleton_info']) + ' (50x50x2) (Auto)', 'Quantity': f"{auto_50x50_count} adet ({auto_50x50_count * 6:.1f}m)", 'Unit Price (€)': FIYATLAR['steel_profile_50x50x2'], 'Total (€)': calculate_rounded_up_cost(auto_50x50_count * FIYATLAR['steel_profile_50x50x2'])})
                 profile_analysis_details.append({'Item': '50x50x2 (Auto)', 'Quantity': auto_50x50_count, 'Unit Price (€)': FIYATLAR['steel_profile_50x50x2'], 'Total (€)': calculate_rounded_up_cost(auto_50x50_count * FIYATLAR['steel_profile_50x50x2'])})
 
     else: # Heavy Steel
@@ -410,7 +410,7 @@ costs.append({'Item': clean_invisible_chars('Merdiven + İşçilik (Manual)'), '
 total_material_cost = sum(item['Total (€)'] for item in costs if 'Total (€)' in item)
 
 fire_rate_val = FIRE_RATE
-profit_rate_val = 0.25 # Kullanıcıdan alınan varsayılan %25 kar oranı
+profit_rate_val = project_inputs['profit_rate'][1] # project_inputs'tan okunacak
 vat_rate_val = VAT_RATE
 
 fire_cost = calculate_rounded_up_cost(total_material_cost * fire_rate_val)
