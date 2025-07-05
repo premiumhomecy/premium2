@@ -3460,8 +3460,8 @@ def run_streamlit_app():
                     {'Item': 'Maliyeti Karşılama (Kar Hariç)', 'Value': format_currency(sum(item['Total (€)'] for item in costs_df) + calculate_rounded_up_cost(sum(item['Total (€)'] for item in costs_df) * FIRE_RATE) + MONTHLY_ACCOUNTING_EXPENSES + MONTHLY_OFFICE_RENT)},
                     {'Item': f'Kar (%{st.session_state.profit_rate[0]})', 'Value': format_currency(calculate_rounded_up_cost((sum(item['Total (€)'] for item in costs_df) + calculate_rounded_up_cost(sum(item['Total (€)'] for item in costs_df) * FIRE_RATE) + MONTHLY_ACCOUNTING_EXPENSES + MONTHLY_OFFICE_RENT) * st.session_state.profit_rate[1]))},
                     {'Item': 'KDV Hariç Satış Fiyatı', 'Value': format_currency(calculate_rounded_up_cost((sum(item['Total (€)'] for item in costs_df) + calculate_rounded_up_cost(sum(item['Total (€)'] for item in costs_df) * FIRE_RATE) + MONTHLY_ACCOUNTING_EXPENSES + MONTHLY_OFFICE_RENT) * (1 + st.session_state.profit_rate[1])))},
-                    {'Item': f'KDV Dahil Satış Fiyatı (%{VAT_RATE*100:.0f})', 'Value': format_currency(calculate_rounded_up_cost((sum(item['Total (€)'] for item in costs_df) + calculate_rounded_up_cost(sum(item['Total (€)'] for item in costs_df) * FIRE_RATE) + MONTHLY_ACCOUNTING_EXPENSES + MONTHLY_OFFICE_RENT) * (1 + st.session_state.profit_rate[1])) * (1 + VAT_RATE)))},
-                ]
+                   # Düzeltilmiş Satır (calculate_rounded_up_cost ifadesinin sonunda fazladan bir ) kaldırıldı)
+                    {'Item': f'KDV Dahil Satış Fiyatı (%{VAT_RATE*100:.0f})', 'Value': format_currency(calculate_rounded_up_cost((sum(item['Total (€)'] for item in costs_df) + calculate_rounded_up_cost(sum(item['Total (€)'] for item in costs_df) * FIRE_RATE) + MONTHLY_ACCOUNTING_EXPENSES + MONTHLY_OFFICE_RENT) * (1 + st.session_state.profit_rate[1]) * (1 + VAT_RATE)))}, 
 
                 # --- Streamlit'te Sonuçları Göster ---
                 st.subheader(clean_invisible_chars("Hesaplama Sonuçları"))
