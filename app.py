@@ -3462,7 +3462,7 @@ def run_streamlit_app():
                     {'Item': 'KDV Hariç Satış Fiyatı', 'Value': format_currency(calculate_rounded_up_cost((sum(item['Total (€)'] for item in costs_df) + calculate_rounded_up_cost(sum(item['Total (€)'] for item in costs_df) * FIRE_RATE) + MONTHLY_ACCOUNTING_EXPENSES + MONTHLY_OFFICE_RENT) * (1 + st.session_state.profit_rate[1])))},
                    # Düzeltilmiş Satır (calculate_rounded_up_cost ifadesinin sonunda fazladan bir ) kaldırıldı)
                     {'Item': f'KDV Dahil Satış Fiyatı (%{VAT_RATE*100:.0f})', 'Value': format_currency(calculate_rounded_up_cost((sum(item['Total (€)'] for item in costs_df) + calculate_rounded_up_cost(sum(item['Total (€)'] for item in costs_df) * FIRE_RATE) + MONTHLY_ACCOUNTING_EXPENSES + MONTHLY_OFFICE_RENT) * (1 + st.session_state.profit_rate[1]) * (1 + VAT_RATE)))}, 
-
+                    ]
                 # --- Streamlit'te Sonuçları Göster ---
                 st.subheader(clean_invisible_chars("Hesaplama Sonuçları"))
                 st.dataframe(pd.DataFrame(financial_summary_data).set_index('Item'), use_container_width=True)
