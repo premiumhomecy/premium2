@@ -263,15 +263,13 @@ def calculate_costs_detailed(project_inputs, areas):
     """
     Proje girdilerine ve alanlara göre detaylı maliyet hesaplamalarını yapar.
     Maliyet dökümü listesini ve diğer hesaplanan değerleri döndürür.
-    BU FONKSİYON SADECE PROJECT_INPUTS PARAMETRESİNİ KULLANIR.
     """
-    
     floor_area = areas["floor"]
     wall_area = areas["wall"]
     roof_area = areas["roof"]
 
-    costs = [] # Tüm maliyet kalemleri buraya eklenecek
-    profile_analysis_details = [] # Çelik profil analiz detaylarını tutacak
+    costs = []
+    profile_analysis_details = []
     
     # --- Yapısal Maliyetler ---
     if project_inputs['structure_type'] == 'Light Steel':
@@ -284,7 +282,7 @@ def calculate_costs_detailed(project_inputs, areas):
             "HEA160": project_inputs['profile_HEA160_count'],
         }
         
-        has_manual_steel_profiles = sum(profile_types_and_counts.values()) > 0
+        has_manual_steel_profiles = any(profile_types_and_counts.values())
         
         if has_manual_steel_profiles:
             for p_type, p_count in profile_types_and_counts.items():
@@ -292,140 +290,120 @@ def calculate_costs_detailed(project_inputs, areas):
                     fiytlar_key = f"steel_profile_{p_type.replace('x', '_').lower()}" 
                     cost_per_piece = FIYATLAR.get(fiytlar_key, 0.0)
                     total_profile_cost = p_count * cost_per_piece
-                    costs.append({'Item': clean_invisible_chars(f"{MATERIAL_INFO_ITEMS['steel_skeleton_info']} ({p_type})"), 'Quantity': f"{p_count} adet", 'Unit Price (€)': cost_per_piece, 'Total (€)': calculate_rounded_up_cost(total_profile_cost)})
-                    profile_analysis_details.append({'Item': p_type, 'Quantity': p_count, 'Unit Price (€)': cost_per_piece, 'Total (€)': calculate_rounded_up_cost(total_profile_cost)})
-        else: # Otomatik hesaplama
+                    costs.append({
+                        'Item': clean_invisible_chars(f"{MATERIAL_INFO_ITEMS['steel_skeleton_info']} ({p_type})"),
+                        'Quantity': f"{p_count} adet",
+                        'Unit Price (€)': cost_per_piece,
+                        'Total (€)': calculate_rounded_up_cost(total_profile_cost)
+                    })
+        else:
             auto_100x100_count = math.ceil(floor_area * (12 / 27.0))
             auto_50x50_count = math.ceil(floor_area * (6 / 27.0))
+            
             if auto_100x100_count > 0:
-                costs.append({'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['steel_skeleton_info']) + ' (100x100x3) (Auto)', 'Quantity': f"{auto_100x100_count} adet ({auto_100x100_count * 6:.1f}m)", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(auto_100x100_count * 0)})
-                profile_analysis_details.append({'Item': '100x100x3 (Auto)', 'Quantity': auto_100x100_count, 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(auto_100x100_count * 0)})
+                cost_per_piece = FIYATLAR['steel_profile_100x100x3']
+                total_cost = auto_100x100_count * cost_per_piece
+                costs.append({
+                    'Item': clean_invisible_chars(f"{MATERIAL_INFO_ITEMS['steel_skeleton_info']} (100x100x3) (Auto)"),
+                    'Quantity': f"{auto_100x100_count} adet",
+                    'Unit Price (€)': cost_per_piece,
+                    'Total (€)': calculate_rounded_up_cost(total_cost)
+                })
+            
             if auto_50x50_count > 0:
-                costs.append({'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['steel_skeleton_info']) + ' (50x50x2) (Auto)', 'Quantity': f"{auto_50x50_count} adet ({auto_50x50_count * 6:.1f}m)", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(auto_50x50_count * 0)})
-                profile_analysis_details.append({'Item': '50x50x2 (Auto)', 'Quantity': auto_50x50_count, 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(auto_50x50_count * 0)})
+                cost_per_piece = FIYATLAR['steel_profile_50x50x2']
+                total_cost = auto_50x50_count * cost_per_piece
+                costs.append({
+                    'Item': clean_invisible_chars(f"{MATERIAL_INFO_ITEMS['steel_skeleton_info']} (50x50x2) (Auto)"),
+                    'Quantity': f"{auto_50x50_count} adet",
+                    'Unit Price (€)': cost_per_piece,
+                    'Total (€)': calculate_rounded_up_cost(total_cost)
+                })
 
-    else: # Heavy Steel
-        heavy_steel_cost = floor_area * 0
-        costs.append({'Item': clean_invisible_chars('Heavy Steel Structure'), 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(heavy_steel_cost)})
-        profile_analysis_details.append({'Item': 'Heavy Steel Structure', 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(heavy_steel_cost)})
+    else:  # Heavy Steel
+        cost_per_m2 = FIYATLAR['heavy_steel_m2']
+        heavy_steel_cost = floor_area * cost_per_m2
+        costs.append({
+            'Item': clean_invisible_chars('Heavy Steel Structure'),
+            'Quantity': f"{floor_area:.2f} m²",
+            'Unit Price (€)': cost_per_m2,
+            'Total (€)': calculate_rounded_up_cost(heavy_steel_cost)
+        })
     
-    # Koruyucu otomotiv boyası (her zaman dahil)
-    costs.append({'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['protective_automotive_paint_info']), 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
+    # Koruyucu boya (her zaman dahil)
+    costs.append({
+        'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['protective_automotive_paint_info']),
+        'Quantity': 'N/A',
+        'Unit Price (€)': 0.0,
+        'Total (€)': 0.0
+    })
 
     # Kaynak işçiliği
-    welding_labor_price = 0 if project_inputs['welding_type'] == 'Standard Welding (160€/m²)' else 0
+    welding_key = 'welding_labor_m2_standard' if project_inputs['welding_type'] == 'Standard Welding (160€/m²)' else 'welding_labor_m2_trmontaj'
+    welding_labor_price = FIYATLAR[welding_key]
     welding_cost = floor_area * welding_labor_price
-    costs.append({'Item': clean_invisible_chars(f"Steel Welding Labor ({project_inputs['welding_type'].split(' ')[0]})"), 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': welding_labor_price, 'Total (€)': calculate_rounded_up_cost(welding_cost)})
+    costs.append({
+        'Item': clean_invisible_chars(f"Steel Welding Labor ({project_inputs['welding_type'].split(' ')[0]})"),
+        'Quantity': f"{floor_area:.2f} m²",
+        'Unit Price (€)': welding_labor_price,
+        'Total (€)': calculate_rounded_up_cost(welding_cost)
+    })
 
-    # Bağlantı elemanları (metrekare başına)
-    connection_elements_cost = floor_area * 0
-    costs.append({'Item': 'Connection Elements', 'Quantity': f"{floor_area:.2f} m²", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(connection_elements_cost)})
+    # Bağlantı elemanları
+    connection_elements_cost = floor_area * FIYATLAR['connection_element_m2']
+    costs.append({
+        'Item': 'Connection Elements',
+        'Quantity': f"{floor_area:.2f} m²",
+        'Unit Price (€)': FIYATLAR['connection_element_m2'],
+        'Total (€)': calculate_rounded_up_cost(connection_elements_cost)
+    })
 
-
-    # 2. Duvarlar (Sandviç Panel, Alçıpan, OSB, Kaplamalar ve Yalıtım)
-    # Dış/İç Duvar Sandviç Panel
-    if project_inputs['structure_type'] == 'Light Steel' or project_inputs['facade_sandwich_panel_option']:
+    # --- Duvarlar ve Çatı ---
+    if project_inputs['facade_sandwich_panel_option']:
         sandwich_panel_total_area = wall_area + roof_area
-        sandwich_panel_cost = sandwich_panel_total_area * 0
-        costs.append({'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['60mm_eps_sandwich_panel_info']), 'Quantity': f"{sandwich_panel_total_area:.2f} m²", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(sandwich_panel_cost)})
-        costs.append({'Item': 'Panel Assembly Labor', 'Quantity': f"{sandwich_panel_total_area:.2f} m²", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(sandwich_panel_total_area * 0)})
+        sandwich_panel_cost = sandwich_panel_total_area * FIYATLAR["sandwich_panel_m2"]
+        costs.append({
+            'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['60mm_eps_sandwich_panel_info']),
+            'Quantity': f"{sandwich_panel_total_area:.2f} m²",
+            'Unit Price (€)': FIYATLAR["sandwich_panel_m2"],
+            'Total (€)': calculate_rounded_up_cost(sandwich_panel_cost)
+        })
+        
+        # Panel montaj işçiliği
+        panel_assembly_cost = sandwich_panel_total_area * FIYATLAR['panel_assembly_labor_m2']
+        costs.append({
+            'Item': 'Panel Assembly Labor',
+            'Quantity': f"{sandwich_panel_total_area:.2f} m²",
+            'Unit Price (€)': FIYATLAR['panel_assembly_labor_m2'],
+            'Total (€)': calculate_rounded_up_cost(panel_assembly_cost)
+        })
 
-    # İç Alçıpan / İç ve Dış Alçıpan
-    # "alçıpan kullanılmayacak" denmesine rağmen, özel adetler verildiği için manuel olarak eklenir.
-    if project_inputs['plasterboard_interior_option']: # False olması bekleniyor bu senaryoda
-        plasterboard_total_area_calc = wall_area
-        costs.append({'Item': 'Interior Plasterboard (White)', 'Quantity': f"{plasterboard_total_area_calc:.2f} m²", 'Unit Price (€)': 0 / GYPSUM_BOARD_UNIT_AREA_M2, 'Total (€)': calculate_rounded_up_cost(plasterboard_total_area_calc * (0 / GYPSUM_BOARD_UNIT_AREA_M2))})
-        costs.append({'Item': 'Plasterboard Labor', 'Quantity': f"{plasterboard_total_area_calc:.2f} m²", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(plasterboard_total_area_calc * 0)})
-        costs.append({'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['satin_plaster_paint_info']), 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
+    # --- Diğer maliyet kalemleri buraya eklenmeye devam edilebilir ---
+
+    # --- Finansal Hesaplamalar ---
+    total_material_cost = sum(item['Total (€)'] for item in costs)
+    fire_cost = calculate_rounded_up_cost(total_material_cost * FIRE_RATE)
+    profit_amount = calculate_rounded_up_cost(total_material_cost * project_inputs['profit_rate'][1])
+    total_overhead_cost = MONTHLY_ACCOUNTING_EXPENSES + MONTHLY_OFFICE_RENT
     
-    if project_inputs['plasterboard_all_option']: # False olması bekleniyor bu senaryoda
-        plasterboard_total_area_calc = wall_area * 2
-        costs.append({'Item': 'Interior & Exterior Plasterboard (White)', 'Quantity': f"{plasterboard_total_area_calc:.2f} m²", 'Unit Price (€)': 0 / GYPSUM_BOARD_UNIT_AREA_M2, 'Total (€)': calculate_rounded_up_cost(plasterboard_total_area_calc * (0 / GYPSUM_BOARD_UNIT_AREA_M2))})
-        costs.append({'Item': 'Plasterboard Labor', 'Quantity': f"{plasterboard_total_area_calc:.2f} m²", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(plasterboard_total_area_calc * 0)})
-        costs.append({'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['satin_plaster_paint_info']), 'Quantity': 'N/A', 'Unit Price (€)': 0.0, 'Total (€)': 0.0})
-
-    # İç Duvar OSB Malzemesi
-    if project_inputs['osb_inner_wall_option']: # False olması bekleniyor bu senaryoda
-        osb_inner_wall_pieces = math.ceil(wall_area / OSB_PANEL_AREA_M2)
-        costs.append({'Item': 'OSB Inner Wall Material', 'Quantity': f"{osb_inner_wall_pieces} adet", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(osb_inner_wall_pieces * 0)})
-
-    # Duvar Yalıtımı: "tasyunu kullanılmayacak" denildi, bu yüzden maliyeti eklemiyorum
-    if project_inputs['insulation_wall'] and project_inputs['insulation_material_type'] != 'Yalıtım Yapılmayacak': # False olması bekleniyor
-        pass # Yalıtım maliyeti eklenmeyecek
-
-    # Dış Cephe Kaplaması (Knauf Aquapanel) (Bu projede dış ahşap lambiri var, bu yok)
-    if project_inputs['exterior_cladding_m2_option'] and project_inputs['exterior_cladding_m2_val'] > 0: # False olması bekleniyor
-        pass # Maliyet eklenmeyecek
+    total_cost_no_vat = calculate_rounded_up_cost(
+        total_material_cost + profit_amount + fire_cost + total_overhead_cost
+    )
     
-    # Dış Ahşap Kaplama (Lambiri)
-    if project_inputs['exterior_wood_cladding_m2_option'] and project_inputs['exterior_wood_cladding_m2_val'] > 0: # False olması bekleniyor
-        pass # Maliyet eklenmeyecek
+    vat_amount = calculate_rounded_up_cost(total_cost_no_vat * VAT_RATE)
+    final_sales_price_vat_included = calculate_rounded_up_cost(total_cost_no_vat + vat_amount)
 
-    # 3. Zemin Maliyetleri ("sadece yalıtım malzemesi plywood olacak")
-    # Plywood OSB (14 adet) - Kullanıcıdan gelen manuel adet
-    plywood_osb_count = 14
-    plywood_osb_cost = plywood_osb_count * 0
-    costs.append({'Item': clean_invisible_chars(MATERIAL_INFO_ITEMS['plywood_osb_floor_panel_info']), 'Quantity': f"{plywood_osb_count} adet", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(plywood_osb_cost)})
-    # Plywood döşeme işçiliği (toplam zemin alanı için)
-    plywood_flooring_labor_cost = total_floor_area * 0
-    costs.append({'Item': 'Plywood Flooring Labor', 'Quantity': f"{total_floor_area:.2f} m²", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(plywood_flooring_labor_cost)})
-    
-    # Diğer zemin kaplamaları (Laminat, Seramik, Beton Panel, Teras) - bu projede varsayılan olarak seçili değiller
-    if project_inputs['laminate_flooring_m2_val'] > 0: pass
-    if project_inputs['concrete_panel_floor_option'] and project_inputs['concrete_panel_floor_m2_val'] > 0: pass
-    if project_inputs['terrace_laminated_wood_flooring_option'] and project_inputs['terrace_laminated_wood_flooring_m2_val'] > 0: pass
-    if project_inputs['porcelain_tiles_option'] and project_inputs['porcelain_tiles_m2_val'] > 0: pass
-
-
-    # 4. Doğramalar (Pencere ve Kapılar)
-    # 2 konteynerde 2 pencere ve 1 kapı -> Toplam 4 pencere, 2 kapı
-    window_count = 4
-    door_count = 2
-    window_cost = window_count * 0
-    costs.append({'Item': clean_invisible_chars(f"Window (Standard)"), 'Quantity': window_count, 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(window_cost)})
-
-    door_cost = door_count * 0
-    costs.append({'Item': clean_invisible_chars(f"Door (Standard)"), 'Quantity': door_count, 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(door_cost)})
-
-    # Kapı/Pencere Montaj İşçiliği
-    total_doors_windows = window_count + door_count
-    door_window_assembly_cost = total_doors_windows * 0
-    costs.append({'Item': 'Door/Window Assembly Labor', 'Quantity': f"{total_doors_windows} adet", 'Unit Price (€)': 0, 'Total (€)': calculate_rounded_up_cost(door_window_assembly_cost)})
-
-
-# 5. Tesisatlar ve Diğer Manuel Kalemler
-
-# --- Finansal Hesaplamalar ---
-total_material_cost = sum(item['Total (€)'] for item in costs if 'Total (€)' in item)
-fire_rate_val = FIRE_RATE
-profit_rate_val = project_inputs['profit_rate'][1] # project_inputs'tan okunacak
-vat_rate_val = VAT_RATE
-
-fire_cost = calculate_rounded_up_cost(total_material_cost * fire_rate_val)
-total_monthly_overhead = MONTHLY_ACCOUNTING_EXPENSES + MONTHLY_OFFICE_RENT
-total_overhead_cost = calculate_rounded_up_cost(total_monthly_overhead) 
-
-profit_amount = calculate_rounded_up_cost(total_material_cost * profit_rate_val)
-total_cost_no_vat = calculate_rounded_up_cost(total_material_cost + profit_amount + fire_cost + total_overhead_cost)
-vat_amount = calculate_rounded_up_cost(total_cost_no_vat * vat_rate_val)
-final_sales_price_vat_included = calculate_rounded_up_cost(total_cost_no_vat + vat_amount)
-
-# --- Sonuçları Metin Olarak Hazırla ---
-cost_df = pd.DataFrame(costs)
-cost_df.columns = ['Kalem', 'Miktar', 'Birim Fiyat (€)', 'Toplam (€)'] # Çıktı için sütun adlarını düzenle
-
-detailed_cost_markdown = "### Detaylı Maliyet Dökümü:\n"
-detailed_cost_markdown += cost_df.to_markdown(index=False)
-
-financial_summary_markdown = "\n### Finansal Özet:\n"
-financial_summary_markdown += f"- Malzeme Ara Toplamı: {format_currency(total_material_cost)}\n"
-financial_summary_markdown += f"- Atık Maliyeti ({FIRE_RATE*100:.0f}%): {format_currency(fire_cost)}\n"
-financial_summary_markdown += f"- Genel Giderler (Aylık Sabit): {format_currency(total_overhead_cost)}\n"
-financial_summary_markdown += f"- Maliyeti Karşılama (Kar Hariç): {format_currency(total_cost_no_vat - profit_amount)}\n" # Düzeltildi
-financial_summary_markdown += f"- Kar ({profit_rate_val*100:.0f}%): {format_currency(profit_amount)}\n"
-financial_summary_markdown += f"- KDV Hariç Satış Fiyatı: {format_currency(total_cost_no_vat)}\n"
-financial_summary_markdown += f"- KDV Dahil Satış Fiyatı ({VAT_RATE*100:.0f}%): {format_currency(final_sales_price_vat_included)}\n"
-
+    # --- Sonuçları döndür ---
+    return {
+        'costs_df': pd.DataFrame(costs),
+        'total_material_cost': total_material_cost,
+        'fire_cost': fire_cost,
+        'profit_amount': profit_amount,
+        'total_overhead_cost': total_overhead_cost,
+        'total_cost_no_vat': total_cost_no_vat,
+        'vat_amount': vat_amount,
+        'final_sales_price': final_sales_price_vat_included
+    }
 print(detailed_cost_markdown)
 print(financial_summary_markdown)
 # ==============================================================================
