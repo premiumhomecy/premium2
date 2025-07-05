@@ -397,7 +397,6 @@ def calculate_costs_detailed(project_inputs, areas):
 
 # --- Finansal Hesaplamalar ---
 total_material_cost = sum(item['Total (€)'] for item in costs if 'Total (€)' in item)
-
 fire_rate_val = FIRE_RATE
 profit_rate_val = project_inputs['profit_rate'][1] # project_inputs'tan okunacak
 vat_rate_val = VAT_RATE
