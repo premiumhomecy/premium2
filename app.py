@@ -6,7 +6,7 @@ try:
 except ImportError:
     print("Required 'reportlab' library is being installed...")
     import sys
-    {sys.executable} -m pip install reportlab
+!{sys.executable} -m pip install reportlab
     print("Installation complete. Please re-run the cell.")
 
 # Mount Google Drive
