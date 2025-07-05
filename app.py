@@ -24,7 +24,6 @@ import pandas as pd
 import base64
 import io
 from datetime import datetime
-from IPython.display import display, clear_output, HTML
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
